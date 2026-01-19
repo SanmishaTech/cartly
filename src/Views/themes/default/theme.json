@@ -1,0 +1,29 @@
+{
+  "name": "Default Theme",
+  "version": "1.0.0",
+  "description": "Cartly default theme - fallback for all missing views",
+  "colors": {
+    "primary": "#3498db",
+    "secondary": "#2c3e50",
+    "success": "#27ae60",
+    "danger": "#e74c3c",
+    "warning": "#f39c12",
+    "info": "#3498db",
+    "light": "#ecf0f1",
+    "dark": "#2c3e50"
+  },
+  "features": {
+    "enable_search": true,
+    "enable_reviews": true,
+    "enable_wishlists": true,
+    "enable_comparison": true,
+    "show_price": true,
+    "show_stock": true,
+    "enable_checkout": true,
+    "enable_guest_checkout": true
+  },
+  "fonts": {
+    "primary": "system-ui, -apple-system, sans-serif",
+    "secondary": "Georgia, serif"
+  }
+}

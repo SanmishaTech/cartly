@@ -1,0 +1,206 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Edit Package{% endblock %}
+{% block page_title %}Edit Package{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">Edit Package</h2>
+            <form method="POST" action="/admin/packages/{{ package.id }}/update" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="admin-form-grid mb-4">
+                    <div class="card bg-base-200/40 border border-base-300">
+                        <div class="admin-card-body">
+                            <h3 class="admin-section-title mb-2">Package Details</h3>
+                            <div class="admin-form-control">
+                                <label class="label" for="package_name">
+                                    <span class="label-text font-semibold">Package Name</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="package[name]" 
+                                    id="package_name"
+                                    value="{{ data.package.name ?? package.name }}"
+                                    placeholder="e.g., Starter, Professional, Enterprise"
+                                class="admin-input {% if errors['package.name'] %}input-error{% endif %}"
+                                    required
+                                />
+                                {% if errors['package.name'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['package.name'] }}</span>
+                                </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label cursor-pointer" for="package_active">
+                                    <span class="label-text font-semibold">Active</span>
+                                    <input type="hidden" name="package[active]" value="0" />
+                                    <input 
+                                        type="checkbox" 
+                                        name="package[active]" 
+                                        id="package_active"
+                                        value="1"
+                                        {% set activeValue = data.package.active is defined ? data.package.active : (package.active ? '1' : '0') %}
+                                        {% if activeValue == '1' %}checked{% endif %}
+                                        class="checkbox"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-base-200/40 border border-base-300">
+                        <div class="admin-card-body">
+                            <h3 class="admin-section-title mb-2">Costs</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="admin-form-control">
+                                    <label class="label" for="cost_1_month">
+                                        <span class="label-text font-semibold">1 Month</span>
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        name="package[cost_1_month]"
+                                        id="cost_1_month"
+                                        value="{{ data.package.cost_1_month ?? package.cost_1_month }}"
+                                        step="0.01"
+                                        min="0.01"
+                                        class="admin-input {% if errors['package.cost_1_month'] %}input-error{% endif %}"
+                                        required
+                                    />
+                                    {% if errors['package.cost_1_month'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['package.cost_1_month'] }}</span>
+                                    </label>
+                                    {% endif %}
+                                </div>
+                                <div class="admin-form-control">
+                                    <label class="label" for="cost_3_month">
+                                        <span class="label-text font-semibold">3 Months</span>
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        name="package[cost_3_month]"
+                                        id="cost_3_month"
+                                        value="{{ data.package.cost_3_month ?? package.cost_3_month }}"
+                                        step="0.01"
+                                        min="0.01"
+                                        class="admin-input {% if errors['package.cost_3_month'] %}input-error{% endif %}"
+                                        required
+                                    />
+                                    {% if errors['package.cost_3_month'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['package.cost_3_month'] }}</span>
+                                    </label>
+                                    {% endif %}
+                                </div>
+                                <div class="admin-form-control">
+                                    <label class="label" for="cost_6_month">
+                                        <span class="label-text font-semibold">6 Months</span>
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        name="package[cost_6_month]"
+                                        id="cost_6_month"
+                                        value="{{ data.package.cost_6_month ?? package.cost_6_month }}"
+                                        step="0.01"
+                                        min="0.01"
+                                        class="admin-input {% if errors['package.cost_6_month'] %}input-error{% endif %}"
+                                        required
+                                    />
+                                    {% if errors['package.cost_6_month'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['package.cost_6_month'] }}</span>
+                                    </label>
+                                    {% endif %}
+                                </div>
+                                <div class="admin-form-control">
+                                    <label class="label" for="cost_12_month">
+                                        <span class="label-text font-semibold">12 Months</span>
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        name="package[cost_12_month]"
+                                        id="cost_12_month"
+                                        value="{{ data.package.cost_12_month ?? package.cost_12_month }}"
+                                        step="0.01"
+                                        min="0.01"
+                                        class="admin-input {% if errors['package.cost_12_month'] %}input-error{% endif %}"
+                                        required
+                                    />
+                                    {% if errors['package.cost_12_month'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['package.cost_12_month'] }}</span>
+                                    </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-base-100 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <h3 class="admin-section-title">Features</h3>
+                            <span class="admin-section-subtitle">Shared across all periods</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Feature</th>
+                                        <th class="w-48">Limit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for key, label in featureDefinitions %}
+                                        {% set featureId = 'feature_' ~ key %}
+                                        <tr class="hover">
+                                            <td>
+                                                <label for="{{ featureId }}" class="label">
+                                                    <span class="label-text font-semibold">{{ label }}</span>
+                                                </label>
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    id="{{ featureId }}"
+                                                    name="features[{{ key }}]"
+                                                    value="{{ featureInput[key] }}"
+                                                    min="0"
+                                                    class="admin-input {% if errors['features.' ~ key] %}input-error{% endif %}"
+                                                />
+                                                {% if errors['features.' ~ key] %}
+                                                    <label class="label">
+                                                        <span class="label-text-alt text-error">{{ errors['features.' ~ key] }}</span>
+                                                    </label>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="admin-form-actions">
+                    <a href="/admin/packages" class="btn btn-sm bg-base-200 hover:bg-base-300 border-base-300">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-sm">Update Package</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Edit Shop{% endblock %}
+{% block page_title %}Edit Shop{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">Edit Shop</h2>
+            <form method="POST" action="/admin/shops/{{ shop.id }}/update" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="admin-form-grid mb-6">
+                    <div class="card bg-base-200/40 border border-base-300">
+                        <div class="admin-card-body">
+                            <h3 class="admin-section-title mb-2">Shop Details</h3>
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_shop_name">
+                                    <span class="label-text font-semibold">Shop Name</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="shop_name"
+                                    id="shop_shop_name"
+                                    value="{{ data.shop_name ?? shop.shop_name }}"
+                                    class="admin-input {% if errors.shop_name %}input-error{% endif %}"
+                                    required
+                                />
+                                {% if errors.shop_name %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors.shop_name }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_slug">
+                                    <span class="label-text font-semibold">Slug</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="slug"
+                                    id="shop_slug"
+                                    value="{{ data.slug ?? shop.slug }}"
+                                    class="admin-input {% if errors.slug %}input-error{% endif %}"
+                                    required
+                                />
+                                {% if errors.slug %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors.slug }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-base-200/40 border border-base-300">
+                        <div class="admin-card-body">
+                            <h3 class="admin-section-title mb-2">Status</h3>
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_status">
+                                    <span class="label-text font-semibold">Shop Status</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <select
+                                    id="shop_status"
+                                    name="status"
+                                    class="admin-select {% if errors.status %}select-error{% endif %}"
+                                    required
+                                >
+                                    {% set currentStatus = data.status ?? shop.status %}
+                                    <option value="active" {% if currentStatus == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if currentStatus == 'inactive' %}selected{% endif %}>Inactive</option>
+                                </select>
+                                {% if errors.status %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors.status }}</span>
+                                    </label>
+                                {% endif %}
+                                <p class="text-xs text-base-content/60 mt-2">
+                                    Disabling a shop blocks access even if a subscription is active.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-base-100 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Shop Admin</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_admin_name">
+                                    <span class="label-text font-semibold">Admin Name</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="user[name]"
+                                    id="shop_admin_name"
+                                    value="{{ data.user.name ?? adminUser.name ?? '' }}"
+                                    class="admin-input {% if errors['user.name'] %}input-error{% endif %}"
+                                    required
+                                />
+                                {% if errors['user.name'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['user.name'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_admin_email">
+                                    <span class="label-text font-semibold">Admin Email</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    name="user[email]"
+                                    id="shop_admin_email"
+                                    value="{{ data.user.email ?? adminUser.email ?? '' }}"
+                                    class="admin-input {% if errors['user.email'] %}input-error{% endif %}"
+                                    required
+                                />
+                                {% if errors['user.email'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['user.email'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-form-actions">
+                    <a href="/admin/shops" class="btn btn-sm bg-base-200 hover:bg-base-300 border-base-300">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

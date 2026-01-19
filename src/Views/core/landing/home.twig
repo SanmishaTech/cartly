@@ -1,0 +1,464 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+{# Navigation #}
+<nav class="fixed top-0 w-full bg-white bg-opacity-95 shadow-sm z-50">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+            </div>
+            <span class="text-2xl font-black text-gray-900">Cartly</span>
+        </div>
+        
+        <div class="hidden md:flex items-center space-x-8">
+            <a href="#features" class="text-gray-700 hover:text-gray-900 font-medium">Features</a>
+            <a href="#pricing" class="text-gray-700 hover:text-gray-900 font-medium">Pricing</a>
+            <a href="#faq" class="text-gray-700 hover:text-gray-900 font-medium">FAQ</a>
+        </div>
+        
+        <a href="/admin" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+            Store Admin Login
+        </a>
+    </div>
+</nav>
+
+{# Hero Section #}
+<section class="pt-32 pb-24 px-4">
+    <div class="container mx-auto text-center">
+        <div class="inline-flex items-center justify-center bg-blue-50 border border-blue-200 rounded-full px-4 py-2 mb-8">
+            <span class="text-sm font-semibold text-blue-600">🚀 Now Live - Multi-Shop Ready</span>
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-black text-gray-900 mb-6 leading-tight">
+            Multi-Shop <span class="bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">eCommerce</span> Platform
+        </h1>
+        
+        <p class="text-xl md:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto">
+            Launch your own marketplace where independent sellers can create their own online stores. Simple, powerful, and built for scale.
+        </p>
+        
+        <div class="flex flex-col md:flex-row items-center justify-center gap-4 mb-16">
+            <a href="/admin" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-bold text-lg transition inline-flex items-center space-x-2">
+                <span>Get Started</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+            </a>
+            <button class="bg-gray-100 hover:bg-gray-200 text-gray-900 px-8 py-4 rounded-lg font-bold text-lg transition">
+                Watch Demo
+            </button>
+        </div>
+        
+        {# Hero Image/Screenshot #}
+        <div class="bg-gradient-to-b from-gray-100 to-gray-50 rounded-2xl overflow-hidden border border-gray-200 shadow-2xl">
+            <div class="aspect-video bg-gray-200 flex items-center justify-center">
+                <svg class="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Features Section #}
+<section id="features" class="py-24 px-4 bg-gray-50">
+    <div class="container mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4">Powerful Features</h2>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">Everything you need to build a thriving multi-shop platform</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {# Feature 1 #}
+            <div class="bg-white rounded-xl p-8 shadow-md hover:shadow-lg transition">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Multi-Shop Management</h3>
+                <p class="text-gray-600">Each shop is independent with its own products, orders, and inventory management.</p>
+            </div>
+            
+            {# Feature 2 #}
+            <div class="bg-white rounded-xl p-8 shadow-md hover:shadow-lg transition">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Customizable Themes</h3>
+                <p class="text-gray-600">Choose from multiple professionally designed themes or create your own to match your brand.</p>
+            </div>
+            
+            {# Feature 3 #}
+            <div class="bg-white rounded-xl p-8 shadow-md hover:shadow-lg transition">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Payment Processing</h3>
+                <p class="text-gray-600">Accept payments from customers with secure payment gateway integration.</p>
+            </div>
+            
+            {# Feature 4 #}
+            <div class="bg-white rounded-xl p-8 shadow-md hover:shadow-lg transition">
+                <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Advanced Analytics</h3>
+                <p class="text-gray-600">Track sales, customer behavior, and store performance with detailed analytics dashboard.</p>
+            </div>
+            
+            {# Feature 5 #}
+            <div class="bg-white rounded-xl p-8 shadow-md hover:shadow-lg transition">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Lightning Fast</h3>
+                <p class="text-gray-600">Server-rendered pages with minimal JavaScript for maximum performance and SEO.</p>
+            </div>
+            
+            {# Feature 6 #}
+            <div class="bg-white rounded-xl p-8 shadow-md hover:shadow-lg transition">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Secure & Reliable</h3>
+                <p class="text-gray-600">Enterprise-grade security with data isolation and compliance with international standards.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# How It Works Section #}
+<section class="py-24 px-4">
+    <div class="container mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4">How It Works</h2>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">Get your store up and running in minutes</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {# Step 1 #}
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-4">
+                    1
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Create Account</h3>
+                <p class="text-gray-600">Sign up for your store admin account in seconds</p>
+            </div>
+            
+            {# Arrow #}
+            <div class="flex items-center justify-center">
+                <svg class="w-6 h-6 text-gray-300 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+            </div>
+            
+            {# Step 2 #}
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-4">
+                    2
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Add Products</h3>
+                <p class="text-gray-600">Upload your products with descriptions and images</p>
+            </div>
+            
+            {# Arrow #}
+            <div class="flex items-center justify-center">
+                <svg class="w-6 h-6 text-gray-300 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+            </div>
+            
+            {# Step 3 #}
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-4">
+                    3
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Go Live</h3>
+                <p class="text-gray-600">Your store is ready for customers</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Pricing Section #}
+<section id="pricing" class="py-24 px-4 bg-gray-50">
+    <div class="container mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4">Simple, Transparent Pricing</h2>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">Choose the plan that fits your business</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {# Starter Plan #}
+            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
+                <div class="p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Starter</h3>
+                    <p class="text-gray-600 mb-6">Perfect for new sellers</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold text-gray-900">$29</span>
+                        <span class="text-gray-600">/month</span>
+                    </div>
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold mb-8 transition">
+                        Get Started
+                    </button>
+                    <ul class="space-y-4">
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Up to 100 products</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Basic analytics</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Email support</span>
+                        </li>
+                        <li class="flex items-center space-x-3 text-gray-400">
+                            <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span>Custom domain</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            {# Professional Plan (Featured) #}
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-blue-600 md:scale-105 hover:shadow-xl transition">
+                <div class="bg-blue-600 text-white px-8 py-3 text-center font-semibold">
+                    Most Popular
+                </div>
+                <div class="p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Professional</h3>
+                    <p class="text-gray-600 mb-6">For growing businesses</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold text-gray-900">$79</span>
+                        <span class="text-gray-600">/month</span>
+                    </div>
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold mb-8 transition">
+                        Get Started
+                    </button>
+                    <ul class="space-y-4">
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Up to 1000 products</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Advanced analytics</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Priority support</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Custom domain</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            {# Enterprise Plan #}
+            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
+                <div class="p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
+                    <p class="text-gray-600 mb-6">For large operations</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold text-gray-900">Custom</span>
+                        <p class="text-gray-600 text-sm">Contact us</p>
+                    </div>
+                    <button class="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 py-3 rounded-lg font-semibold mb-8 transition">
+                        Contact Sales
+                    </button>
+                    <ul class="space-y-4">
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Unlimited products</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Custom integrations</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Dedicated support</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-gray-600">Custom branding</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# FAQ Section #}
+<section id="faq" class="py-24 px-4">
+    <div class="container mx-auto max-w-3xl">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <p class="text-xl text-gray-600">Get answers to common questions about Cartly</p>
+        </div>
+        
+        <div class="space-y-4" x-data="{ open: 0 }">
+            {# FAQ 1 #}
+            <div class="border border-gray-200 rounded-lg">
+                <button @click="open = open === 1 ? 0 : 1" class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition">
+                    <span class="font-semibold text-gray-900 text-left">What is Cartly?</span>
+                    <svg class="w-5 h-5 text-gray-500 transform transition" :class="open === 1 ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </button>
+                <div x-show="open === 1" class="px-6 pb-6 text-gray-600">
+                    Cartly is a multi-shop eCommerce platform that allows multiple independent sellers to create and manage their own online stores on a single platform.
+                </div>
+            </div>
+            
+            {# FAQ 2 #}
+            <div class="border border-gray-200 rounded-lg">
+                <button @click="open = open === 2 ? 0 : 2" class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition">
+                    <span class="font-semibold text-gray-900 text-left">Can I customize my store's appearance?</span>
+                    <svg class="w-5 h-5 text-gray-500 transform transition" :class="open === 2 ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </button>
+                <div x-show="open === 2" class="px-6 pb-6 text-gray-600">
+                    Yes! You can choose from multiple pre-designed themes or customize the theme to match your brand identity using the theme management panel.
+                </div>
+            </div>
+            
+            {# FAQ 3 #}
+            <div class="border border-gray-200 rounded-lg">
+                <button @click="open = open === 3 ? 0 : 3" class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition">
+                    <span class="font-semibold text-gray-900 text-left">What payment methods are supported?</span>
+                    <svg class="w-5 h-5 text-gray-500 transform transition" :class="open === 3 ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </button>
+                <div x-show="open === 3" class="px-6 pb-6 text-gray-600">
+                    We support major payment gateways including credit cards, digital wallets, and local payment methods depending on your region.
+                </div>
+            </div>
+            
+            {# FAQ 4 #}
+            <div class="border border-gray-200 rounded-lg">
+                <button @click="open = open === 4 ? 0 : 4" class="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition">
+                    <span class="font-semibold text-gray-900 text-left">Is there a free trial?</span>
+                    <svg class="w-5 h-5 text-gray-500 transform transition" :class="open === 4 ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </button>
+                <div x-show="open === 4" class="px-6 pb-6 text-gray-600">
+                    Yes! We offer a 14-day free trial for all plans. No credit card required to get started.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# CTA Section #}
+<section class="py-24 px-4 bg-gradient-to-r from-blue-600 to-blue-700">
+    <div class="container mx-auto text-center">
+        <h2 class="text-4xl md:text-5xl font-black text-white mb-6">Ready to Launch Your Store?</h2>
+        <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">Join hundreds of sellers and start selling online today</p>
+        <a href="/admin" class="inline-flex items-center space-x-2 bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-lg font-bold text-lg transition">
+            <span>Get Started Now</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+        </a>
+    </div>
+</section>
+
+{# Footer #}
+<footer class="bg-gray-900 text-gray-400 py-12 px-4">
+    <div class="container mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+                <div class="flex items-center space-x-2 mb-4">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                    </div>
+                    <span class="font-bold text-white">Cartly</span>
+                </div>
+                <p class="text-sm">Multi-shop eCommerce platform for everyone.</p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-white mb-4">Product</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#features" class="hover:text-white">Features</a></li>
+                    <li><a href="#pricing" class="hover:text-white">Pricing</a></li>
+                    <li><a href="#" class="hover:text-white">Security</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-white mb-4">Company</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-white">About</a></li>
+                    <li><a href="#" class="hover:text-white">Blog</a></li>
+                    <li><a href="#" class="hover:text-white">Contact</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-white mb-4">Legal</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-white">Privacy</a></li>
+                    <li><a href="#" class="hover:text-white">Terms</a></li>
+                    <li><a href="#" class="hover:text-white">Cookies</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-800 pt-8">
+            <p class="text-sm text-center">
+                &copy; {{ "now"|date("Y") }} Cartly. All rights reserved. Built with ❤️ for sellers everywhere.
+            </p>
+        </div>
+    </div>
+</footer>
+{% endblock %}

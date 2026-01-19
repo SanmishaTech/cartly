@@ -1,0 +1,269 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Subscription
+{% endblock %}
+{% block page_title %}Subscription
+{% endblock %}
+
+{% block content %}
+	<div class="w-full">
+		<div class="card bg-base-100 border border-base-300">
+			<div class="admin-card-body">
+				<h2 class="card-title mb-4">Subscription:
+					{{ shop.shop_name }}</h2>
+				{% if error %}
+					<div class="alert alert-error mb-4">
+						<span>There are errors in the form. Please review the fields below.</span>
+					</div>
+				{% endif %}
+
+				<div class="admin-form-grid">
+					<div class="card bg-base-200/40 border border-base-300">
+						<div class="admin-card-body">
+							<h3 class="admin-section-title mb-2">Current Subscription</h3>
+							{% if currentSubscription %}
+								<div class="space-y-2 text-sm">
+									<div>
+										<span class="font-semibold">Package:</span>
+										{{ currentSubscription.package ? currentSubscription.package.name : '—' }}</div>
+									<div>
+										<span class="font-semibold">Status:</span>
+										{{ currentSubscription.status|capitalize }}</div>
+									<div>
+										<span class="font-semibold">Starts:</span>
+										{{ currentSubscription.starts_at|local_date }}</div>
+									<div>
+										<span class="font-semibold">Expires:</span>
+										{{ currentSubscription.expires_at|local_date }}</div>
+									{% if currentSubscription.trial_days %}
+										<div>
+											<span class="font-semibold">Trial Days:</span>
+											{{ currentSubscription.trial_days }}</div>
+									{% endif %}
+								</div>
+							{% else %}
+								<p class="text-base-content/60">No subscription assigned yet.</p>
+							{% endif %}
+						</div>
+					</div>
+
+					<div class="card bg-base-200/40 border border-base-300">
+						<div class="admin-card-body">
+							<h3 class="admin-section-title mb-2">Renew Subscription</h3>
+							<p class="text-sm text-base-content/60 mb-2">Select trial or paid. This adds a new subscription record.</p>
+                        <form method="POST" action="/admin/subscriptions/{{ shop.id }}/change" class="flex flex-col gap-4" novalidate>
+								<input type="hidden" name="_token" value="{{ csrf_token }}">
+								<div class="admin-form-control mb-2">
+									<label class="label" for="subscription_type">
+										<span class="label-text font-semibold">Subscription Type</span>
+										<span class="text-error">*</span>
+									</label>
+									<select id="subscription_type" name="subscription[type]" class="admin-select" data-subscription-type>
+										{% set currentType = data.subscription.type ?? 'paid' %}
+										<option value="paid" {% if currentType == 'paid' %} selected {% endif %}>Paid Package</option>
+										<option value="trial" {% if currentType == 'trial' %} selected {% endif %}>Trial</option>
+									</select>
+								</div>
+
+								<div class="admin-form-control mb-2" data-paid-field>
+									<label class="label" for="package_id">
+										<span class="label-text font-semibold">Package</span>
+										<span class="text-error">*</span>
+									</label>
+									<select id="package_id" name="subscription[package_id]" class="admin-select {% if errors['subscription.package_id'] %}select-error{% endif %}" required>
+										<option value="">Select package</option>
+										{% for pkg in packages %}
+											<option value="{{ pkg.id }}" data-cost-1="{{ pkg.cost_1_month }}" data-cost-3="{{ pkg.cost_3_month }}" data-cost-6="{{ pkg.cost_6_month }}" data-cost-12="{{ pkg.cost_12_month }}" {% if (data.subscription.package_id is defined and data.subscription.package_id == pkg.id) or (data.subscription.package_id is not defined and currentSubscription and currentSubscription.package_id == pkg.id) %} selected {% endif %}>
+												{{ pkg.name }}
+											</option>
+										{% endfor %}
+									</select>
+									{% if errors['subscription.package_id'] %}
+										<label class="label">
+											<span class="label-text-alt text-error">{{ errors['subscription.package_id'] }}</span>
+										</label>
+									{% endif %}
+								</div>
+
+								<div class="admin-form-control mb-2" data-paid-field>
+									<label class="label" for="change_period_months">
+										<span class="label-text font-semibold">Billing Period</span>
+										<span class="text-error">*</span>
+									</label>
+									<select id="change_period_months" name="subscription[period_months]" class="admin-select {% if errors['subscription.period_months'] %}select-error{% endif %}" required>
+										{% set currentPeriod = data.subscription.period_months ?? (currentSubscription ? currentSubscription.billing_period_months : '') %}
+										<option value="">Select period</option>
+										<option value="1" {% if currentPeriod == 1 %} selected {% endif %}>1 Month</option>
+										<option value="3" {% if currentPeriod == 3 %} selected {% endif %}>3 Months</option>
+										<option value="6" {% if currentPeriod == 6 %} selected {% endif %}>6 Months</option>
+										<option value="12" {% if currentPeriod == 12 %} selected {% endif %}>12 Months</option>
+									</select>
+									{% if errors['subscription.period_months'] %}
+										<label class="label">
+											<span class="label-text-alt text-error">{{ errors['subscription.period_months'] }}</span>
+										</label>
+									{% endif %}
+								</div>
+
+								<div class="admin-form-control mb-2" data-paid-field>
+									<label class="label" for="change_payment_method">
+										<span class="label-text font-semibold">Payment Method</span>
+										<span class="text-error">*</span>
+									</label>
+									<select id="change_payment_method" name="payment[method]" class="admin-select {% if errors['payment.method'] %}select-error{% endif %}" required>
+										<option value="">Select method</option>
+										<option value="gateway" {% if data.payment.method == 'gateway' %} selected {% endif %}>Gateway</option>
+										<option value="cash" {% if data.payment.method == 'cash' %} selected {% endif %}>Cash</option>
+										<option value="bank_transfer" {% if data.payment.method == 'bank_transfer' %} selected {% endif %}>Bank Transfer</option>
+									</select>
+									{% if errors['payment.method'] %}
+										<label class="label">
+											<span class="label-text-alt text-error">{{ errors['payment.method'] }}</span>
+										</label>
+									{% endif %}
+								</div>
+
+								<div class="admin-form-control mb-2" data-paid-field>
+									<label class="label" for="change_payment_reference">
+										<span class="label-text font-semibold">Payment Reference</span>
+										<span class="text-error">*</span>
+									</label>
+									<input type="text" id="change_payment_reference" name="payment[reference]" class="admin-input {% if errors['payment.reference'] %}input-error{% endif %}" placeholder="Gateway/Cash/Bank ref id" value="{{ data.payment.reference ?? '' }}" required/>
+									{% if errors['payment.reference'] %}
+										<label class="label">
+											<span class="label-text-alt text-error">{{ errors['payment.reference'] }}</span>
+										</label>
+									{% endif %}
+								</div>
+
+								<div class="admin-form-control mb-2" data-paid-field>
+									<label class="label" for="change_payment_amount">
+										<span class="label-text font-semibold">Amount</span>
+										<span class="text-error">*</span>
+									</label>
+									<input type="number" id="change_payment_amount" name="payment[amount]" step="0.01" min="0" class="admin-input {% if errors['payment.amount'] %}input-error{% endif %}" value="{{ data.payment.amount ?? '' }}" readonly required/>
+									{% if errors['payment.amount'] %}
+										<label class="label">
+											<span class="label-text-alt text-error">{{ errors['payment.amount'] }}</span>
+										</label>
+									{% endif %}
+								</div>
+
+								<div class="admin-form-control mb-2" data-trial-field>
+									<label class="label" for="trial_days">
+										<span class="label-text font-semibold">Trial Days</span>
+										<span class="text-error">*</span>
+									</label>
+									<select id="trial_days" name="subscription[trial_days]" class="admin-select {% if errors['subscription.trial_days'] %}select-error{% endif %}">
+										<option value="">Select trial days</option>
+										{% for days in [7, 10, 15] %}
+											<option value="{{ days }}" {% if data.subscription.trial_days == days %} selected {% endif %}>{{ days }}
+												days</option>
+										{% endfor %}
+									</select>
+									{% if errors['subscription.trial_days'] %}
+										<label class="label">
+											<span class="label-text-alt text-error">{{ errors['subscription.trial_days'] }}</span>
+										</label>
+									{% endif %}
+								</div>
+
+                            <div class="mt-auto flex justify-end">
+									<button type="submit" class="btn btn-primary btn-sm">Save Subscription</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+
+				<script>
+					(function () {
+var typeSelect = document.querySelector('[data-subscription-type]');
+var paidFields = document.querySelectorAll('[data-paid-field]');
+var trialFields = document.querySelectorAll('[data-trial-field]');
+var packageSelect = document.getElementById('package_id');
+var periodSelect = document.getElementById('change_period_months');
+var amountInput = document.getElementById('change_payment_amount');
+if (! typeSelect) {
+return;
+}
+
+function toggleFields() {
+var isTrial = typeSelect.value === 'trial';
+paidFields.forEach(function (wrapper) {
+wrapper.style.display = isTrial ? 'none' : '';
+});
+trialFields.forEach(function (wrapper) {
+wrapper.style.display = isTrial ? '' : 'none';
+});
+}
+
+function updateAmount() {
+if (! packageSelect || ! periodSelect || ! amountInput) {
+return;
+}
+var option = packageSelect.options[packageSelect.selectedIndex];
+if (! option) {
+amountInput.value = '';
+return;
+}
+var period = periodSelect.value;
+if (! period) {
+amountInput.value = '';
+return;
+}
+var key = 'cost-' + period;
+var value = option.getAttribute('data-' + key);
+amountInput.value = value ? value : '';
+}
+
+typeSelect.addEventListener('change', toggleFields);
+if (packageSelect) {
+packageSelect.addEventListener('change', updateAmount);
+}
+if (periodSelect) {
+periodSelect.addEventListener('change', updateAmount);
+}
+toggleFields();
+updateAmount();
+})();
+                </script>
+
+			<div class="card bg-base-200/40 border border-base-300 mt-6">
+				<div class="admin-card-body">
+					<h3 class="admin-section-title mb-2">Subscription History</h3>
+					{% if history|length %}
+						<div class="overflow-x-auto">
+							<table class="admin-table">
+								<thead>
+									<tr>
+										<th>Type</th>
+										<th>Package</th>
+										<th>Period</th>
+										<th>Starts</th>
+										<th>Expires</th>
+										<th>Status</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for entry in history %}
+										<tr class="hover">
+											<td>{{ entry.status|capitalize }}</td>
+											<td>{{ entry.package ? entry.package.name : 'Trial' }}</td>
+											<td>{{ entry.billing_period_months ? (entry.billing_period_months ~ ' months') : '—' }}</td>
+											<td>{{ entry.starts_at ? (entry.starts_at|local_date) : '—' }}</td>
+											<td>{{ entry.expires_at ? (entry.expires_at|local_date) : '—' }}</td>
+											<td>{{ entry.status|capitalize }}</td>
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					{% else %}
+						<p class="text-sm text-base-content/60">No subscription history yet.</p>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>{% endblock %}

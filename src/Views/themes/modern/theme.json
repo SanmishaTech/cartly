@@ -1,0 +1,18 @@
+{
+  "name": "Modern",
+  "slug": "modern",
+  "version": "1.0.0",
+  "author": "Cartly",
+  "description": "Sleek, contemporary ecommerce storefront with purple accents",
+  "preview_image": "preview.png",
+  "supports": {
+    "dark_mode": true,
+    "product_variants": true,
+    "wishlist": true
+  },
+  "colors": {
+    "primary": "#8B5CF6",
+    "secondary": "#EC4899",
+    "accent": "#F59E0B"
+  }
+}

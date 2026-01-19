@@ -1,0 +1,76 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ shop.shop_name }} - Products{% endblock %}
+
+{% block content %}
+<div class="space-y-8 p-4 md:p-8">
+    <section class="bg-base-200 rounded-lg p-6 md:p-8">
+        <p class="text-sm uppercase tracking-wide text-primary font-semibold">Catalog</p>
+        <h1 class="mt-2 text-3xl md:text-4xl font-bold">Browse all products</h1>
+        <p class="mt-2 text-base-content/70">
+            Placeholder catalog with filters and sorting. Replace with real data when ready.
+        </p>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <aside class="lg:col-span-1 space-y-6">
+            <div class="card bg-base-100 border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title text-lg">Filters</h2>
+                    <div class="space-y-4 text-sm text-base-content/70">
+                        <div>
+                            <p class="font-semibold text-base-content">Category</p>
+                            <ul class="mt-2 space-y-1">
+                                {% for category in categories|slice(0, 6) %}
+                                    <li class="flex items-center justify-between">
+                                        <span>{{ category.name }}</span>
+                                        <span class="badge badge-ghost">{{ category.count }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-base-content">Price range</p>
+                            <div class="mt-2 h-2 rounded bg-base-200"></div>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-base-content">Ratings</p>
+                            <div class="mt-2 space-y-1">
+                                <div>4 stars and up</div>
+                                <div>3 stars and up</div>
+                                <div>2 stars and up</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-sm mt-4" disabled>
+                        Apply filters (coming soon)
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <div class="lg:col-span-3 space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <p class="text-base-content/70">{{ products|length }} products found</p>
+                <div class="join">
+                    <button class="btn btn-sm join-item" disabled>Sort: Popular</button>
+                    <button class="btn btn-sm join-item" disabled>Filter</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                {% for product in products %}
+                    {% include 'partials/product_card.twig' with { product: product } only %}
+                {% endfor %}
+            </div>
+            <div class="flex justify-center">
+                <div class="join">
+                    <button class="btn join-item btn-sm" disabled>Prev</button>
+                    <button class="btn join-item btn-sm btn-active" disabled>1</button>
+                    <button class="btn join-item btn-sm" disabled>2</button>
+                    <button class="btn join-item btn-sm" disabled>Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ shop.shop_name }} - Home{% endblock %}
+
+{% block content %}
+<div class="space-y-12 p-4 md:p-8">
+    {% set allowed_hero_types = ['static', 'carousel', 'text', 'grid', 'category_grid'] %}
+    {% set resolved_hero_type = hero_type ?? shop.hero_type ?? 'carousel' %}
+    {% if resolved_hero_type == 'category_grid' %}
+        {% set resolved_hero_type = 'grid' %}
+    {% endif %}
+    {% if resolved_hero_type not in allowed_hero_types %}
+        {% set resolved_hero_type = 'carousel' %}
+    {% endif %}
+    {% include 'partials/hero/' ~ resolved_hero_type ~ '.twig' with {
+        hero_settings: hero_settings ?? {},
+        shop: shop
+    } only %}
+    
+    {% if shop.shop_description %}
+    <section class="px-4">
+        <div class="rounded-lg bg-base-200/40 border border-base-300 p-6 text-base-content">
+            <h2 class="text-2xl font-semibold mb-2">About {{ shop.shop_name }}</h2>
+            <p class="text-base-content/70">{{ shop.shop_description }}</p>
+        </div>
+    </section>
+    {% endif %}
+    
+    {# Featured Products #}
+    <section class="px-4">
+        <h2 class="text-3xl font-bold mb-8 text-base-content">Featured Products</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% set featured_products = [
+                { 'name': 'Classic Cotton T-Shirt', 'slug': 'classic-cotton-tshirt', 'price': '₹899', 'badge': 'New' },
+                { 'name': 'Wireless Earbuds', 'slug': 'wireless-earbuds', 'price': '₹2,499', 'badge': 'Hot' },
+                { 'name': 'Minimal Backpack', 'slug': 'minimal-backpack', 'price': '₹1,799', 'badge': 'Limited' },
+                { 'name': 'Ceramic Coffee Mug', 'slug': 'ceramic-coffee-mug', 'price': '₹499', 'badge': 'Bestseller' }
+            ] %}
+            {% for product in featured_products %}
+                {% include 'partials/product_card.twig' with { product: product } only %}
+            {% endfor %}
+        </div>
+    </section>
+    
+    {# Categories #}
+    <section class="px-4">
+        <h2 class="text-3xl font-bold mb-8 text-base-content">Shop by Category</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for category in ['Electronics', 'Fashion', 'Home & Living', 'Sports'] %}
+            <a href="/category/{{ category|lower }}" class="btn btn-outline btn-primary h-auto flex-col p-6 gap-2 rounded-lg hover:bg-primary hover:text-primary-content">
+                <div class="text-4xl">📦</div>
+                <h3 class="font-semibold text-base">{{ category }}</h3>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

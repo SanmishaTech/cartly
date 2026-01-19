@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cartly - Multi-Shop eCommerce Platform{% endblock %}</title>
+    <meta name="description" content="{% block description %}Launch your own multi-shop eCommerce platform. Simple, powerful, and ready to scale.{% endblock %}">
+    
+    <!-- Compiled CSS with Tailwind + DaisyUI -->
+    <link rel="stylesheet" href="/assets/css/output.css">
+    
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-base-100">
+    {% block content %}{% endblock %}
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

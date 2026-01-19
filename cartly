@@ -1,0 +1,311 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Cartly CLI Tool
+ * 
+ * Command-line interface for common development tasks
+ * Usage: php cartly <command> [options]
+ */
+
+// Colors for CLI output
+define('COLOR_RED', "\033[0;31m");
+define('COLOR_GREEN', "\033[0;32m");
+define('COLOR_YELLOW', "\033[1;33m");
+define('COLOR_BLUE', "\033[0;34m");
+define('COLOR_CYAN', "\033[0;36m");
+define('COLOR_NC', "\033[0m"); // No Color
+
+// Helper functions
+function info($message) {
+    echo COLOR_CYAN . $message . COLOR_NC . PHP_EOL;
+}
+
+function success($message) {
+    echo COLOR_GREEN . '✓ ' . $message . COLOR_NC . PHP_EOL;
+}
+
+function error($message) {
+    echo COLOR_RED . '✗ ' . $message . COLOR_NC . PHP_EOL;
+}
+
+function warning($message) {
+    echo COLOR_YELLOW . '⚠ ' . $message . COLOR_NC . PHP_EOL;
+}
+
+function showBanner() {
+    echo COLOR_CYAN . <<<BANNER
+   ____           _   _       
+  / ___|__ _ _ __| |_| |_   _ 
+ | |   / _` | '__| __| | | | |
+ | |__| (_| | |  | |_| | |_| |
+  \____\__,_|_|   \__|_|\__, |
+                        |___/ 
+BANNER;
+    echo COLOR_NC . PHP_EOL;
+    echo COLOR_YELLOW . "Multi-Shop Ecommerce Platform" . COLOR_NC . PHP_EOL;
+    echo PHP_EOL;
+}
+
+function showHelp() {
+    showBanner();
+    echo COLOR_GREEN . "Available Commands:" . COLOR_NC . PHP_EOL;
+    echo PHP_EOL;
+    
+    $commands = [
+        'serve' => [
+            'description' => 'Start the development server',
+            'usage' => 'cartly serve [port]',
+            'example' => 'cartly serve 8080'
+        ],
+        'migrate' => [
+            'description' => 'Run database migrations',
+            'usage' => 'cartly migrate',
+            'example' => 'cartly migrate'
+        ],
+        'migrate:rollback' => [
+            'description' => 'Rollback the last migration',
+            'usage' => 'cartly migrate:rollback',
+            'example' => 'cartly migrate:rollback'
+        ],
+        'db:seed' => [
+            'description' => 'Seed the database (dev environment)',
+            'usage' => 'cartly db:seed [--demo]',
+            'example' => 'cartly db:seed --demo'
+        ],
+        'hosts:setup' => [
+            'description' => 'Setup /etc/hosts entries for development',
+            'usage' => 'cartly hosts:setup',
+            'example' => 'cartly hosts:setup'
+        ],
+        'clear:logs' => [
+            'description' => 'Clear application logs',
+            'usage' => 'cartly clear:logs',
+            'example' => 'cartly clear:logs'
+        ],
+        'list' => [
+            'description' => 'List all available commands',
+            'usage' => 'cartly list',
+            'example' => 'cartly list'
+        ],
+    ];
+    
+    foreach ($commands as $command => $details) {
+        echo COLOR_YELLOW . "  $command" . COLOR_NC . PHP_EOL;
+        echo "    " . $details['description'] . PHP_EOL;
+        echo COLOR_BLUE . "    Usage: " . COLOR_NC . $details['usage'] . PHP_EOL;
+        echo PHP_EOL;
+    }
+    
+    echo COLOR_CYAN . "For help with a specific command:" . COLOR_NC . PHP_EOL;
+    echo "  cartly help <command>" . PHP_EOL;
+    echo PHP_EOL;
+}
+
+// Command handlers
+function handleServe($args) {
+    $port = $args[0] ?? '8000';
+    $host = '0.0.0.0';
+    
+    info("Starting Cartly development server...");
+    echo PHP_EOL;
+    
+    // Check if Apache is running and stop it
+    $output = shell_exec("pgrep -f 'apache2' 2>/dev/null || echo ''");
+    if (!empty(trim($output))) {
+        warning("Apache2 is running on port 80. Attempting to stop it...");
+        shell_exec("kill $(pgrep -f 'apache2') 2>/dev/null || echo 'Could not stop Apache'");
+        sleep(1);
+        echo PHP_EOL;
+    }
+    
+    // Show access URLs
+    echo COLOR_GREEN . "✓ Server running on port $port" . COLOR_NC . PHP_EOL;
+    echo PHP_EOL;
+    echo COLOR_CYAN . "Access Cartly at:" . COLOR_NC . PHP_EOL;
+    echo COLOR_YELLOW . "  Landing:     http://cartly.test:$port/" . COLOR_NC . PHP_EOL;
+    echo COLOR_YELLOW . "  Shop 1:      http://demo1.cartly.test:$port/" . COLOR_NC . PHP_EOL;
+    echo COLOR_YELLOW . "  Shop 2:      http://demo2.cartly.test:$port/" . COLOR_NC . PHP_EOL;
+    echo COLOR_YELLOW . "  Admin:       http://cartly.test:$port/admin/login" . COLOR_NC . PHP_EOL;
+    echo COLOR_YELLOW . "  Root Admin:  http://cartly.test:$port/admin/login" . COLOR_NC . PHP_EOL;
+    echo PHP_EOL;
+    echo COLOR_CYAN . "🔴 IMPORTANT: Port :$port is required in all URLs" . COLOR_NC . PHP_EOL;
+    echo COLOR_CYAN . "❌ DON'T use: http://demo1.cartly.test/" . COLOR_NC . PHP_EOL;
+    echo COLOR_CYAN . "✅ DO use: http://demo1.cartly.test:$port/" . COLOR_NC . PHP_EOL;
+    echo PHP_EOL;
+    echo COLOR_YELLOW . "Press Ctrl+C to stop" . COLOR_NC . PHP_EOL;
+    echo PHP_EOL;
+    
+    // Change to public directory and start server
+    chdir(__DIR__ . '/public');
+    passthru("php -S $host:$port");
+}
+
+function handleMigrate($args) {
+    info("Running database migrations...");
+    require __DIR__ . '/scripts/migrate.php';
+}
+
+function handleMigrateRollback($args) {
+    warning("Rollback functionality not yet implemented");
+    info("This will be added in a future update");
+}
+
+function handleDbSeed($args) {
+    $isDemo = in_array('--demo', $args);
+    
+    if ($isDemo) {
+        info("Seeding database with demo data...");
+        require __DIR__ . '/scripts/seed_demo.php';
+    } else {
+        info("Seeding database with dev data...");
+        require __DIR__ . '/scripts/seed_dev.php';
+    }
+}
+
+function handleHostsSetup($args) {
+    info("Setting up /etc/hosts entries...");
+    echo PHP_EOL;
+    
+    // Check if .env exists
+    $envFile = __DIR__ . '/.env';
+    if (!file_exists($envFile)) {
+        error(".env file not found!");
+        exit(1);
+    }
+    
+    // Read APP_DOMAIN from .env
+    $envContent = file_get_contents($envFile);
+    preg_match('/^APP_DOMAIN=(.*)$/m', $envContent, $matches);
+    $appDomain = $matches[1] ?? 'cartly.test';
+    $appDomain = trim($appDomain);
+    
+    $host = '127.0.0.1';
+    $shops = ['demo1', 'demo2'];
+    $hostsFile = '/etc/hosts';
+    
+    info("Domain: $appDomain");
+    echo PHP_EOL;
+    
+    // Check existing entries
+    $hostsContent = @file_get_contents($hostsFile);
+    if ($hostsContent === false) {
+        error("Cannot read $hostsFile. Run with sudo:");
+        echo "  sudo php cartly hosts:setup" . PHP_EOL;
+        exit(1);
+    }
+    
+    $entriesToAdd = [];
+    foreach ($shops as $shop) {
+        $domain = "$shop.$appDomain";
+        if (strpos($hostsContent, $domain) === false) {
+            $entriesToAdd[] = "$host $domain";
+        } else {
+            success("$domain already in /etc/hosts");
+        }
+    }
+    
+    if (empty($entriesToAdd)) {
+        success("All domains are already configured!");
+        return;
+    }
+    
+    echo PHP_EOL;
+    warning("The following entries need to be added to $hostsFile:");
+    foreach ($entriesToAdd as $entry) {
+        echo "  $entry" . PHP_EOL;
+    }
+    echo PHP_EOL;
+    
+    // Check if running as root
+    if (posix_geteuid() !== 0) {
+        error("Permission denied. Run with sudo:");
+        echo "  sudo php cartly hosts:setup" . PHP_EOL;
+        exit(1);
+    }
+    
+    // Add entries
+    $handle = fopen($hostsFile, 'a');
+    if ($handle) {
+        foreach ($entriesToAdd as $entry) {
+            fwrite($handle, PHP_EOL . $entry);
+            success("Added: $entry");
+        }
+        fclose($handle);
+        echo PHP_EOL;
+        success("All domains configured successfully!");
+    } else {
+        error("Failed to write to $hostsFile");
+        exit(1);
+    }
+}
+
+function handleClearLogs($args) {
+    $logsDir = __DIR__ . '/storage/logs';
+    
+    if (!is_dir($logsDir)) {
+        warning("Logs directory not found");
+        return;
+    }
+    
+    info("Clearing application logs...");
+    
+    $files = glob($logsDir . '/*.log');
+    $count = 0;
+    
+    foreach ($files as $file) {
+        if (is_file($file)) {
+            file_put_contents($file, '');
+            $count++;
+        }
+    }
+    
+    success("Cleared $count log file(s)");
+}
+
+function handleList($args) {
+    showHelp();
+}
+
+// Main execution
+$command = $argv[1] ?? 'help';
+$args = array_slice($argv, 2);
+
+switch ($command) {
+    case 'serve':
+        handleServe($args);
+        break;
+    
+    case 'migrate':
+        handleMigrate($args);
+        break;
+    
+    case 'migrate:rollback':
+        handleMigrateRollback($args);
+        break;
+    
+    case 'db:seed':
+        handleDbSeed($args);
+        break;
+    
+    case 'hosts:setup':
+        handleHostsSetup($args);
+        break;
+    
+    case 'clear:logs':
+        handleClearLogs($args);
+        break;
+    
+    case 'list':
+    case 'help':
+    case '--help':
+    case '-h':
+        showHelp();
+        break;
+    
+    default:
+        error("Unknown command: $command");
+        echo PHP_EOL;
+        showHelp();
+        exit(1);
+}

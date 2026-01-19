@@ -1,0 +1,123 @@
+<?php
+
+use DI\ContainerBuilder;
+use Slim\Factory\AppFactory;
+use Dotenv\Dotenv;
+use Slim\Views\Twig;
+use Slim\Views\TwigMiddleware;
+use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Events\Dispatcher;
+use Illuminate\Container\Container;
+use App\Middleware\ShopResolverMiddleware;
+use App\Middleware\SubscriptionEnforcerMiddleware;
+use App\Middleware\ThemeMiddleware;
+use App\Middleware\AuthMiddleware;
+use App\Middleware\CsrfMiddleware;
+use App\Services\ThemeResolver;
+use App\Twig\ThemeExtension;
+use App\Config\LocalizationConfig;
+use Twig\Loader\ChainLoader;
+use Twig\Loader\FilesystemLoader;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
+
+// Initialize timezone and localization
+LocalizationConfig::initializeTimezone();
+
+// Create a loader with multiple paths for theme fallback
+$viewsPath = __DIR__ . '/../src/Views';
+
+// Use FilesystemLoader with multiple paths instead of ChainLoader
+$loaderPaths = [
+    // Admin theme paths (complete admin system)
+    $viewsPath . '/core/admin',
+    $viewsPath . '/core/admin/layouts',
+    $viewsPath . '/core/admin/partials',
+    $viewsPath . '/core/admin/auth',
+    $viewsPath . '/core/admin/dashboard',
+    $viewsPath . '/core/admin/packages',
+    $viewsPath . '/core/admin/shops',
+    $viewsPath . '/core/admin/setup',
+    // Landing pages
+    $viewsPath . '/core/landing',
+    // Theme paths (for shop customers)
+    $viewsPath . '/themes/default',
+    $viewsPath . '/themes/default/pages',
+    $viewsPath . '/themes/default/partials',
+    // Base fallback
+    $viewsPath,
+];
+
+$loader = new FilesystemLoader($loaderPaths);
+
+$twig = Twig::create($viewsPath, ['cache' => false]);
+$twig->getEnvironment()->setLoader($loader);
+
+$capsule = new Capsule;
+$capsule->addConnection([
+    'driver'    => $_ENV['DB_DRIVER'] ?? $_ENV['DB_CONNECTION'] ?? getenv('DB_DRIVER') ?? getenv('DB_CONNECTION') ?? 'mysql',
+    'host'      => $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?? '127.0.0.1',
+    'database'  => $_ENV['DB_DATABASE'] ?? getenv('DB_DATABASE') ?? 'cartly',
+    'username'  => $_ENV['DB_USERNAME'] ?? getenv('DB_USERNAME') ?? 'root',
+    'password'  => $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?? '',
+    'port'      => (int)($_ENV['DB_PORT'] ?? getenv('DB_PORT') ?? 3306),
+    'charset'   => 'utf8mb4',
+    'collation' => 'utf8mb4_unicode_ci',
+    'prefix'    => ''
+]);
+
+// Set the event dispatcher used by Eloquent models... (optional)
+$capsule->setEventDispatcher(new Dispatcher(new Container));
+
+// Make this Capsule instance available globally via static methods... (optional)
+$capsule->setAsGlobal();
+
+// Setup the Eloquent ORM... (optional; unless you plan to use it)
+$capsule->bootEloquent();
+
+// Create DI container
+$containerBuilder = new ContainerBuilder();
+$containerBuilder->addDefinitions([
+    Twig::class => $twig,
+    ThemeResolver::class => function () {
+        return new ThemeResolver(__DIR__ . '/../src/Views');
+    },
+]);
+$container = $containerBuilder->build();
+
+AppFactory::setContainer($container);
+$app = AppFactory::create();
+
+$themeResolver = $container->get(ThemeResolver::class);
+
+// Add extensions to Twig
+$twig->getEnvironment()->addExtension(new ThemeExtension($themeResolver));
+$twig->getEnvironment()->addExtension(new \App\Twig\LocalizationExtension());
+
+$app->add(TwigMiddleware::create($app, $twig));
+
+$app->addRoutingMiddleware();
+$app->addErrorMiddleware(true, true, true);
+
+// NOTE: Middleware in Slim runs in REVERSE order (last added runs first)
+// Execution order: CsrfMiddleware -> AuthMiddleware -> ShopResolverMiddleware -> SubscriptionEnforcerMiddleware -> ThemeMiddleware -> Routes
+
+// Configure theme system based on context and shop (runs 4th)
+$app->add(new ThemeMiddleware($twig, $themeResolver));
+// Compute subscription state (active/grace/expired) (runs 3rd)
+$app->add(new SubscriptionEnforcerMiddleware());
+// Resolve shop from Host header (runs 2nd)
+$app->add(new ShopResolverMiddleware());
+// Check authentication status (runs 1st)
+$app->add(new AuthMiddleware());
+// Enforce CSRF on state-changing requests (runs 0th)
+$app->add(new CsrfMiddleware($twig));
+
+// Routes
+(require __DIR__ . '/../src/Routes/web.php')($app, $twig);
+
+$app->run();
+

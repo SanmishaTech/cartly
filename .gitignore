@@ -1,0 +1,38 @@
+# Dependencies
+/vendor
+/node_modules
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Storage - ignore data but keep directories
+/storage/logs/*
+/storage/cache/*
+/storage/sessions/*
+/storage/uploads/*
+/storage/temp/*
+!/storage/logs/.gitkeep
+!/storage/cache/.gitkeep
+!/storage/sessions/.gitkeep
+!/storage/uploads/.gitkeep
+!/storage/temp/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Composer
+composer.lock
+
+# Misc
+*.log

@@ -1,0 +1,11 @@
+---
+description: PHP and Twig rules for Cartly
+globs:
+  - "**/*.php"
+  - "**/*.twig"
+---
+- Use Eloquent models and existing services; keep controllers thin.
+- Validate inputs server-side before writes.
+- For Twig, prefer existing filters (currency/local_date) and avoid inline PHP.
+- Keep forms CSRF-protected and use required fields.
+- Resolve controllers from the PHP-DI container; avoid manual instantiation in routes.

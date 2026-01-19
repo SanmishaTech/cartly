@@ -1,0 +1,75 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ shop.shop_name }} - Account{% endblock %}
+
+{% block content %}
+<div class="space-y-8 p-4 md:p-8">
+    <section class="bg-base-200 rounded-lg p-6 md:p-8">
+        <p class="text-sm uppercase tracking-wide text-primary font-semibold">Account</p>
+        <h1 class="mt-2 text-3xl md:text-4xl font-bold">Welcome back</h1>
+        <p class="mt-2 text-base-content/70">
+            Placeholder account dashboard. Customer login will be enabled later.
+        </p>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="card bg-base-100 border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title">Recent orders</h2>
+                    <div class="overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                    <tr class="hover">
+                                        <td>{{ order.id }}</td>
+                                        <td>{{ order.date }}</td>
+                                        <td>
+                                            <span class="badge badge-outline">{{ order.status }}</span>
+                                        </td>
+                                        <td>{{ order.total }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="btn btn-outline btn-sm mt-4" disabled>View all orders</button>
+                </div>
+            </div>
+            <div class="card bg-base-100 border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title">Wishlist</h2>
+                    <p class="text-base-content/70">
+                        Placeholder wishlist. Enable wishlists in theme features to activate.
+                    </p>
+                    <button class="btn btn-outline btn-sm" disabled>View wishlist</button>
+                </div>
+            </div>
+        </div>
+        <div class="space-y-6">
+            <div class="card bg-base-100 border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title">Profile</h2>
+                    <p class="text-base-content/70">Name, email, phone, and address details.</p>
+                    <button class="btn btn-outline btn-sm" disabled>Update profile</button>
+                </div>
+            </div>
+            <div class="card bg-base-100 border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title">Support</h2>
+                    <p class="text-base-content/70">Need help with your order?</p>
+                    <button class="btn btn-outline btn-sm" disabled>Contact support</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

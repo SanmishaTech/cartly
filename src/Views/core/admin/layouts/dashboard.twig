@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - Cartly Admin</title>
+    
+    <link rel="stylesheet" href="/assets/css/output.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-base-200" x-data="{ sidebarOpen: true }">
+    <div class="flex h-screen">
+        {# Sidebar #}
+        <aside 
+            x-show="sidebarOpen" 
+            class="admin-nav w-64 bg-base-100 border-r border-base-300 flex-shrink-0 transition-all duration-300"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-x-full"
+            x-transition:enter-end="opacity-100 translate-x-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-x-0"
+            x-transition:leave-end="opacity-0 -translate-x-full"
+        >
+            <div class="flex flex-col h-full">
+                {# Logo #}
+                <div class="px-4 h-16 flex items-center border-b border-base-300">
+                    <div class="flex items-center gap-2">
+                        <div class="h-9 w-9 rounded-lg bg-primary/15 text-primary grid place-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-semibold text-base-content">Cartly</h1>
+                    </div>
+                </div>
+                
+                {# Navigation Menu #}
+                <nav class="flex-1 overflow-y-auto px-3 py-4">
+                    {% set active_classes = 'is-active' %}
+                    {% set nav_path = current_path ?? (current_path() ?? '') %}
+                    <ul class="menu menu-sm gap-1">
+                        <li class="menu-title">
+                            <span>Main</span>
+                        </li>
+                        {% if can.admin_access %}
+                        <li>
+                            <a href="/admin/dashboard" class="rounded-md {{ nav_path == '/admin/dashboard' or nav_path == '/admin' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                                Dashboard
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="menu-title">
+                            <span>Management</span>
+                        </li>
+                        {% if can.packages_manage %}
+                        <li>
+                            <a href="/admin/packages" class="rounded-md {{ nav_path starts with '/admin/packages' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                Packages
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can.root_access %}
+                        <li>
+                            <a href="/admin/shops" class="rounded-md {{ nav_path starts with '/admin/shops' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                                Shops
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can.support_sudo %}
+                        <li>
+                            <a href="/admin/sudo" class="rounded-md {{ nav_path starts with '/admin/sudo' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.567 3-3.5S13.657 4 12 4 9 5.567 9 7.5 10.343 11 12 11zm6 8H6v-1a6 6 0 0112 0v1z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8h4m0 0l-2-2m2 2l-2 2" />
+                                </svg>
+                                Sudo Login
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can.root_access %}
+                        <li>
+                            <a href="/admin/users" class="rounded-md {{ nav_path starts with '/admin/users' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                Users
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if can.admin_access %}
+                        <li class="menu-title">
+                            <span>Basic Setup</span>
+                        </li>
+                        <li>
+                            <a href="/admin/setup/basic" class="rounded-md {{ nav_path starts with '/admin/setup/basic' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                                Basic
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/setup/seo" class="rounded-md {{ nav_path starts with '/admin/setup/seo' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2" />
+                                </svg>
+                                SEO
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/setup/themes" class="rounded-md {{ nav_path starts with '/admin/setup/themes' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4a8 8 0 100 16 8 8 0 000-16zm0 0v8h8" />
+                                </svg>
+                                Themes
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/setup/payments" class="rounded-md {{ nav_path starts with '/admin/setup/payments' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2" />
+                                </svg>
+                                Payments
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/setup/delivery" class="rounded-md {{ nav_path starts with '/admin/setup/delivery' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13l4-2 4 2 6-3 4 2v6H3z" />
+                                </svg>
+                                Delivery
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/setup/discounts" class="rounded-md {{ nav_path starts with '/admin/setup/discounts' ? active_classes : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6M7 7h.01M17 17h.01" />
+                                </svg>
+                                Discounts
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                
+                {# User Info at Bottom removed #}
+            </div>
+        </aside>
+        
+        {# Main Content Area #}
+        <div class="flex-1 flex flex-col overflow-hidden">
+            {# Top Navigation Bar #}
+            <header class="bg-base-100 border-b border-base-300">
+                <div class="navbar px-4 h-16">
+                    <div class="flex-none">
+                        <button @click="sidebarOpen = !sidebarOpen" class="btn btn-square btn-ghost">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="flex-1"></div>
+                    
+                    <div class="flex-none gap-2 flex items-center">
+                        {% if shop_preview_url is defined %}
+                            <a
+                                href="{{ shop_preview_url }}"
+                                target="_blank"
+                                rel="noopener"
+                                class="btn btn-outline btn-sm"
+                            >
+                                Preview Store
+                            </a>
+                        {% endif %}
+                        {# User Dropdown #}
+                        <div class="dropdown dropdown-end">
+                            <div tabindex="0" role="button" class="btn btn-primary btn-circle btn-sm avatar placeholder">
+                                <div class="bg-primary text-primary-content rounded-full w-8">
+                                    <span>{{ session.user_name|default('A')|slice(0, 1)|upper }}</span>
+                                </div>
+                            </div>
+                            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 border border-base-300">
+                                <li class="menu-title">
+                                    <span>{{ session.user_name|default('Admin User') }}</span>
+                                    <span class="text-xs text-base-content/50">{{ session.user_email|default('') }}</span>
+                                </li>
+                                <li><a href="/admin/profile">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Profile
+                                </a></li>
+                                <div class="divider my-0"></div>
+                                <li>
+                                    <form method="POST" action="/logout" novalidate onsubmit="return confirm('Are you sure you want to logout?')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="w-full flex items-center gap-2 text-left text-error">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                            </svg>
+                                            Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            {# Page Content #}
+            <main class="flex-1 overflow-y-auto p-6">
+                {% include 'partials/toast.twig' with {
+                    success: success,
+                    info: info,
+                    warning: warning,
+                    error: error
+                } only %}
+                {% block content %}{% endblock %}
+            </main>
+            <footer class="bg-base-100 border-t border-base-300 px-6 py-3 text-xs text-base-content/60">
+                © {{ "now"|date("Y") }} Cartly. All rights reserved.
+            </footer>
+        </div>
+    </div>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

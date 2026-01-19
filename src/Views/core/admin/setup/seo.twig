@@ -1,0 +1,101 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}SEO Setup{% endblock %}
+{% block page_title %}SEO Setup{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">SEO Setup</h2>
+            <form method="POST" action="/admin/setup/seo" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Shop SEO</h3>
+                        <div class="admin-form-control">
+                            <label class="label" for="seo_title">
+                                <span class="label-text font-semibold">SEO Title</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="seo[seo_title]"
+                                id="seo_title"
+                                value="{{ data.seo.seo_title ?? shop.seo_title ?? '' }}"
+                                class="admin-input {% if errors['seo.seo_title'] %}input-error{% endif %}"
+                            />
+                            {% if errors['seo.seo_title'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['seo.seo_title'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+
+                        <div class="admin-form-control">
+                            <label class="label" for="seo_description">
+                                <span class="label-text font-semibold">SEO Description</span>
+                            </label>
+                            <textarea
+                                name="seo[seo_description]"
+                                id="seo_description"
+                                class="admin-textarea {% if errors['seo.seo_description'] %}textarea-error{% endif %}"
+                                rows="3"
+                            >{{ data.seo.seo_description ?? shop.seo_description ?? '' }}</textarea>
+                            {% if errors['seo.seo_description'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['seo.seo_description'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Home Page SEO</h3>
+                        <div class="admin-form-control">
+                            <label class="label" for="home_seo_title">
+                                <span class="label-text font-semibold">Home Page SEO Title</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="seo[home_seo_title]"
+                                id="home_seo_title"
+                                value="{{ data.seo.home_seo_title ?? shop.home_seo_title ?? '' }}"
+                                class="admin-input {% if errors['seo.home_seo_title'] %}input-error{% endif %}"
+                            />
+                            {% if errors['seo.home_seo_title'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['seo.home_seo_title'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+
+                        <div class="admin-form-control">
+                            <label class="label" for="home_seo_description">
+                                <span class="label-text font-semibold">Home Page SEO Description</span>
+                            </label>
+                            <textarea
+                                name="seo[home_seo_description]"
+                                id="home_seo_description"
+                                class="admin-textarea {% if errors['seo.home_seo_description'] %}textarea-error{% endif %}"
+                                rows="3"
+                            >{{ data.seo.home_seo_description ?? shop.home_seo_description ?? '' }}</textarea>
+                            {% if errors['seo.home_seo_description'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['seo.home_seo_description'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-form-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">Save SEO Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

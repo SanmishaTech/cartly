@@ -1,0 +1,29 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ shop.shop_name }} - Categories{% endblock %}
+
+{% block content %}
+<div class="space-y-8 p-4 md:p-8">
+    <section class="bg-base-200 rounded-lg p-6 md:p-8">
+        <p class="text-sm uppercase tracking-wide text-primary font-semibold">Collections</p>
+        <h1 class="mt-2 text-3xl md:text-4xl font-bold">Shop by category</h1>
+        <p class="mt-2 text-base-content/70">
+            Placeholder categories. Add real collections once your catalog is live.
+        </p>
+    </section>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for category in categories %}
+            <a href="/categories/{{ category.slug }}" class="card bg-base-100 border border-base-300 hover:shadow-lg transition-shadow">
+                <div class="card-body">
+                    <div class="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                        🗂️
+                    </div>
+                    <h2 class="card-title text-lg">{{ category.name }}</h2>
+                    <p class="text-sm text-base-content/60">{{ category.count }}</p>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

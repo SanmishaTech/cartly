@@ -1,0 +1,255 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Basic Setup{% endblock %}
+{% block page_title %}Basic Setup{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">Basic Setup</h2>
+            <form method="POST" action="/admin/setup/basic" enctype="multipart/form-data" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="admin-form-grid mb-6">
+                    <div class="card bg-base-200/40 border border-base-300">
+                        <div class="admin-card-body">
+                            <h3 class="admin-section-title mb-2">Brand</h3>
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_name">
+                                    <span class="label-text font-semibold">Shop Name</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="shop_name"
+                                    id="shop_name"
+                                    value="{{ data.shop_name ?? shop.shop_name ?? '' }}"
+                                    class="admin-input {% if errors.shop_name %}input-error{% endif %}"
+                                    required
+                                />
+                                {% if errors.shop_name %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors.shop_name }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_description">
+                                    <span class="label-text font-semibold">Shop Description</span>
+                                </label>
+                                <textarea
+                                    name="shop_description"
+                                    id="shop_description"
+                                    class="admin-textarea {% if errors.shop_description %}textarea-error{% endif %}"
+                                    rows="3"
+                                >{{ data.shop_description ?? shop.shop_description ?? '' }}</textarea>
+                                {% if errors.shop_description %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors.shop_description }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-base-200/40 border border-base-300">
+                        <div class="admin-card-body">
+                            <h3 class="admin-section-title mb-2">Branding Assets (WebP)</h3>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div class="admin-form-control">
+                                    <label class="label" for="logo">
+                                        <span class="label-text font-semibold">Logo (512x512)</span>
+                                    </label>
+                                    <input
+                                        type="file"
+                                        name="logo"
+                                        id="logo"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        class="file-input file-input-bordered w-full"
+                                        data-crop-target="logo"
+                                        data-crop-ratio="1"
+                                    />
+                                    <p class="text-xs text-base-content/60 mt-1">We crop to 512x512 and convert to WebP.</p>
+                                    <img
+                                        src="{% if shop.logo_path %}/media/{{ shop.logo_path }}{% endif %}"
+                                        alt="Logo preview"
+                                        class="mt-2 h-16 w-16 rounded bg-base-200 object-cover {% if not shop.logo_path %}hidden{% endif %}"
+                                        data-preview="logo"
+                                    />
+                                    {% if errors.logo %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors.logo }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+
+                                <div class="admin-form-control">
+                                    <label class="label" for="favicon">
+                                        <span class="label-text font-semibold">Favicon (64x64)</span>
+                                    </label>
+                                    <input
+                                        type="file"
+                                        name="favicon"
+                                        id="favicon"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        class="file-input file-input-bordered w-full"
+                                        data-crop-target="favicon"
+                                        data-crop-ratio="1"
+                                    />
+                                    <p class="text-xs text-base-content/60 mt-1">We resize to 64x64 and convert to WebP.</p>
+                                    <img
+                                        src="{% if shop.favicon_path %}/media/{{ shop.favicon_path }}{% endif %}"
+                                        alt="Favicon preview"
+                                        class="mt-2 h-10 w-10 rounded bg-base-200 object-cover {% if not shop.favicon_path %}hidden{% endif %}"
+                                        data-preview="favicon"
+                                    />
+                                    {% if errors.favicon %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors.favicon }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+
+                                <div class="admin-form-control lg:col-span-2">
+                                    <label class="label" for="social_image">
+                                        <span class="label-text font-semibold">Social Share Image (1200x630)</span>
+                                    </label>
+                                    <input
+                                        type="file"
+                                        name="social_image"
+                                        id="social_image"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        class="file-input file-input-bordered w-full"
+                                        data-crop-target="social"
+                                        data-crop-ratio="1.91"
+                                    />
+                                    <p class="text-xs text-base-content/60 mt-1">We crop to 1200x630 and convert to WebP.</p>
+                                    <img
+                                        src="{% if shop.social_image_path %}/media/{{ shop.social_image_path }}{% endif %}"
+                                        alt="Social preview"
+                                        class="mt-2 max-w-xs rounded bg-base-200 object-cover {% if not shop.social_image_path %}hidden{% endif %}"
+                                        data-preview="social"
+                                    />
+                                    {% if errors.social_image %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors.social_image }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if errors.uploads %}
+                                <div class="mt-2 text-sm text-error">{{ errors.uploads }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-form-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">Save Basic Setup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<dialog id="cropModal" class="modal">
+    <div class="modal-box max-w-4xl p-0 overflow-hidden">
+        <div class="flex items-center justify-between border-b border-base-300 px-6 py-4 bg-base-100/80">
+            <h3 class="font-semibold text-lg">Crop Image</h3>
+            <form method="dialog">
+                <button class="btn btn-ghost btn-sm">Close</button>
+            </form>
+        </div>
+        <div class="px-6 py-4">
+            <div class="border border-base-300 rounded-lg bg-base-200/40 max-h-[70vh] overflow-auto p-3">
+                <img id="cropImage" src="" alt="Crop preview" class="w-full max-h-[70vh] object-contain bg-base-200 rounded" />
+            </div>
+            <p class="text-xs text-base-content/60 mt-3">Drag to reposition and resize the crop area.</p>
+        </div>
+        <div class="flex items-center justify-end gap-2 border-t border-base-300 px-6 py-4 bg-base-100/80">
+            <form method="dialog" class="flex gap-2">
+                <button class="btn btn-ghost btn-sm">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="applyCrop">Apply Crop</button>
+            </form>
+        </div>
+    </div>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+    <script>
+        (function () {
+            var cropModal = document.getElementById('cropModal');
+            var cropImage = document.getElementById('cropImage');
+            var applyButton = document.getElementById('applyCrop');
+            var activeInput = null;
+            var activePreview = null;
+            var cropper = null;
+            var activeRatio = 1;
+
+            function openCropper(file, ratio, preview) {
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    cropImage.src = event.target.result;
+                    cropModal.showModal();
+                    activeRatio = ratio;
+                    activePreview = preview;
+                    setTimeout(function () {
+                        if (cropper) {
+                            cropper.destroy();
+                        }
+                        cropper = new Cropper(cropImage, {
+                            aspectRatio: activeRatio,
+                            viewMode: 1,
+                            autoCropArea: 1,
+                        });
+                    }, 50);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            document.querySelectorAll('[data-crop-target]').forEach(function (input) {
+                input.addEventListener('change', function (event) {
+                    var file = event.target.files && event.target.files[0];
+                    if (!file) {
+                        return;
+                    }
+                    activeInput = event.target;
+                    var ratio = parseFloat(event.target.getAttribute('data-crop-ratio')) || 1;
+                    var preview = document.querySelector('[data-preview="' + event.target.getAttribute('data-crop-target') + '"]');
+                    openCropper(file, ratio, preview);
+                });
+            });
+
+            applyButton.addEventListener('click', function () {
+                if (!cropper || !activeInput) {
+                    return;
+                }
+                cropper.getCroppedCanvas().toBlob(function (blob) {
+                    if (!blob) {
+                        return;
+                    }
+                    var file = new File([blob], 'cropped.webp', { type: 'image/webp' });
+                    var dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    activeInput.files = dataTransfer.files;
+                    if (activePreview) {
+                        activePreview.src = URL.createObjectURL(blob);
+                        activePreview.classList.remove('hidden');
+                    }
+                    cropModal.close();
+                    cropper.destroy();
+                    cropper = null;
+                }, 'image/webp', 0.9);
+            });
+        })();
+    </script>
+{% endblock %}

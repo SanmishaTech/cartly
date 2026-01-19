@@ -1,0 +1,58 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ shop.shop_name }} - Home{% endblock %}
+
+{% block content %}
+<div class="space-y-12 p-4 md:p-8">
+    {# Hero Section with DaisyUI #}
+    <section class="hero bg-primary text-primary-content rounded-lg shadow-xl">
+        <div class="hero-content text-center py-20">
+            <div class="max-w-md">
+                <h1 class="mb-5 text-5xl font-bold">Welcome to {{ shop.shop_name }}</h1>
+                <p class="mb-5 text-lg opacity-90">Discover amazing products at great prices</p>
+                <a href="/products" class="btn btn-secondary btn-lg">
+                    Shop Now
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    {# Featured Products #}
+    <section class="px-4">
+        <h2 class="text-3xl font-bold mb-8 text-base-content">Featured Products</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {# Product cards #}
+            {% for i in 1..4 %}
+            <div class="card bg-base-100 border border-base-300 shadow-lg hover:shadow-xl transition-shadow">
+                <figure class="bg-base-200 h-48 flex items-center justify-center">
+                    <span class="text-base-content/40">Product Image</span>
+                </figure>
+                <div class="card-body">
+                    <h3 class="card-title text-lg">Product {{ i }}</h3>
+                    <p class="text-base-content/70 text-sm">Amazing product description goes here</p>
+                    <div class="card-actions justify-between items-center mt-4">
+                        <span class="text-2xl font-bold text-primary">₹999</span>
+                        <button class="btn btn-primary btn-sm">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    
+    {# Categories #}
+    <section class="px-4">
+        <h2 class="text-3xl font-bold mb-8 text-base-content">Shop by Category</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for category in ['Electronics', 'Fashion', 'Home & Living', 'Sports'] %}
+            <a href="/category/{{ category|lower }}" class="btn btn-outline btn-primary h-auto flex-col p-6 gap-2 rounded-lg hover:bg-primary hover:text-primary-content">
+                <div class="text-4xl">📦</div>
+                <h3 class="font-semibold text-base">{{ category }}</h3>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

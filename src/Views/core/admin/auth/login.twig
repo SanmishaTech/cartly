@@ -1,0 +1,118 @@
+{% extends 'layouts/auth.twig' %}
+
+{% block title %}Admin Login{% endblock %}
+
+{% block content %}
+    <!-- Card container to match Dashwind feel -->
+    <div class="card w-full bg-base-100 border border-base-300 shadow-md">
+        <div class="admin-card-body">
+            <!-- Header / logo -->
+            <div class="mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-xl bg-primary/10 text-primary grid place-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="h-5 w-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Cartly</p>
+                        <h1 class="text-lg font-semibold tracking-tight">Admin Portal</h1>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Headline -->
+            <div class="mb-4">
+                <h2 class="text-2xl font-semibold tracking-tight">Welcome back</h2>
+                <p class="mt-1 text-sm text-base-content/60">Sign in to continue to your dashboard</p>
+            </div>
+
+            {# Global error toast (if controller passes `error`) #}
+            {% include 'partials/toast.twig' with { error: error } only %}
+
+            <form method="POST" action="/admin/login" novalidate class="space-y-4">
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+                <!-- Email -->
+                <div class="admin-form-control">
+                    <label for="login_email" class="label">
+                        <span class="label-text font-semibold">Email address</span>
+                        <span class="text-error">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                            </svg>
+                        </span>
+                        <input
+                            type="email"
+                            id="login_email"
+                            name="user[email]"
+                            required
+                            autofocus
+                            value="{{ data.user.email ?? session.last_login_email ?? '' }}"
+                            class="admin-input pl-10 {% if errors['user.email'] %}input-error{% endif %}"
+                            placeholder="admin@company.com"
+                        />
+                    </div>
+                    {% if errors['user.email'] %}
+                        <label class="label"><span class="label-text-alt text-error">{{ errors['user.email'] }}</span></label>
+                    {% endif %}
+                </div>
+
+                <!-- Password -->
+                <div class="admin-form-control">
+                    <label class="label" for="login_password">
+                        <span class="label-text font-semibold">Password</span>
+                        <span class="text-error">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                        </span>
+                        <input
+                            type="password"
+                            id="login_password"
+                            name="user[password]"
+                            required
+                            class="admin-input pl-10 {% if errors['user.password'] %}input-error{% endif %}"
+                            placeholder="Enter your password"
+                        />
+                    </div>
+                    {% if errors['user.password'] %}
+                        <label class="label"><span class="label-text-alt text-error">{{ errors['user.password'] }}</span></label>
+                    {% endif %}
+                    <div class="mt-2">
+                        <a href="/admin/forgot-password" class="text-xs link link-primary no-underline">Forgot password?</a>
+                    </div>
+                </div>
+
+                <!-- Remember me -->
+                <div class="admin-form-control">
+                    <label class="label cursor-pointer justify-start gap-2" for="remember">
+                        <input type="checkbox" id="remember" name="remember" class="checkbox checkbox-primary checkbox-sm" />
+                        <span class="label-text text-sm">Keep me Logged In</span>
+                    </label>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn btn-primary w-full">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Small footer links -->
+    <div class="mt-6 text-center space-y-2">
+        <div class="text-sm text-base-content/60">
+            <a href="/" class="link link-hover no-underline">Back to Storefront</a>
+            <span class="mx-2 opacity-30">•</span>
+            <a href="/help" class="link link-hover no-underline">Help Center</a>
+            <span class="mx-2 opacity-30">•</span>
+            <a href="/support" class="link link-hover no-underline">Support</a>
+        </div>
+    </div>
+{% endblock %}

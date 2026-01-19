@@ -1,0 +1,99 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Theme Setup{% endblock %}
+{% block page_title %}Theme Setup{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">Theme Setup</h2>
+            <form method="POST" action="/admin/setup/themes" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Theme</h3>
+                        <div class="admin-form-control">
+                            <label class="label" for="theme">
+                                <span class="label-text font-semibold">Select Theme</span>
+                            </label>
+                            <select id="theme" name="theme" class="admin-select {% if errors.theme %}select-error{% endif %}">
+                                {% for themeName in themes %}
+                                    <option value="{{ themeName }}" {% if (data.theme ?? shop.theme) == themeName %}selected{% endif %}>
+                                        {{ themeName|title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if errors.theme %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors.theme }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Hero Preset</h3>
+                        {% set currentHero = data.hero.type ?? shop.hero_type ?? 'carousel' %}
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <div class="admin-form-control">
+                                <label class="label" for="hero_type">
+                                    <span class="label-text font-semibold">Hero Type</span>
+                                </label>
+                                <select
+                                    id="hero_type"
+                                    name="hero[type]"
+                                    class="admin-select {% if errors['hero.type'] %}select-error{% endif %}"
+                                >
+                                    {% for type in ['static', 'carousel', 'text', 'grid'] %}
+                                        <option value="{{ type }}" {% if currentHero == type %}selected{% endif %}>{{ type|replace({'_': ' '})|title }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if errors['hero.type'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['hero.type'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="hero_slides">
+                                    <span class="label-text font-semibold">Max Slides</span>
+                                </label>
+                                {% set currentSlides = data.hero.slides ?? hero_settings.max_slides ?? 2 %}
+                                <select id="hero_slides" name="hero[slides]" class="admin-select">
+                                    {% for slides in [1, 2, 3] %}
+                                        <option value="{{ slides }}" {% if currentSlides == slides %}selected{% endif %}>{{ slides }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label cursor-pointer justify-start gap-2" for="hero_autoplay">
+                                    <input
+                                        type="checkbox"
+                                        id="hero_autoplay"
+                                        name="hero[autoplay]"
+                                        value="1"
+                                        class="checkbox checkbox-primary checkbox-sm"
+                                        {% if (data.hero.autoplay ?? hero_settings.autoplay ?? false) %}checked{% endif %}
+                                    />
+                                    <span class="label-text text-sm">Autoplay (slow)</span>
+                                </label>
+                                <p class="text-xs text-base-content/60 mt-1">Cartly enforces lazy loading and H1 rules.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-form-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">Save Theme Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

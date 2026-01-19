@@ -1,0 +1,26 @@
+{
+  "name": "cartly",
+  "version": "1.0.0",
+  "description": "Slim + Twig + Alpine ecommerce",
+  "type": "module",
+  "scripts": {
+    "build": "tailwindcss -i ./src/assets/css/input.css -o ./public/assets/css/output.css",
+    "build:minify": "tailwindcss -i ./src/assets/css/input.css -o ./public/assets/css/output.css --minify",
+    "watch": "tailwindcss -i ./src/assets/css/input.css -o ./public/assets/css/output.css --watch",
+    "dev": "npm run watch",
+    "prod": "npm run build:minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4",
+    "daisyui": "^4.11.1"
+  },
+  "keywords": [
+    "ecommerce",
+    "saas",
+    "multi-tenant",
+    "slim",
+    "twig"
+  ],
+  "author": "Sanjeev Divekar",
+  "license": "MIT"
+}

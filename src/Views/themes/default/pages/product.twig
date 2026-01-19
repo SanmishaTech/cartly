@@ -1,0 +1,92 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ shop.shop_name }} - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-10 p-4 md:p-8">
+    <nav class="text-sm breadcrumbs">
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/products">Products</a></li>
+            <li>{{ product.name }}</li>
+        </ul>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="space-y-4">
+            <div class="aspect-square rounded-lg bg-base-200 flex items-center justify-center text-base-content/50">
+                Main Image Placeholder
+            </div>
+            <div class="grid grid-cols-4 gap-3">
+                {% for i in 1..4 %}
+                    <div class="aspect-square rounded-lg bg-base-200 flex items-center justify-center text-xs text-base-content/50">
+                        {{ 'Thumb ' ~ i }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="flex items-center gap-2">
+                <span class="badge badge-outline">{{ product.badge }}</span>
+                <span class="text-sm text-base-content/60">SKU: {{ product.sku }}</span>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold">{{ product.name }}</h1>
+            <p class="text-2xl font-semibold text-primary">{{ product.price }}</p>
+            <p class="text-base-content/70">
+                Placeholder product description. Highlight key materials, usage, and brand story here.
+            </p>
+            <div class="flex flex-wrap gap-3">
+                <button class="btn btn-primary" disabled>Add to Cart (coming soon)</button>
+                <button class="btn btn-outline btn-primary" disabled>Buy Now</button>
+            </div>
+            <div class="divider"></div>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="p-4 bg-base-200 rounded-lg">
+                    <p class="font-semibold">Delivery</p>
+                    <p class="text-base-content/70">3-5 days (placeholder)</p>
+                </div>
+                <div class="p-4 bg-base-200 rounded-lg">
+                    <p class="font-semibold">Returns</p>
+                    <p class="text-base-content/70">7-day easy return</p>
+                </div>
+                <div class="p-4 bg-base-200 rounded-lg">
+                    <p class="font-semibold">Stock</p>
+                    <p class="text-base-content/70">{{ product.stock }}</p>
+                </div>
+                <div class="p-4 bg-base-200 rounded-lg">
+                    <p class="font-semibold">Support</p>
+                    <p class="text-base-content/70">24/7 chat (soon)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+            <div class="tabs tabs-boxed">
+                <a class="tab tab-active">Description</a>
+                <a class="tab">Specifications</a>
+                <a class="tab">Reviews</a>
+            </div>
+            <div class="mt-4 space-y-3 text-base-content/70">
+                <p>
+                    Use this area for detailed product information, sizing, and care instructions.
+                </p>
+                <p>
+                    Add highlights, warranty, and FAQ placeholders to guide future content.
+                </p>
+            </div>
+        </div>
+        <div class="card bg-base-100 border border-base-300">
+            <div class="card-body">
+                <h3 class="card-title">Need help?</h3>
+                <p class="text-base-content/70">
+                    Add support links, WhatsApp, or live chat once enabled.
+                </p>
+                <button class="btn btn-outline btn-sm" disabled>Contact support</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Users{% endblock %}
+{% block page_title %}Users{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <h2 class="card-title">Users</h2>
+                <a href="/admin/users/create" class="btn btn-primary btn-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add User
+                </a>
+            </div>
+
+            <div class="card bg-base-200/40 border border-base-300 mb-4">
+                <div class="admin-card-body">
+                    <h3 class="admin-section-title mb-2">Filters</h3>
+                    <form method="GET" action="/admin/users" class="flex flex-wrap gap-2 items-center">
+                        <input type="hidden" name="sort" value="{{ pager.sort }}">
+                        <input type="hidden" name="dir" value="{{ pager.dir }}">
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ pager.query.search ?? '' }}"
+                            placeholder="Search by name, email, or shop"
+                            class="admin-input sm:w-64"
+                        />
+                        <button type="submit" class="btn btn-accent btn-sm">Filter</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if pager.items|length %}
+            <div class="overflow-x-auto">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="{{ pager.sortUrls.name }}" class="link link-hover">
+                                    Name{% if pager.sort == 'name' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ pager.sortUrls.email }}" class="link link-hover">
+                                    Email{% if pager.sort == 'email' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                </a>
+                            </th>
+                            <th>Shop</th>
+                            <th>
+                                <a href="{{ pager.sortUrls.role }}" class="link link-hover">
+                                    Role{% if pager.sort == 'role' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ pager.sortUrls.status }}" class="link link-hover">
+                                    Status{% if pager.sort == 'status' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ pager.sortUrls.created }}" class="link link-hover">
+                                    Created{% if pager.sort == 'created' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                </a>
+                            </th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in pager.items %}
+                            <tr class="hover">
+                                <td class="font-semibold">{{ user.name }}</td>
+                                <td>{{ user.email }}</td>
+                                <td class="text-sm text-base-content/70 text-truncate">{{ user.shop_name ?? '—' }}</td>
+                                <td>{{ user.role|capitalize }}</td>
+                                <td>
+                                    {% if user.status == 'active' %}
+                                        <div class="badge badge-success">Active</div>
+                                    {% else %}
+                                        <div class="badge badge-ghost">{{ user.status|capitalize }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.created_at ? (user.created_at|local_date) : '—' }}</td>
+                                <td class="text-right">
+                                    <a href="/admin/users/{{ user.id }}/edit" class="btn btn-sm btn-outline">Edit</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="text-sm text-base-content/70">
+                        Showing {{ pager.rangeStart }}-{{ pager.rangeEnd }} of {{ pager.total }}
+                    </div>
+                    <div class="join">
+                        {% if pager.pageUrls.prev %}
+                            <a href="{{ pager.pageUrls.prev }}" class="btn btn-sm join-item">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm join-item btn-disabled">Previous</button>
+                        {% endif %}
+                        <button class="btn btn-sm join-item btn-disabled">Page {{ pager.page }} of {{ pager.lastPage }}</button>
+                        {% if pager.pageUrls.next %}
+                            <a href="{{ pager.pageUrls.next }}" class="btn btn-sm join-item">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm join-item btn-disabled">Next</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="admin-card-body text-center py-12">
+                <h3 class="text-xl font-semibold mb-2">No users found</h3>
+                <p class="text-base-content/60">Try adjusting your search filters.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

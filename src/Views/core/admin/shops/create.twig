@@ -1,0 +1,394 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Create Shop{% endblock %}
+{% block page_title %}Create Shop{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">Add New Shop</h2>
+            <form method="POST" action="/admin/shops/store" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="admin-form-grid mb-4">
+                    <div class="card bg-base-200/40 border border-base-300">
+                        <div class="admin-card-body">
+                            <h3 class="admin-section-title mb-2">Shop Details</h3>
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_shop_name">
+                                    <span class="label-text font-semibold">Shop Name</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="shop[shop_name]"
+                                    id="shop_shop_name"
+                                    value="{{ data.shop.shop_name ?? '' }}"
+                                    placeholder="e.g., Acme Store"
+                                    class="admin-input {% if errors['shop.shop_name'] %}input-error{% endif %}"
+                                    required
+                                    data-auto-slug-source
+                                />
+                                {% if errors['shop.shop_name'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['shop.shop_name'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_slug">
+                                    <span class="label-text font-semibold">Slug (optional)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="shop[slug]"
+                                    id="shop_slug"
+                                    value="{{ data.shop.slug ?? '' }}"
+                                    placeholder="e.g., acme-store"
+                                    class="admin-input {% if errors['shop.slug'] %}input-error{% endif %}"
+                                    data-auto-slug-target
+                                />
+                                {% if errors['shop.slug'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['shop.slug'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-base-200/40 border border-base-300">
+                        <div class="admin-card-body">
+                            <h3 class="admin-section-title mb-2">Subscription</h3>
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_subscription_type">
+                                    <span class="label-text font-semibold">Subscription Type</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <select
+                                    id="shop_subscription_type"
+                                    name="subscription[type]"
+                                    class="admin-select"
+                                    data-subscription-type
+                                >
+                                    {% set currentType = data.subscription.type ?? 'paid' %}
+                                    <option value="paid" {% if currentType == 'paid' %}selected{% endif %}>Paid Package</option>
+                                    <option value="trial" {% if currentType == 'trial' %}selected{% endif %}>Trial</option>
+                                </select>
+                            </div>
+
+                            <div class="admin-form-control" data-paid-field>
+                                <label class="label" for="shop_package_id">
+                                    <span class="label-text font-semibold">Package</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <select
+                                    id="shop_package_id"
+                                    name="subscription[package_id]"
+                                    class="admin-select {% if errors['subscription.package_id'] %}select-error{% endif %}"
+                                    required
+                                >
+                                    <option value="">Select package</option>
+                                    {% for pkg in packages %}
+                                        <option value="{{ pkg.id }}" {% if data.subscription.package_id == pkg.id %}selected{% endif %}>
+                                            {{ pkg.name }} ({{ pkg.period_months }} months)
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if errors['subscription.package_id'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['subscription.package_id'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control" data-paid-field>
+                                <label class="label" for="shop_period_months">
+                                    <span class="label-text font-semibold">Billing Period</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <select
+                                    id="shop_period_months"
+                                    name="subscription[period_months]"
+                                    class="admin-select {% if errors['subscription.period_months'] %}select-error{% endif %}"
+                                >
+                                    <option value="">Select period</option>
+                                    {% for value, label in {1:'1 Month',3:'3 Months',6:'6 Months',12:'12 Months'} %}
+                                        <option value="{{ value }}" {% if data.subscription.period_months == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if errors['subscription.period_months'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['subscription.period_months'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control" data-trial-field>
+                                <label class="label" for="shop_trial_days">
+                                    <span class="label-text font-semibold">Trial Days</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <select
+                                    id="shop_trial_days"
+                                    name="subscription[trial_days]"
+                                    class="admin-select {% if errors['subscription.trial_days'] %}select-error{% endif %}"
+                                >
+                                    <option value="">Select trial days</option>
+                                    {% for days in trialOptions %}
+                                        <option value="{{ days }}" {% if data.subscription.trial_days == days %}selected{% endif %}>
+                                            {{ days }} days
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if errors['subscription.trial_days'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['subscription.trial_days'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4">
+                                <div class="admin-form-control" data-paid-field>
+                                    <label class="label" for="shop_payment_method">
+                                        <span class="label-text font-semibold">Payment Method</span>
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <select
+                                        id="shop_payment_method"
+                                        name="payment[method]"
+                                        class="admin-select {% if errors['payment.method'] %}select-error{% endif %}"
+                                    >
+                                        <option value="">Select method</option>
+                                        {% for method in ['gateway', 'cash', 'bank_transfer'] %}
+                                            <option value="{{ method }}" {% if data.payment.method == method %}selected{% endif %}>
+                                                {{ method|replace({'_': ' '})|capitalize }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if errors['payment.method'] %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors['payment.method'] }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+
+                                <div class="admin-form-control" data-paid-field>
+                                    <label class="label" for="shop_payment_reference">
+                                        <span class="label-text font-semibold">Payment Reference</span>
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="shop_payment_reference"
+                                        name="payment[reference]"
+                                        value="{{ data.payment.reference ?? '' }}"
+                                        placeholder="Gateway/Cash/Bank ref id"
+                                        class="admin-input {% if errors['payment.reference'] %}input-error{% endif %}"
+                                    />
+                                    {% if errors['payment.reference'] %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors['payment.reference'] }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+
+                                <div class="admin-form-control" data-paid-field>
+                                    <label class="label" for="shop_payment_amount">
+                                        <span class="label-text font-semibold">Amount ({{ currency_symbol() }})</span>
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="shop_payment_amount"
+                                        name="payment[amount]"
+                                        value="{{ data.payment.amount ?? '' }}"
+                                        placeholder="0.00"
+                                        step="0.01"
+                                        min="0"
+                                        class="admin-input {% if errors['payment.amount'] %}input-error{% endif %}"
+                                    />
+                                    {% if errors['payment.amount'] %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors['payment.amount'] }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-base-100 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Shop Admin</h3>
+                        {% set sendLink = data.user.send_password_link ?? false %}
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_admin_name">
+                                    <span class="label-text font-semibold">Admin Name</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="user[name]"
+                                    id="shop_admin_name"
+                                    value="{{ data.user.name ?? '' }}"
+                                    placeholder="e.g., John Doe"
+                                    class="admin-input {% if errors['user.name'] %}input-error{% endif %}"
+                                    required
+                                />
+                                {% if errors['user.name'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['user.name'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_admin_email">
+                                    <span class="label-text font-semibold">Admin Email</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    name="user[email]"
+                                    id="shop_admin_email"
+                                    value="{{ data.user.email ?? '' }}"
+                                    placeholder="admin@example.com"
+                                    class="admin-input {% if errors['user.email'] %}input-error{% endif %}"
+                                    required
+                                />
+                                {% if errors['user.email'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['user.email'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="admin-form-control">
+                            <label class="label cursor-pointer justify-start gap-2" for="send_password_link">
+                                <input
+                                    type="checkbox"
+                                    id="send_password_link"
+                                    name="user[send_password_link]"
+                                    value="1"
+                                    class="checkbox checkbox-primary checkbox-sm"
+                                    data-send-password-link
+                                    {% if sendLink %}checked{% endif %}
+                                />
+                                <span class="label-text text-sm">Send Password Link</span>
+                            </label>
+                        </div>
+
+                        <div class="admin-form-control" data-password-wrapper>
+                            <label class="label" for="shop_admin_password">
+                                <span class="label-text font-semibold">Admin Password</span>
+                                <span class="text-error">*</span>
+                            </label>
+                            <input
+                                type="password"
+                                name="user[password]"
+                                id="shop_admin_password"
+                                placeholder="Minimum 6 characters"
+                                class="admin-input {% if errors['user.password'] %}input-error{% endif %}"
+                                data-password-input
+                                {% if not sendLink %}required{% endif %}
+                            />
+                            {% if errors['user.password'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['user.password'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-form-actions">
+                    <a href="/admin/shops" class="btn btn-sm bg-base-200 hover:bg-base-300 border-base-300">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-sm">Create Shop</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        (function () {
+            var nameInput = document.querySelector('[data-auto-slug-source]');
+            var slugInput = document.querySelector('[data-auto-slug-target]');
+            if (!nameInput || !slugInput) {
+                return;
+            }
+
+            var slugTouched = slugInput.value.trim() !== '';
+
+            function slugify(value) {
+                return value
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+            }
+
+            slugInput.addEventListener('input', function () {
+                slugTouched = slugInput.value.trim() !== '';
+            });
+
+            nameInput.addEventListener('input', function () {
+                if (slugTouched) {
+                    return;
+                }
+                slugInput.value = slugify(nameInput.value);
+            });
+        })();
+    </script>
+    <script>
+        (function () {
+            var typeSelect = document.querySelector('[data-subscription-type]');
+            var paidFields = document.querySelectorAll('[data-paid-field]');
+            var trialFields = document.querySelectorAll('[data-trial-field]');
+            if (!typeSelect) {
+                return;
+            }
+
+            function toggleFields() {
+                var isTrial = typeSelect.value === 'trial';
+                paidFields.forEach(function (wrapper) {
+                    wrapper.style.display = isTrial ? 'none' : '';
+                });
+                trialFields.forEach(function (wrapper) {
+                    wrapper.style.display = isTrial ? '' : 'none';
+                });
+            }
+
+            typeSelect.addEventListener('change', toggleFields);
+            toggleFields();
+        })();
+    </script>
+    <script>
+        (function () {
+            var toggle = document.querySelector('[data-send-password-link]');
+            var passwordWrapper = document.querySelector('[data-password-wrapper]');
+            var passwordInput = document.querySelector('[data-password-input]');
+            if (!toggle || !passwordWrapper || !passwordInput) {
+                return;
+            }
+
+            function updateState() {
+                var isChecked = toggle.checked;
+                passwordWrapper.style.display = isChecked ? 'none' : '';
+                passwordInput.required = !isChecked;
+                if (isChecked) {
+                    passwordInput.value = '';
+                }
+            }
+
+            toggle.addEventListener('change', updateState);
+            updateState();
+        })();
+    </script>
+</div>
+{% endblock %}

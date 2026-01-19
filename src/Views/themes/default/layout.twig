@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ shop.shop_name }}{% endblock %}</title>
+    {% if shop.seo_description %}
+        <meta name="description" content="{{ shop.seo_description }}">
+    {% endif %}
+    {% if shop.favicon_path %}
+        <link rel="icon" type="image/webp" href="/media/{{ shop.favicon_path }}">
+    {% endif %}
+    {% if shop.social_image_path %}
+        <meta property="og:image" content="/media/{{ shop.social_image_path }}">
+        <meta name="twitter:image" content="/media/{{ shop.social_image_path }}">
+    {% endif %}
+    
+    {# Compiled Tailwind + DaisyUI CSS #}
+    <link rel="stylesheet" href="/assets/css/output.css">
+    
+    {# Alpine.js for interactivity #}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    {# Theme-specific styles #}
+    <link rel="stylesheet" href="{{ theme_asset('css/style.css') }}">
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-base-100 text-base-content">
+    {# Header/Navbar #}
+    {% include 'partials/header.twig' %}
+    
+    {# Main Content #}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    {# Footer #}
+    {% include 'partials/footer.twig' %}
+    
+    {# Theme-specific scripts #}
+    <script src="{{ theme_asset('js/script.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

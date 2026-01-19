@@ -1,0 +1,68 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ shop.shop_name }} - Checkout{% endblock %}
+
+{% block content %}
+<div class="space-y-8 p-4 md:p-8">
+    <section class="bg-base-200 rounded-lg p-6 md:p-8">
+        <p class="text-sm uppercase tracking-wide text-primary font-semibold">Checkout</p>
+        <h1 class="mt-2 text-3xl md:text-4xl font-bold">Secure checkout</h1>
+        <p class="mt-2 text-base-content/70">
+            Placeholder checkout experience. Forms are disabled until payments go live.
+        </p>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="card bg-base-100 border border-base-300">
+                <div class="card-body space-y-4">
+                    <h2 class="card-title">Shipping details</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input class="input input-bordered w-full" placeholder="Full name" disabled>
+                        <input class="input input-bordered w-full" placeholder="Phone number" disabled>
+                        <input class="input input-bordered w-full md:col-span-2" placeholder="Address" disabled>
+                        <input class="input input-bordered w-full" placeholder="City" disabled>
+                        <input class="input input-bordered w-full" placeholder="Postal code" disabled>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-base-100 border border-base-300">
+                <div class="card-body space-y-4">
+                    <h2 class="card-title">Payment</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button class="btn btn-outline w-full" disabled>UPI</button>
+                        <button class="btn btn-outline w-full" disabled>Card</button>
+                        <button class="btn btn-outline w-full" disabled>Netbanking</button>
+                        <button class="btn btn-outline w-full" disabled>Cash on Delivery</button>
+                    </div>
+                    <p class="text-sm text-base-content/60">
+                        Payment gateway setup required.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="card bg-base-100 border border-base-300">
+            <div class="card-body space-y-4">
+                <h2 class="card-title">Order summary</h2>
+                <div class="space-y-3">
+                    {% for item in cart_items %}
+                        <div class="flex justify-between text-sm">
+                            <span>{{ item.name }}</span>
+                            <span>{{ item.price }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="divider"></div>
+                <div class="flex justify-between font-semibold">
+                    <span>Total</span>
+                    <span>₹2,698</span>
+                </div>
+                <button class="btn btn-primary w-full" disabled>Place order</button>
+                <p class="text-xs text-base-content/60 text-center">
+                    Orders will be enabled after checkout integration.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

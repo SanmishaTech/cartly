@@ -1,0 +1,14 @@
+{# Session-backed flash toasts: reads from session.* keys if present #}
+{% set _success = session.flash_success ?? null %}
+{% set _info = session.flash_info ?? null %}
+{% set _warning = session.flash_warning ?? null %}
+{% set _error = session.flash_error ?? null %}
+
+{% if _success or _info or _warning or _error %}
+  {% include 'partials/toast.twig' with {
+    success: _success,
+    info: _info,
+    warning: _warning,
+    error: _error
+  } only %}
+{% endif %}

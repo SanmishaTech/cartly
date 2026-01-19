@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ shop.shop_name }}{% endblock %}</title>
+    
+    {# Compiled Tailwind + DaisyUI CSS with dark theme #}
+    <link rel="stylesheet" href="/assets/css/output.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="{{ theme_asset('css/style.css') }}">
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-base-100 text-base-content">
+    {% include 'partials/header.twig' %}
+    
+    <main class="min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% include 'partials/footer.twig' %}
+    
+    <script src="{{ theme_asset('js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

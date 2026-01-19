@@ -1,0 +1,183 @@
+<?php
+
+use Slim\App;
+use Slim\Views\Twig;
+use App\Controllers\HomeController;
+use App\Controllers\StorefrontController;
+use App\Controllers\AuthController;
+use App\Controllers\RootController;
+use App\Controllers\PackageController;
+use App\Controllers\ShopController;
+use App\Controllers\SubscriptionController;
+use App\Controllers\SudoController;
+use App\Controllers\UserController;
+use App\Controllers\SetupController;
+use App\Controllers\MediaController;
+use App\Middleware\RequirePermissionMiddleware;
+use App\Middleware\TrimInputMiddleware;
+use App\Services\AuthorizationService;
+
+return function (App $app, Twig $twig) {
+    $container = $app->getContainer();
+    $homeController = $container->get(HomeController::class);
+    $mediaController = $container->get(MediaController::class);
+    $storefrontController = $container->get(StorefrontController::class);
+
+    // Public routes
+    $app->get('/', [$homeController, 'index']);
+    $app->get('/media/{path:.+}', [$mediaController, 'show']);
+    $app->get('/products', [$storefrontController, 'products']);
+    $app->get('/products/{slug}', [$storefrontController, 'productDetail']);
+    $app->get('/categories', [$storefrontController, 'categories']);
+    $app->get('/categories/{slug}', [$storefrontController, 'categoryDetail']);
+    $app->get('/cart', [$storefrontController, 'cart']);
+    $app->get('/checkout', [$storefrontController, 'checkout']);
+    $app->get('/account', [$storefrontController, 'account']);
+
+    // Auth routes
+    $authController = $container->get(AuthController::class);
+    
+    // Admin/Root Login (single entrypoint: /admin/login)
+    $app->get('/admin/login', [$authController, 'adminLoginForm']);
+    $app->post('/admin/login', [$authController, 'adminLogin'])->add(new TrimInputMiddleware());
+
+    // Forgot password and reset
+    $app->get('/admin/forgot-password', [$authController, 'adminForgotPasswordForm']);
+    $app->post('/admin/forgot-password', [$authController, 'adminForgotPassword'])->add(new TrimInputMiddleware());
+    $app->get('/admin/reset-password', [$authController, 'adminResetPasswordForm']);
+    $app->post('/admin/reset-password', [$authController, 'adminResetPassword'])->add(new TrimInputMiddleware());
+
+    $app->get('/admin', function($request, $response) {
+        return $response->withStatus(302)->withHeader('Location', '/admin/login');
+    });
+    $app->get('/admin/settings', function ($request, $response) {
+        return $response->withStatus(302)->withHeader('Location', '/admin/setup/basic');
+    });
+    // Logout
+    $app->post('/logout', [$authController, 'logout'])->add(new TrimInputMiddleware());
+    
+    // TODO: Customer login and registration (will be implemented later)
+
+    // Admin routes (protected)
+    $rootController = $container->get(RootController::class);
+    $packageController = $container->get(PackageController::class);
+    $shopController = $container->get(ShopController::class);
+    $subscriptionController = $container->get(SubscriptionController::class);
+    $userController = $container->get(UserController::class);
+    $sudoController = $container->get(SudoController::class);
+    $setupController = $container->get(SetupController::class);
+    $authorization = new AuthorizationService();
+    
+    // Admin dashboard (protected)
+    $adminGroup = $app->group('/admin', function ($group) use ($rootController) {
+        $group->get('/dashboard', [$rootController, 'dashboard']);
+    });
+    $adminGroup->add(
+        new RequirePermissionMiddleware(
+            $authorization,
+            AuthorizationService::PERMISSION_ADMIN_ACCESS
+        )
+    );
+
+    // Packages management
+    $packagesGroup = $app->group('/admin/packages', function ($packages) use ($packageController) {
+        $packages->get('', [$packageController, 'index']);
+        $packages->get('/create', [$packageController, 'create']);
+        $packages->post('/store', [$packageController, 'store'])->add(new TrimInputMiddleware());
+        $packages->get('/{id}/edit', [$packageController, 'edit']);
+        $packages->post('/{id}/update', [$packageController, 'update'])->add(new TrimInputMiddleware());
+        $packages->post('/{id}/delete', [$packageController, 'delete'])->add(new TrimInputMiddleware());
+    });
+    $packagesGroup->add(
+        new RequirePermissionMiddleware(
+            $authorization,
+            AuthorizationService::PERMISSION_ADMIN_ACCESS
+        )
+    );
+    $packagesGroup->add(
+        new RequirePermissionMiddleware(
+            $authorization,
+            AuthorizationService::PERMISSION_PACKAGES_MANAGE
+        )
+    );
+
+    // Shops management
+    $shopsGroup = $app->group('/admin/shops', function ($shops) use ($shopController) {
+        $shops->get('', [$shopController, 'index']);
+        $shops->get('/create', [$shopController, 'create']);
+        $shops->post('/store', [$shopController, 'store'])->add(new TrimInputMiddleware());
+        $shops->get('/{id}/edit', [$shopController, 'edit']);
+        $shops->post('/{id}/update', [$shopController, 'update'])->add(new TrimInputMiddleware());
+        $shops->post('/{id}/delete', [$shopController, 'delete'])->add(new TrimInputMiddleware());
+        $shops->post('/{id}/send-password-link', [$shopController, 'sendSetPassword'])->add(new TrimInputMiddleware());
+    });
+    $shopsGroup->add(
+        new RequirePermissionMiddleware(
+            $authorization,
+            AuthorizationService::PERMISSION_ROOT_ACCESS
+        )
+    );
+
+    // Subscriptions management
+    $subscriptionsGroup = $app->group('/admin/subscriptions', function ($subscriptions) use ($subscriptionController) {
+        $subscriptions->get('', [$subscriptionController, 'index']);
+        $subscriptions->get('/{id}', [$subscriptionController, 'show']);
+        $subscriptions->post('/{id}/assign', [$subscriptionController, 'assign'])->add(new TrimInputMiddleware());
+        $subscriptions->post('/{id}/change', [$subscriptionController, 'change'])->add(new TrimInputMiddleware());
+        $subscriptions->post('/{id}/lock', [$subscriptionController, 'lock'])->add(new TrimInputMiddleware());
+    });
+    $subscriptionsGroup->add(
+        new RequirePermissionMiddleware(
+            $authorization,
+            AuthorizationService::PERMISSION_ROOT_ACCESS
+        )
+    );
+
+    // Users management
+    $usersGroup = $app->group('/admin/users', function ($users) use ($userController) {
+        $users->get('', [$userController, 'index']);
+        $users->get('/create', [$userController, 'create']);
+        $users->post('/store', [$userController, 'store'])->add(new TrimInputMiddleware());
+        $users->get('/{id}/edit', [$userController, 'edit']);
+        $users->post('/{id}/update', [$userController, 'update'])->add(new TrimInputMiddleware());
+    });
+    $usersGroup->add(
+        new RequirePermissionMiddleware(
+            $authorization,
+            AuthorizationService::PERMISSION_ROOT_ACCESS
+        )
+    );
+
+    // Shop admin setup
+    $setupGroup = $app->group('/admin/setup', function ($setup) use ($setupController) {
+        $setup->get('/basic', [$setupController, 'basic']);
+        $setup->post('/basic', [$setupController, 'updateBasic'])->add(new TrimInputMiddleware());
+        $setup->get('/seo', [$setupController, 'seo']);
+        $setup->post('/seo', [$setupController, 'updateSeo'])->add(new TrimInputMiddleware());
+        $setup->get('/themes', [$setupController, 'themes']);
+        $setup->post('/themes', [$setupController, 'updateThemes'])->add(new TrimInputMiddleware());
+        $setup->get('/payments', [$setupController, 'payments']);
+        $setup->get('/delivery', [$setupController, 'delivery']);
+        $setup->get('/discounts', [$setupController, 'discounts']);
+    });
+    $setupGroup->add(
+        new RequirePermissionMiddleware(
+            $authorization,
+            AuthorizationService::PERMISSION_ADMIN_ACCESS
+        )
+    );
+
+    // Sudo login (helpdesk)
+    $sudoGroup = $app->group('/admin/sudo', function ($sudo) use ($sudoController) {
+        $sudo->get('', [$sudoController, 'index']);
+        $sudo->post('/{id}/login', [$sudoController, 'login'])->add(new TrimInputMiddleware());
+    });
+    $sudoGroup->add(
+        new RequirePermissionMiddleware(
+            $authorization,
+            AuthorizationService::PERMISSION_SUPPORT_SUDO
+        )
+    );
+};
+
+

@@ -1,0 +1,11 @@
+---
+description: UI and styling rules for Cartly
+globs:
+  - "**/*.twig"
+  - "src/assets/css/**"
+---
+- Use DaisyUI components/classes for consistency.
+- Keep admin UI layouts under core/admin and use existing layouts/partials.
+- Keep form fields labeled with matching for/id and include CSRF tokens.
+- Prefer simple, readable layouts; avoid excessive nesting.
+- Maintain hover styles on tables and consistent spacing utilities.

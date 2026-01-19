@@ -1,0 +1,85 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Subscriptions{% endblock %}
+{% block page_title %}Subscriptions{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">Subscriptions</h2>
+
+            <div class="card bg-base-200/40 border border-base-300 mb-4">
+                <div class="admin-card-body">
+                    <h3 class="admin-section-title mb-2">Filters</h3>
+                    <form method="GET" action="/admin/subscriptions" class="flex flex-wrap gap-2 items-center">
+                        <select name="status" class="admin-select sm:w-56">
+                            <option value="">All statuses</option>
+                            {% for option in ['active','trial','expired','suspended','pending'] %}
+                                <option value="{{ option }}" {% if pager.query.status == option %}selected{% endif %}>
+                                    {{ option|capitalize }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-accent btn-sm">Filter</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Shop</th>
+                            <th>Package</th>
+                            <th>Status</th>
+                            <th>Expires</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for shop in pager.items %}
+                            {% set subscription = shop.subscription %}
+                            <tr class="hover">
+                                <td class="font-semibold">{{ shop.shop_name }}</td>
+                                <td>{{ subscription and subscription.package ? subscription.package.name : '—' }}</td>
+                                <td>
+                                    {% if subscription %}
+                                        <div class="badge {{ subscription.status == 'active' ? 'badge-success' : 'badge-ghost' }}">
+                                            {{ subscription.status|capitalize }}
+                                        </div>
+                                    {% else %}
+                                        <div class="badge badge-ghost">None</div>
+                                    {% endif %}
+                                </td>
+                                <td>{{ subscription ? (subscription.expires_at|local_date) : '—' }}</td>
+                                <td>
+                                    <a href="/admin/subscriptions/{{ shop.id }}" class="btn btn-sm btn-outline">Manage</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="text-sm text-base-content/70">
+                    Showing {{ pager.rangeStart }}-{{ pager.rangeEnd }} of {{ pager.total }}
+                </div>
+                <div class="join">
+                    {% if pager.pageUrls.prev %}
+                        <a href="{{ pager.pageUrls.prev }}" class="btn btn-sm join-item">Previous</a>
+                    {% else %}
+                        <button class="btn btn-sm join-item btn-disabled">Previous</button>
+                    {% endif %}
+                    <button class="btn btn-sm join-item btn-disabled">Page {{ pager.page }} of {{ pager.lastPage }}</button>
+                    {% if pager.pageUrls.next %}
+                        <a href="{{ pager.pageUrls.next }}" class="btn btn-sm join-item">Next</a>
+                    {% else %}
+                        <button class="btn btn-sm join-item btn-disabled">Next</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
