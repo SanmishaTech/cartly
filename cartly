@@ -152,15 +152,8 @@ function handleMigrateRollback($args) {
 }
 
 function handleDbSeed($args) {
-    $isDemo = in_array('--demo', $args);
-    
-    if ($isDemo) {
-        info("Seeding database with demo data...");
-        require __DIR__ . '/scripts/seed_demo.php';
-    } else {
-        info("Seeding database with dev data...");
-        require __DIR__ . '/scripts/seed_dev.php';
-    }
+    info("Seeding database with seed_db...");
+    require __DIR__ . '/scripts/seed_db.php';
 }
 
 function handleHostsSetup($args) {

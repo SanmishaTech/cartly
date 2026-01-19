@@ -15,19 +15,6 @@ return [
             $table->string('shop_name', 255);
             $table->text('shop_description')->nullable();
 
-            $table->string('default_seo_title', 255)->nullable();
-            $table->string('default_seo_description', 500)->nullable();
-            $table->string('seo_keywords', 500)->nullable();
-            $table->string('canonical_url', 255)->nullable();
-            $table->string('meta_robots', 50)->default('index,follow');
-
-            $table->json('home_seo')->nullable();
-
-            $table->string('og_title', 255)->nullable();
-            $table->string('og_description', 500)->nullable();
-            $table->string('social_image_path', 255)->nullable();
-            $table->string('twitter_card_type', 50)->default('summary_large_image');
-
             $table->string('logo_path', 255)->nullable();
             $table->string('favicon_path', 255)->nullable();
 
@@ -37,10 +24,9 @@ return [
             $table->string('theme', 50)->default('default');
             $table->json('theme_config')->nullable();
 
-            $table->enum('status', ['active', 'inactive', 'suspended', 'draft'])->default('active');
+            $table->enum('status', ['active', 'inactive'])->default('active');
 
             $table->boolean('sitemap_enabled')->default(true);
-            $table->json('structured_data')->nullable();
 
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

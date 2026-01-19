@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Admin;
 
 use App\Models\User;
 use App\Services\AuthorizationService;
@@ -105,7 +105,7 @@ class AuthController extends AppController
         
         // Check if user can access admin area
         $authorization = new AuthorizationService();
-        if (!$authorization->roleHasPermission($user->role, AuthorizationService::PERMISSION_ADMIN_ACCESS)) {
+        if (!$authorization->roleHasPermission($user->role, AuthorizationService::PERMISSION_DASHBOARD_ACCESS)) {
             FlashService::set('error', 'This login is for administrators only. Please use shopper login.');
             FlashService::set('old', ['user' => ['email' => $email]]);
             return $response

@@ -14,7 +14,7 @@ class Subscription extends Model
         'starts_at',
         'expires_at',
         'trial_days',
-        'status',
+        'type',
         'renewal_mode',
         'payment_method',
         'price_paid',

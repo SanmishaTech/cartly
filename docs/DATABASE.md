@@ -6,6 +6,7 @@
 - packages
 - subscriptions
 - payments
+- seo_metadata
 
 ## Removed Tables
 - plans
@@ -23,11 +24,28 @@
 Note: Subscription billing period determines which cost column is used.
 
 ## Shops (key fields)
-- name (string)
+- shop_name (string)
 - slug (string, unique)
 - status (active|inactive)
 - theme (string)
-- theme_settings (json)
+- theme_config (json)
+- logo_path (string, nullable)
+- favicon_path (string, nullable)
+- hero_type (string)
+- hero_settings (json)
+- sitemap_enabled (bool)
+
+## SEO Metadata (key fields)
+- entity_type (shop|product|category|page)
+- entity_id (fk id for entity)
+- seo_title (string)
+- seo_description (string)
+- seo_keywords (string)
+- canonical_url (string)
+- og_title (string)
+- og_description (string)
+- og_image (string)
+- schema_json (json)
 
 ## Subscriptions (key fields)
 - shop_id (fk)
@@ -35,7 +53,7 @@ Note: Subscription billing period determines which cost column is used.
 - starts_at (datetime)
 - expires_at (datetime)
 - trial_days (int, nullable)
-- status (active|trial|expired|suspended|pending)
+- type (trial|package)
 - renewal_mode (manual|auto)
 - payment_method (gateway|cash|bank_transfer|manual)
 - price_paid (decimal, nullable)
@@ -43,7 +61,7 @@ Note: Subscription billing period determines which cost column is used.
 - billing_period_months (int)
 - next_renewal_at (date, nullable)
   
-Note: Each subscription change creates a new row; history is stored in the same table.
+Note: Each subscription change creates a new row; history is stored in the same table. Expiry is determined at runtime using next_renewal_at.
 
 ## Payments (key fields)
 - shop_id (fk)
@@ -52,7 +70,7 @@ Note: Each subscription change creates a new row; history is stored in the same 
 - order_id (string)
 - amount (decimal)
 - currency (string)
-- status (captured|refunded|failed)
+- status (pending|captured|refunded|failed)
 - method (gateway|cash|bank_transfer|manual)
 - paid_at (datetime)
 

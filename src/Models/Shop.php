@@ -16,22 +16,11 @@ class Shop extends Model
         'status',
         'theme',
         'theme_config',
-        'default_seo_title',
-        'default_seo_description',
-        'seo_keywords',
-        'canonical_url',
-        'meta_robots',
-        'home_seo',
-        'og_title',
-        'og_description',
         'logo_path',
         'favicon_path',
-        'social_image_path',
-        'twitter_card_type',
         'hero_type',
         'hero_settings',
         'sitemap_enabled',
-        'structured_data',
     ];
 
     public function domains(): HasMany

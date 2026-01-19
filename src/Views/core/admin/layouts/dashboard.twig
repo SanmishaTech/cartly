@@ -44,7 +44,7 @@
                         <li class="menu-title">
                             <span>Main</span>
                         </li>
-                        {% if can.admin_access %}
+                        {% if can.dashboard_access %}
                         <li>
                             <a href="/admin/dashboard" class="rounded-md {{ nav_path == '/admin/dashboard' or nav_path == '/admin' ? active_classes : '' }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,9 +55,11 @@
                         </li>
                         {% endif %}
                         
+                        {% if can.packages_manage or can.shops_manage or can.users_manage or can.subscriptions_manage or can.support_sudo %}
                         <li class="menu-title">
                             <span>Management</span>
                         </li>
+                        {% endif %}
                         {% if can.packages_manage %}
                         <li>
                             <a href="/admin/packages" class="rounded-md {{ nav_path starts with '/admin/packages' ? active_classes : '' }}">
@@ -68,7 +70,7 @@
                             </a>
                         </li>
                         {% endif %}
-                        {% if can.root_access %}
+                        {% if can.shops_manage %}
                         <li>
                             <a href="/admin/shops" class="rounded-md {{ nav_path starts with '/admin/shops' ? active_classes : '' }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -89,7 +91,7 @@
                             </a>
                         </li>
                         {% endif %}
-                        {% if can.root_access %}
+                        {% if can.users_manage %}
                         <li>
                             <a href="/admin/users" class="rounded-md {{ nav_path starts with '/admin/users' ? active_classes : '' }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -99,7 +101,7 @@
                             </a>
                         </li>
                         {% endif %}
-                        {% if can.admin_access %}
+                        {% if can.setup_access %}
                         <li class="menu-title">
                             <span>Basic Setup</span>
                         </li>

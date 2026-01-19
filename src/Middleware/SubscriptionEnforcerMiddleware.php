@@ -19,16 +19,14 @@ class SubscriptionEnforcerMiddleware implements MiddlewareInterface
 
         if ($shop) {
             $subscription = $shop->subscription;
-            $now = Carbon::now();
-
             if (!$subscription) {
                 $state = 'expired';
             } else {
-                $expires = $subscription->expires_at ? Carbon::parse($subscription->expires_at) : null;
+                $renewalAt = $subscription->next_renewal_at ? Carbon::parse($subscription->next_renewal_at) : null;
 
-                if ($subscription->status === 'trial' && $expires && $expires->isFuture()) {
+                if ($subscription->type === 'trial' && $renewalAt && $renewalAt->isFuture()) {
                     $state = 'trial';
-                } elseif ($subscription->status === 'active' && $expires && $expires->isFuture()) {
+                } elseif ($subscription->type === 'package' && $renewalAt && $renewalAt->isFuture()) {
                     $state = 'active';
                 } else {
                     $state = 'expired';

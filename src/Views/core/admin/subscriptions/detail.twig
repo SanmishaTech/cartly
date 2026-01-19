@@ -27,14 +27,14 @@
 										<span class="font-semibold">Package:</span>
 										{{ currentSubscription.package ? currentSubscription.package.name : '—' }}</div>
 									<div>
-										<span class="font-semibold">Status:</span>
-										{{ currentSubscription.status|capitalize }}</div>
+										<span class="font-semibold">Type:</span>
+										{{ currentSubscription.type|capitalize }}</div>
 									<div>
 										<span class="font-semibold">Starts:</span>
 										{{ currentSubscription.starts_at|local_date }}</div>
 									<div>
-										<span class="font-semibold">Expires:</span>
-										{{ currentSubscription.expires_at|local_date }}</div>
+										<span class="font-semibold">Next Renewal:</span>
+										{{ currentSubscription.next_renewal_at|local_date }}</div>
 									{% if currentSubscription.trial_days %}
 										<div>
 											<span class="font-semibold">Trial Days:</span>
@@ -59,8 +59,8 @@
 										<span class="text-error">*</span>
 									</label>
 									<select id="subscription_type" name="subscription[type]" class="admin-select" data-subscription-type>
-										{% set currentType = data.subscription.type ?? 'paid' %}
-										<option value="paid" {% if currentType == 'paid' %} selected {% endif %}>Paid Package</option>
+										{% set currentType = data.subscription.type ?? 'package' %}
+										<option value="package" {% if currentType == 'package' %} selected {% endif %}>Package</option>
 										<option value="trial" {% if currentType == 'trial' %} selected {% endif %}>Trial</option>
 									</select>
 								</div>
@@ -241,19 +241,17 @@ updateAmount();
 										<th>Package</th>
 										<th>Period</th>
 										<th>Starts</th>
-										<th>Expires</th>
-										<th>Status</th>
+										<th>Next Renewal</th>
 									</tr>
 								</thead>
 								<tbody>
 									{% for entry in history %}
 										<tr class="hover">
-											<td>{{ entry.status|capitalize }}</td>
+											<td>{{ entry.type|capitalize }}</td>
 											<td>{{ entry.package ? entry.package.name : 'Trial' }}</td>
 											<td>{{ entry.billing_period_months ? (entry.billing_period_months ~ ' months') : '—' }}</td>
 											<td>{{ entry.starts_at ? (entry.starts_at|local_date) : '—' }}</td>
-											<td>{{ entry.expires_at ? (entry.expires_at|local_date) : '—' }}</td>
-											<td>{{ entry.status|capitalize }}</td>
+											<td>{{ entry.next_renewal_at ? (entry.next_renewal_at|local_date) : '—' }}</td>
 										</tr>
 									{% endfor %}
 								</tbody>

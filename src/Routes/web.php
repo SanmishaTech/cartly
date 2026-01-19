@@ -4,14 +4,14 @@ use Slim\App;
 use Slim\Views\Twig;
 use App\Controllers\HomeController;
 use App\Controllers\StorefrontController;
-use App\Controllers\AuthController;
-use App\Controllers\RootController;
-use App\Controllers\PackageController;
-use App\Controllers\ShopController;
-use App\Controllers\SubscriptionController;
-use App\Controllers\SudoController;
-use App\Controllers\UserController;
-use App\Controllers\SetupController;
+use App\Controllers\Admin\AuthController;
+use App\Controllers\Admin\DashboardController;
+use App\Controllers\Admin\PackageController;
+use App\Controllers\Admin\ShopController;
+use App\Controllers\Admin\SubscriptionController;
+use App\Controllers\Admin\SudoController;
+use App\Controllers\Admin\UserController;
+use App\Controllers\Admin\SetupController;
 use App\Controllers\MediaController;
 use App\Middleware\RequirePermissionMiddleware;
 use App\Middleware\TrimInputMiddleware;
@@ -59,7 +59,7 @@ return function (App $app, Twig $twig) {
     // TODO: Customer login and registration (will be implemented later)
 
     // Admin routes (protected)
-    $rootController = $container->get(RootController::class);
+    $dashboardController = $container->get(DashboardController::class);
     $packageController = $container->get(PackageController::class);
     $shopController = $container->get(ShopController::class);
     $subscriptionController = $container->get(SubscriptionController::class);
@@ -69,13 +69,13 @@ return function (App $app, Twig $twig) {
     $authorization = new AuthorizationService();
     
     // Admin dashboard (protected)
-    $adminGroup = $app->group('/admin', function ($group) use ($rootController) {
-        $group->get('/dashboard', [$rootController, 'dashboard']);
+    $adminGroup = $app->group('/admin', function ($group) use ($dashboardController) {
+        $group->get('/dashboard', [$dashboardController, 'index']);
     });
     $adminGroup->add(
         new RequirePermissionMiddleware(
             $authorization,
-            AuthorizationService::PERMISSION_ADMIN_ACCESS
+            AuthorizationService::PERMISSION_DASHBOARD_ACCESS
         )
     );
 
@@ -88,12 +88,6 @@ return function (App $app, Twig $twig) {
         $packages->post('/{id}/update', [$packageController, 'update'])->add(new TrimInputMiddleware());
         $packages->post('/{id}/delete', [$packageController, 'delete'])->add(new TrimInputMiddleware());
     });
-    $packagesGroup->add(
-        new RequirePermissionMiddleware(
-            $authorization,
-            AuthorizationService::PERMISSION_ADMIN_ACCESS
-        )
-    );
     $packagesGroup->add(
         new RequirePermissionMiddleware(
             $authorization,
@@ -114,7 +108,7 @@ return function (App $app, Twig $twig) {
     $shopsGroup->add(
         new RequirePermissionMiddleware(
             $authorization,
-            AuthorizationService::PERMISSION_ROOT_ACCESS
+            AuthorizationService::PERMISSION_SHOPS_MANAGE
         )
     );
 
@@ -129,7 +123,7 @@ return function (App $app, Twig $twig) {
     $subscriptionsGroup->add(
         new RequirePermissionMiddleware(
             $authorization,
-            AuthorizationService::PERMISSION_ROOT_ACCESS
+            AuthorizationService::PERMISSION_SUBSCRIPTIONS_MANAGE
         )
     );
 
@@ -144,7 +138,7 @@ return function (App $app, Twig $twig) {
     $usersGroup->add(
         new RequirePermissionMiddleware(
             $authorization,
-            AuthorizationService::PERMISSION_ROOT_ACCESS
+            AuthorizationService::PERMISSION_USERS_MANAGE
         )
     );
 
@@ -163,7 +157,7 @@ return function (App $app, Twig $twig) {
     $setupGroup->add(
         new RequirePermissionMiddleware(
             $authorization,
-            AuthorizationService::PERMISSION_ADMIN_ACCESS
+            AuthorizationService::PERMISSION_SETUP_ACCESS
         )
     );
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Admin;
 
 use Slim\Psr7\Response;
 use Slim\Views\Twig;
@@ -42,11 +42,13 @@ class AppController
             $role = $_SESSION['user_role'] ?? null;
             $authorization = new AuthorizationService();
             $data['can'] = [
-                'admin_access' => $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_ADMIN_ACCESS),
-                'root_access' => $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_ROOT_ACCESS),
+                'dashboard_access' => $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_DASHBOARD_ACCESS),
                 'packages_manage' => $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_PACKAGES_MANAGE),
                 'shops_manage' => $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_SHOPS_MANAGE),
+                'users_manage' => $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_USERS_MANAGE),
+                'subscriptions_manage' => $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_SUBSCRIPTIONS_MANAGE),
                 'support_sudo' => $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_SUPPORT_SUDO),
+                'setup_access' => $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_SETUP_ACCESS),
             ];
         }
         if (!array_key_exists('success', $data)) {

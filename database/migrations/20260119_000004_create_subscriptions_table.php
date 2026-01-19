@@ -14,7 +14,7 @@ return [
             $table->timestamp('starts_at');
             $table->timestamp('expires_at');
             $table->integer('trial_days')->nullable();
-            $table->string('status', 20)->default('active');
+            $table->enum('type', ['trial', 'package'])->default('trial');
             $table->string('renewal_mode', 20)->default('manual');
             $table->string('payment_method', 50)->nullable();
             $table->decimal('price_paid', 12, 2)->nullable();

@@ -10,23 +10,33 @@ class AuthorizationService
     public const ROLE_OPERATIONS = 'operations';
     public const ROLE_SHOPPER = 'shopper';
 
-    public const PERMISSION_ROOT_ACCESS = 'root.access';
-    public const PERMISSION_ADMIN_ACCESS = 'admin.access';
+    public const PERMISSION_DASHBOARD_ACCESS = 'dashboard.access';
     public const PERMISSION_PACKAGES_MANAGE = 'packages.manage';
     public const PERMISSION_SHOPS_MANAGE = 'shops.manage';
+    public const PERMISSION_USERS_MANAGE = 'users.manage';
+    public const PERMISSION_SUBSCRIPTIONS_MANAGE = 'subscriptions.manage';
     public const PERMISSION_SUPPORT_SUDO = 'support.sudo';
+    public const PERMISSION_SETUP_ACCESS = 'setup.access';
 
     private array $rolePermissions = [
-        self::ROLE_ROOT => ['*'],
+        self::ROLE_ROOT => [
+            self::PERMISSION_DASHBOARD_ACCESS,
+            self::PERMISSION_PACKAGES_MANAGE,
+            self::PERMISSION_SHOPS_MANAGE,
+            self::PERMISSION_USERS_MANAGE,
+            self::PERMISSION_SUBSCRIPTIONS_MANAGE,
+            self::PERMISSION_SUPPORT_SUDO,
+        ],
         self::ROLE_ADMIN => [
-            self::PERMISSION_ADMIN_ACCESS,
+            self::PERMISSION_DASHBOARD_ACCESS,
+            self::PERMISSION_SETUP_ACCESS,
         ],
         self::ROLE_HELPDESK => [
-            self::PERMISSION_ADMIN_ACCESS,
+            self::PERMISSION_DASHBOARD_ACCESS,
             self::PERMISSION_SUPPORT_SUDO,
         ],
         self::ROLE_OPERATIONS => [
-            self::PERMISSION_ADMIN_ACCESS,
+            self::PERMISSION_DASHBOARD_ACCESS,
         ],
         self::ROLE_SHOPPER => [],
     ];

@@ -15,7 +15,7 @@ return [
             $table->string('order_id', 100)->unique();
             $table->decimal('amount', 12, 2);
             $table->string('currency', 3)->default('INR');
-            $table->string('status', 20)->default('pending');
+            $table->enum('status', ['pending', 'captured', 'refunded', 'failed'])->default('pending');
             $table->string('method', 50)->nullable();
             $table->text('razorpay_response')->nullable();
             $table->text('razorpay_signature')->nullable();

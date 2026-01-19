@@ -14,7 +14,7 @@ return [
             $table->string('name', 255);
             $table->string('role', 50)->default('shopper');
             $table->unsignedBigInteger('shop_id')->nullable();
-            $table->string('status', 20)->default('active');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamp('last_login_at')->nullable();
             $table->string('two_factor_secret')->nullable();
             $table->boolean('two_factor_enabled')->default(false);

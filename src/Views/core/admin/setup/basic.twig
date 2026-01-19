@@ -116,32 +116,6 @@
                                     {% endif %}
                                 </div>
 
-                                <div class="admin-form-control lg:col-span-2">
-                                    <label class="label" for="social_image">
-                                        <span class="label-text font-semibold">Social Share Image (1200x630)</span>
-                                    </label>
-                                    <input
-                                        type="file"
-                                        name="social_image"
-                                        id="social_image"
-                                        accept="image/png,image/jpeg,image/webp"
-                                        class="file-input file-input-bordered w-full"
-                                        data-crop-target="social"
-                                        data-crop-ratio="1.91"
-                                    />
-                                    <p class="text-xs text-base-content/60 mt-1">We crop to 1200x630 and convert to WebP.</p>
-                                    <img
-                                        src="{% if shop.social_image_path %}/media/{{ shop.social_image_path }}{% endif %}"
-                                        alt="Social preview"
-                                        class="mt-2 max-w-xs rounded bg-base-200 object-cover {% if not shop.social_image_path %}hidden{% endif %}"
-                                        data-preview="social"
-                                    />
-                                    {% if errors.social_image %}
-                                        <label class="label">
-                                            <span class="label-text-alt text-error">{{ errors.social_image }}</span>
-                                        </label>
-                                    {% endif %}
-                                </div>
                             </div>
 
                             {% if errors.uploads %}
@@ -160,20 +134,25 @@
 </div>
 
 <dialog id="cropModal" class="modal">
-    <div class="modal-box max-w-4xl p-0 overflow-hidden">
+    <div class="modal-box max-w-5xl h-[85vh] p-0 flex flex-col">
         <div class="flex items-center justify-between border-b border-base-300 px-6 py-4 bg-base-100/80">
             <h3 class="font-semibold text-lg">Crop Image</h3>
-            <form method="dialog">
-                <button class="btn btn-ghost btn-sm">Close</button>
-            </form>
         </div>
-        <div class="px-6 py-4">
-            <div class="border border-base-300 rounded-lg bg-base-200/40 max-h-[70vh] overflow-auto p-3">
-                <img id="cropImage" src="" alt="Crop preview" class="w-full max-h-[70vh] object-contain bg-base-200 rounded" />
+        <div class="px-6 py-4 flex-1 overflow-hidden">
+            <div
+                class="border border-base-300 rounded-lg bg-base-200/40 w-full"
+                style="height: calc(85vh - 220px);"
+            >
+                <img
+                    id="cropImage"
+                    src=""
+                    alt="Crop preview"
+                    style="max-width:100%; max-height:100%; display:block;"
+                />
             </div>
-            <p class="text-xs text-base-content/60 mt-3">Drag to reposition and resize the crop area.</p>
         </div>
-        <div class="flex items-center justify-end gap-2 border-t border-base-300 px-6 py-4 bg-base-100/80">
+        <div class="flex items-center justify-between gap-2 border-t border-base-300 px-6 py-4 bg-base-100/80">
+            <p class="text-xs text-base-content/60">Tip: Use your mouse wheel to zoom.</p>
             <form method="dialog" class="flex gap-2">
                 <button class="btn btn-ghost btn-sm">Cancel</button>
                 <button type="button" class="btn btn-primary btn-sm" id="applyCrop">Apply Crop</button>
@@ -210,6 +189,7 @@
                             aspectRatio: activeRatio,
                             viewMode: 1,
                             autoCropArea: 1,
+                            dragMode: 'move',
                         });
                     }, 50);
                 };
@@ -250,6 +230,7 @@
                     cropper = null;
                 }, 'image/webp', 0.9);
             });
+
         })();
     </script>
 {% endblock %}

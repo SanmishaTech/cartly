@@ -73,8 +73,8 @@
                                     class="admin-select"
                                     data-subscription-type
                                 >
-                                    {% set currentType = data.subscription.type ?? 'paid' %}
-                                    <option value="paid" {% if currentType == 'paid' %}selected{% endif %}>Paid Package</option>
+                                    {% set currentType = data.subscription.type ?? 'package' %}
+                                    <option value="package" {% if currentType == 'package' %}selected{% endif %}>Package</option>
                                     <option value="trial" {% if currentType == 'trial' %}selected{% endif %}>Trial</option>
                                 </select>
                             </div>

@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Admin;
 
 use App\Models\Shop;
+use App\Models\SeoMetadata;
 use App\Services\LocalStorageService;
 use Slim\Psr7\Response;
 use Valitron\Validator;
@@ -43,12 +44,10 @@ class SetupController extends AppController
         $uploads = $request->getUploadedFiles();
         $logoFile = $uploads['logo'] ?? null;
         $faviconFile = $uploads['favicon'] ?? null;
-        $socialImageFile = $uploads['social_image'] ?? null;
 
         $maxSizeBytes = 3 * 1024 * 1024;
         $errors = array_merge($errors, $this->validateUpload($logoFile, 'logo', $maxSizeBytes));
         $errors = array_merge($errors, $this->validateUpload($faviconFile, 'favicon', $maxSizeBytes));
-        $errors = array_merge($errors, $this->validateUpload($socialImageFile, 'social_image', $maxSizeBytes));
 
         if (!empty($errors)) {
             $this->flashSet('errors', $errors);
@@ -71,9 +70,6 @@ class SetupController extends AppController
                 $updates['favicon_path'] = $storage->storeShopBranding($faviconFile, $shop->id, 'favicon', 64, 64);
             }
 
-            if ($socialImageFile && $socialImageFile->getError() === UPLOAD_ERR_OK) {
-                $updates['social_image_path'] = $storage->storeShopBranding($socialImageFile, $shop->id, 'social', 1200, 630);
-            }
         } catch (\RuntimeException $exception) {
             $this->flashSet('errors', ['uploads' => $exception->getMessage()]);
             $this->flashSet('old', $data);
@@ -93,8 +89,13 @@ class SetupController extends AppController
             return $shop;
         }
 
+        $seoMetadata = SeoMetadata::where('entity_type', 'shop')
+            ->where('entity_id', $shop->id)
+            ->first();
+
         return $this->render($response, 'setup/seo.twig', [
             'shop' => $shop,
+            'seo_metadata' => $seoMetadata,
             'errors' => $this->flashGet('errors', []),
             'data' => $this->flashGet('old', []),
         ]);
@@ -113,22 +114,46 @@ class SetupController extends AppController
         $validator = new Validator($data);
         $validator->rule('lengthMax', 'seo.seo_title', 255)->message('SEO title is too long.');
         $validator->rule('lengthMax', 'seo.seo_description', 500)->message('SEO description is too long.');
-        $validator->rule('lengthMax', 'seo.home_seo_title', 255)->message('Home SEO title is too long.');
-        $validator->rule('lengthMax', 'seo.home_seo_description', 500)->message('Home SEO description is too long.');
+        $validator->rule('lengthMax', 'seo.seo_keywords', 255)->message('SEO keywords are too long.');
+        $validator->rule('lengthMax', 'seo.canonical_url', 255)->message('Canonical URL is too long.');
+        $validator->rule('lengthMax', 'seo.og_title', 255)->message('OG title is too long.');
+        $validator->rule('lengthMax', 'seo.og_description', 500)->message('OG description is too long.');
 
         $errors = $validator->validate() ? [] : $this->formatValitronErrors($validator->errors());
+        $uploads = $request->getUploadedFiles();
+        $ogImageFile = $uploads['og_image'] ?? null;
+        if ($ogImageFile) {
+            $maxSizeBytes = 3 * 1024 * 1024;
+            $errors = array_merge($errors, $this->validateUpload($ogImageFile, 'og_image', $maxSizeBytes));
+        }
         if (!empty($errors)) {
             $this->flashSet('errors', $errors);
             $this->flashSet('old', $data);
             return $this->redirect($response, '/admin/setup/seo');
         }
 
-        $shop->update([
-            'seo_title' => (string)($seo['seo_title'] ?? ''),
-            'seo_description' => (string)($seo['seo_description'] ?? ''),
-            'home_seo_title' => (string)($seo['home_seo_title'] ?? ''),
-            'home_seo_description' => (string)($seo['home_seo_description'] ?? ''),
+        $record = SeoMetadata::firstOrNew([
+            'entity_type' => 'shop',
+            'entity_id' => $shop->id,
         ]);
+
+        $record->seo_title = $seo['seo_title'] ?? null;
+        $record->seo_description = $seo['seo_description'] ?? null;
+        $record->seo_keywords = $seo['seo_keywords'] ?? null;
+        $record->canonical_url = $seo['canonical_url'] ?? null;
+        $record->og_title = $seo['og_title'] ?? null;
+        $record->og_description = $seo['og_description'] ?? null;
+        if ($ogImageFile && $ogImageFile->getError() === UPLOAD_ERR_OK) {
+            $storage = new LocalStorageService();
+            try {
+                $record->og_image = $storage->storeShopImageFit($ogImageFile, $shop->id, 'og', 1200, 630);
+            } catch (\RuntimeException $exception) {
+                $this->flashSet('errors', ['og_image' => $exception->getMessage()]);
+                $this->flashSet('old', $data);
+                return $this->redirect($response, '/admin/setup/seo');
+            }
+        }
+        $record->save();
 
         $this->flashSet('success', 'SEO settings saved.');
 

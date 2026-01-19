@@ -8,12 +8,12 @@
     <div class="card bg-base-100 border border-base-300">
         <div class="admin-card-body">
             <h2 class="card-title mb-4">SEO Setup</h2>
-            <form method="POST" action="/admin/setup/seo" novalidate>
+            <form method="POST" action="/admin/setup/seo" enctype="multipart/form-data" novalidate>
                 <input type="hidden" name="_token" value="{{ csrf_token }}">
 
                 <div class="card bg-base-200/40 border border-base-300 mb-6">
                     <div class="admin-card-body">
-                        <h3 class="admin-section-title mb-2">Shop SEO</h3>
+                        <h3 class="admin-section-title mb-2">Shop SEO Metadata</h3>
                         <div class="admin-form-control">
                             <label class="label" for="seo_title">
                                 <span class="label-text font-semibold">SEO Title</span>
@@ -22,7 +22,7 @@
                                 type="text"
                                 name="seo[seo_title]"
                                 id="seo_title"
-                                value="{{ data.seo.seo_title ?? shop.seo_title ?? '' }}"
+                                value="{{ data.seo.seo_title ?? seo_metadata.seo_title ?? '' }}"
                                 class="admin-input {% if errors['seo.seo_title'] %}input-error{% endif %}"
                             />
                             {% if errors['seo.seo_title'] %}
@@ -41,10 +41,46 @@
                                 id="seo_description"
                                 class="admin-textarea {% if errors['seo.seo_description'] %}textarea-error{% endif %}"
                                 rows="3"
-                            >{{ data.seo.seo_description ?? shop.seo_description ?? '' }}</textarea>
+                            >{{ data.seo.seo_description ?? seo_metadata.seo_description ?? '' }}</textarea>
                             {% if errors['seo.seo_description'] %}
                                 <label class="label">
                                     <span class="label-text-alt text-error">{{ errors['seo.seo_description'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+
+                        <div class="admin-form-control">
+                            <label class="label" for="seo_keywords">
+                                <span class="label-text font-semibold">SEO Keywords</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="seo[seo_keywords]"
+                                id="seo_keywords"
+                                value="{{ data.seo.seo_keywords ?? seo_metadata.seo_keywords ?? '' }}"
+                                class="admin-input {% if errors['seo.seo_keywords'] %}input-error{% endif %}"
+                            />
+                            {% if errors['seo.seo_keywords'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['seo.seo_keywords'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+
+                        <div class="admin-form-control">
+                            <label class="label" for="canonical_url">
+                                <span class="label-text font-semibold">Canonical URL</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="seo[canonical_url]"
+                                id="canonical_url"
+                                value="{{ data.seo.canonical_url ?? seo_metadata.canonical_url ?? '' }}"
+                                class="admin-input {% if errors['seo.canonical_url'] %}input-error{% endif %}"
+                            />
+                            {% if errors['seo.canonical_url'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['seo.canonical_url'] }}</span>
                                 </label>
                             {% endif %}
                         </div>
@@ -53,38 +89,64 @@
 
                 <div class="card bg-base-200/40 border border-base-300 mb-6">
                     <div class="admin-card-body">
-                        <h3 class="admin-section-title mb-2">Home Page SEO</h3>
+                        <h3 class="admin-section-title mb-2">Open Graph</h3>
                         <div class="admin-form-control">
-                            <label class="label" for="home_seo_title">
-                                <span class="label-text font-semibold">Home Page SEO Title</span>
+                            <label class="label" for="og_title">
+                                <span class="label-text font-semibold">OG Title</span>
                             </label>
                             <input
                                 type="text"
-                                name="seo[home_seo_title]"
-                                id="home_seo_title"
-                                value="{{ data.seo.home_seo_title ?? shop.home_seo_title ?? '' }}"
-                                class="admin-input {% if errors['seo.home_seo_title'] %}input-error{% endif %}"
+                                name="seo[og_title]"
+                                id="og_title"
+                                value="{{ data.seo.og_title ?? seo_metadata.og_title ?? '' }}"
+                                class="admin-input {% if errors['seo.og_title'] %}input-error{% endif %}"
                             />
-                            {% if errors['seo.home_seo_title'] %}
+                            {% if errors['seo.og_title'] %}
                                 <label class="label">
-                                    <span class="label-text-alt text-error">{{ errors['seo.home_seo_title'] }}</span>
+                                    <span class="label-text-alt text-error">{{ errors['seo.og_title'] }}</span>
                                 </label>
                             {% endif %}
                         </div>
 
                         <div class="admin-form-control">
-                            <label class="label" for="home_seo_description">
-                                <span class="label-text font-semibold">Home Page SEO Description</span>
+                            <label class="label" for="og_description">
+                                <span class="label-text font-semibold">OG Description</span>
                             </label>
                             <textarea
-                                name="seo[home_seo_description]"
-                                id="home_seo_description"
-                                class="admin-textarea {% if errors['seo.home_seo_description'] %}textarea-error{% endif %}"
+                                name="seo[og_description]"
+                                id="og_description"
+                                class="admin-textarea {% if errors['seo.og_description'] %}textarea-error{% endif %}"
                                 rows="3"
-                            >{{ data.seo.home_seo_description ?? shop.home_seo_description ?? '' }}</textarea>
-                            {% if errors['seo.home_seo_description'] %}
+                            >{{ data.seo.og_description ?? seo_metadata.og_description ?? '' }}</textarea>
+                            {% if errors['seo.og_description'] %}
                                 <label class="label">
-                                    <span class="label-text-alt text-error">{{ errors['seo.home_seo_description'] }}</span>
+                                    <span class="label-text-alt text-error">{{ errors['seo.og_description'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+
+                        <div class="admin-form-control">
+                            <label class="label" for="og_image">
+                                <span class="label-text font-semibold">OG Image (1200x630)</span>
+                            </label>
+                            <input
+                                type="file"
+                                name="og_image"
+                                id="og_image"
+                                accept="image/png,image/jpeg,image/webp"
+                                class="file-input file-input-bordered w-full"
+                            />
+                            <p class="text-xs text-base-content/60 mt-1">We resize to fit within 1200x630 and convert to WebP.</p>
+                            {% if seo_metadata and seo_metadata.og_image %}
+                                <img
+                                    src="/media/{{ seo_metadata.og_image }}"
+                                    alt="OG image preview"
+                                    class="mt-2 max-w-xs rounded bg-base-200 object-cover"
+                                />
+                            {% endif %}
+                            {% if errors.og_image %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors.og_image }}</span>
                                 </label>
                             {% endif %}
                         </div>

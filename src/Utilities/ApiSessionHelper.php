@@ -85,7 +85,7 @@ class ApiSessionHelper
     {
         $role = self::getUserRole();
         $authorization = new AuthorizationService();
-        return $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_ADMIN_ACCESS);
+        return $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_DASHBOARD_ACCESS);
     }
 
     /**

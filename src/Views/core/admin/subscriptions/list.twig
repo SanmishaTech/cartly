@@ -13,10 +13,10 @@
                 <div class="admin-card-body">
                     <h3 class="admin-section-title mb-2">Filters</h3>
                     <form method="GET" action="/admin/subscriptions" class="flex flex-wrap gap-2 items-center">
-                        <select name="status" class="admin-select sm:w-56">
-                            <option value="">All statuses</option>
-                            {% for option in ['active','trial','expired','suspended','pending'] %}
-                                <option value="{{ option }}" {% if pager.query.status == option %}selected{% endif %}>
+                        <select name="type" class="admin-select sm:w-56">
+                            <option value="">All types</option>
+                            {% for option in ['package','trial'] %}
+                                <option value="{{ option }}" {% if pager.query.type == option %}selected{% endif %}>
                                     {{ option|capitalize }}
                                 </option>
                             {% endfor %}
@@ -32,8 +32,8 @@
                         <tr>
                             <th>Shop</th>
                             <th>Package</th>
-                            <th>Status</th>
-                            <th>Expires</th>
+                            <th>Type</th>
+                            <th>Next Renewal</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -45,14 +45,14 @@
                                 <td>{{ subscription and subscription.package ? subscription.package.name : '—' }}</td>
                                 <td>
                                     {% if subscription %}
-                                        <div class="badge {{ subscription.status == 'active' ? 'badge-success' : 'badge-ghost' }}">
-                                            {{ subscription.status|capitalize }}
+                                        <div class="badge {{ subscription.type == 'package' ? 'badge-success' : 'badge-warning' }}">
+                                            {{ subscription.type|capitalize }}
                                         </div>
                                     {% else %}
                                         <div class="badge badge-ghost">None</div>
                                     {% endif %}
                                 </td>
-                                <td>{{ subscription ? (subscription.expires_at|local_date) : '—' }}</td>
+                                <td>{{ subscription ? (subscription.next_renewal_at|local_date) : '—' }}</td>
                                 <td>
                                     <a href="/admin/subscriptions/{{ shop.id }}" class="btn btn-sm btn-outline">Manage</a>
                                 </td>

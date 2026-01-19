@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Admin;
 
 use App\Models\Package;
 use App\Models\Payment;
@@ -21,9 +21,9 @@ class SubscriptionController extends AppController
             'basePath' => '/admin/subscriptions',
             'sortMap' => ['name' => 'name'],
             'filters' => [
-                'status' => function ($q, $value) {
+                'type' => function ($q, $value) {
                     $q->whereHas('subscription', function ($sub) use ($value) {
-                        $sub->where('status', $value);
+                        $sub->where('type', $value);
                     });
                 },
             ],
@@ -91,7 +91,7 @@ class SubscriptionController extends AppController
                 'starts_at' => $startsAt,
                 'expires_at' => $expiresAt,
                 'next_renewal_at' => $expiresAt,
-                'status' => 'active',
+                'type' => 'package',
                 'renewal_mode' => 'manual',
                 'billing_period_months' => (int)($data['period_months'] ?? 0),
             ]
@@ -112,11 +112,11 @@ class SubscriptionController extends AppController
         $data = $request->getParsedBody();
         $subscriptionData = $data['subscription'] ?? [];
         $paymentData = $data['payment'] ?? [];
-        $type = $subscriptionData['type'] ?? 'paid';
+        $type = $subscriptionData['type'] ?? 'package';
         $package = $this->getPackage((int)($subscriptionData['package_id'] ?? 0));
         $validator = new Validator($data);
         $validator->rule('required', 'subscription.type')->message('Subscription type is required.');
-        $validator->rule('in', 'subscription.type', ['trial', 'paid'])->message('Subscription type is required.');
+        $validator->rule('in', 'subscription.type', ['trial', 'package'])->message('Subscription type is required.');
         if ($type === 'trial') {
             $validator->rule('required', 'subscription.trial_days')->message('Select a valid trial duration.');
             $validator->rule('in', 'subscription.trial_days', [7, 10, 15])->message('Select a valid trial duration.');
@@ -157,7 +157,7 @@ class SubscriptionController extends AppController
                 'starts_at' => $startsAt,
                 'expires_at' => $expiresAt,
                 'next_renewal_at' => $nextRenewalAt,
-                'status' => 'trial',
+                'type' => 'trial',
                 'renewal_mode' => 'manual',
                 'trial_days' => (int)($subscriptionData['trial_days'] ?? 0),
                 'billing_period_months' => null,
@@ -187,7 +187,7 @@ class SubscriptionController extends AppController
             'starts_at' => $startsAt,
             'expires_at' => $expiresAt,
             'next_renewal_at' => $nextRenewalAt,
-            'status' => 'active',
+            'type' => 'package',
             'renewal_mode' => 'manual',
             'billing_period_months' => (int)($subscriptionData['period_months'] ?? 0),
         ]);
@@ -210,7 +210,9 @@ class SubscriptionController extends AppController
         $shop->save();
 
         if ($shop->subscription) {
-            $shop->subscription->status = 'suspended';
+            $now = Carbon::now();
+            $shop->subscription->next_renewal_at = $now;
+            $shop->subscription->expires_at = $now;
             $shop->subscription->save();
         }
 

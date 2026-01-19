@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Admin;
 
 use App\Models\Package;
 use App\Models\Payment;
@@ -72,7 +72,7 @@ class ShopController extends AppController
         $subscriptionInput = $data['subscription'] ?? [];
         $paymentInput = $data['payment'] ?? [];
         $sendPasswordLink = !empty($userInput['send_password_link']);
-        $subscriptionType = $subscriptionInput['type'] ?? 'paid';
+        $subscriptionType = $subscriptionInput['type'] ?? 'package';
         $validator = new Validator($data);
         $validator->rule('required', 'shop.shop_name')->message('Shop name is required.');
         $validator->rule('required', 'user.name')->message('Shop admin name is required.');
@@ -185,7 +185,7 @@ class ShopController extends AppController
             'expires_at' => $expiresAt,
             'next_renewal_at' => $nextRenewalAt,
             'trial_days' => $subscriptionType === 'trial' ? (int)($subscriptionInput['trial_days'] ?? 0) : null,
-            'status' => $subscriptionType === 'trial' ? 'trial' : 'active',
+            'type' => $subscriptionType === 'trial' ? 'trial' : 'package',
             'renewal_mode' => 'manual',
             'payment_method' => $subscriptionType === 'trial' ? null : (string)($paymentInput['method'] ?? ''),
             'price_paid' => $subscriptionType === 'trial' ? null : (float)($paymentInput['amount'] ?? 0),
@@ -440,5 +440,4 @@ class ShopController extends AppController
             . "{$resetUrl}\n\n"
             . "If you did not request this, you can ignore this email.\n";
     }
-
 }

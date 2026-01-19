@@ -14,7 +14,7 @@ return [
             $table->boolean('is_primary')->default(true);
             $table->boolean('is_temp')->default(true);
             $table->timestamp('verified_at')->nullable();
-            $table->string('status', 20)->default('pending');
+            $table->enum('status', ['pending', 'active'])->default('pending');
             $table->timestamps();
 
             $table->index('shop_id');
