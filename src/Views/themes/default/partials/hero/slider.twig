@@ -1,0 +1,98 @@
+{% set slides = hero_settings.slides ?? [] %}
+{% set config = hero_settings.config ?? {} %}
+{% set has_slides = false %}
+{% for slide in slides %}
+    {% if slide.image %}
+        {% set has_slides = true %}
+    {% endif %}
+{% endfor %}
+
+{% if has_slides %}
+<section class="rounded-lg bg-base-200 shadow-sm overflow-hidden">
+    <div class="carousel w-full" data-autoplay="{{ config.autoplay ? '1' : '0' }}" data-interval="{{ config.interval ?? 4000 }}">
+        {% for slide in slides %}
+            <div id="hero-slide-{{ loop.index }}" class="carousel-item relative w-full">
+                <div class="w-full">
+                    <div class="relative h-80 md:h-96">
+                        <img src="/media/{{ slide.image }}" alt="{{ slide.title ?? 'Hero slide' }}" class="h-full w-full object-cover" loading="lazy" />
+                        <div class="absolute inset-0 bg-black/40"></div>
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="p-8 md:p-12 text-white max-w-2xl">
+                                {% if slide.title %}
+                                    <h1 class="text-4xl md:text-5xl font-bold">{{ slide.title }}</h1>
+                                {% endif %}
+                                {% if slide.subtitle %}
+                                    <p class="mt-4 text-lg text-white/80">{{ slide.subtitle }}</p>
+                                {% endif %}
+                                {% if slide.cta and slide.cta.text and slide.cta.link %}
+                                    <div class="mt-6">
+                                        <a href="{{ slide.cta.link }}" class="btn btn-primary">{{ slide.cta.text }}</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute left-4 right-4 top-1/2 flex -translate-y-1/2 transform justify-between">
+                    <a href="#hero-slide-{{ loop.index == 1 ? slides|length : loop.index - 1 }}" class="btn btn-circle btn-sm">❮</a>
+                    <a href="#hero-slide-{{ loop.index == slides|length ? 1 : loop.index + 1 }}" class="btn btn-circle btn-sm">❯</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+<script>
+(() => {
+    const script = document.currentScript;
+    if (!script) {
+        return;
+    }
+    const section = script.previousElementSibling;
+    if (!section) {
+        return;
+    }
+    const carousel = section.querySelector('.carousel[data-autoplay="1"]');
+    if (!carousel) {
+        return;
+    }
+    const items = Array.from(carousel.querySelectorAll('.carousel-item'));
+    if (items.length < 2) {
+        return;
+    }
+    const intervalMs = parseInt(carousel.getAttribute('data-interval') || '4000', 10);
+    const delay = Number.isFinite(intervalMs) && intervalMs > 0 ? intervalMs : 4000;
+    let index = 0;
+    let timer = null;
+
+    const goToSlide = (nextIndex) => {
+        index = nextIndex % items.length;
+        const target = items[index];
+        carousel.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+    };
+
+    const start = () => {
+        if (timer) {
+            return;
+        }
+        timer = window.setInterval(() => {
+            goToSlide(index + 1);
+        }, delay);
+    };
+
+    const stop = () => {
+        if (!timer) {
+            return;
+        }
+        window.clearInterval(timer);
+        timer = null;
+    };
+
+    carousel.addEventListener('mouseenter', stop);
+    carousel.addEventListener('mouseleave', start);
+    carousel.addEventListener('focusin', stop);
+    carousel.addEventListener('focusout', start);
+
+    start();
+})();
+</script>
+{% endif %}

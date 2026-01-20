@@ -1,0 +1,30 @@
+{% set hero = hero_settings.content ?? {} %}
+{% set alignment = hero.align ?? 'left' %}
+{% set overlay = hero.overlay ?? 0.4 %}
+
+{% if hero.title and hero.image %}
+<section class="relative rounded-lg overflow-hidden bg-base-200">
+    <div class="absolute inset-0">
+        <img
+            src="/media/{{ hero.image }}"
+            alt="{{ hero.title ?? 'Hero banner' }}"
+            class="h-full w-full object-cover"
+            loading="lazy"
+        />
+        <div class="absolute inset-0" style="background-color: rgba(0, 0, 0, {{ overlay }});"></div>
+    </div>
+    <div class="relative z-10 p-8 md:p-12 text-white {{ alignment == 'center' ? 'text-center' : 'text-left' }}">
+        <div class="max-w-2xl {{ alignment == 'center' ? 'mx-auto' : '' }}">
+            <h1 class="text-4xl md:text-5xl font-bold">{{ hero.title }}</h1>
+            {% if hero.subtitle %}
+                <p class="mt-4 text-lg text-white/80">{{ hero.subtitle }}</p>
+            {% endif %}
+            {% if hero.cta and hero.cta.text and hero.cta.link %}
+                <div class="mt-6">
+                    <a href="{{ hero.cta.link }}" class="btn btn-primary">{{ hero.cta.text }}</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}

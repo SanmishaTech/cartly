@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "author": "Cartly",
   "description": "Clean, traditional ecommerce storefront with blue accents",
-  "preview_image": "preview.png",
+  "preview_image": "preview_image.png",
   "supports": {
     "dark_mode": false,
     "product_variants": true,

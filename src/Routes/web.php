@@ -13,6 +13,7 @@ use App\Controllers\Admin\SudoController;
 use App\Controllers\Admin\UserController;
 use App\Controllers\Admin\SetupController;
 use App\Controllers\MediaController;
+use App\Controllers\ThemeAssetController;
 use App\Middleware\RequirePermissionMiddleware;
 use App\Middleware\TrimInputMiddleware;
 use App\Services\AuthorizationService;
@@ -21,11 +22,13 @@ return function (App $app, Twig $twig) {
     $container = $app->getContainer();
     $homeController = $container->get(HomeController::class);
     $mediaController = $container->get(MediaController::class);
+    $themeAssetController = $container->get(ThemeAssetController::class);
     $storefrontController = $container->get(StorefrontController::class);
 
     // Public routes
     $app->get('/', [$homeController, 'index']);
     $app->get('/media/{path:.+}', [$mediaController, 'show']);
+    $app->get('/assets/themes/{theme}/{path:.+}', [$themeAssetController, 'show']);
     $app->get('/products', [$storefrontController, 'products']);
     $app->get('/products/{slug}', [$storefrontController, 'productDetail']);
     $app->get('/categories', [$storefrontController, 'categories']);
@@ -148,6 +151,8 @@ return function (App $app, Twig $twig) {
         $setup->post('/basic', [$setupController, 'updateBasic'])->add(new TrimInputMiddleware());
         $setup->get('/seo', [$setupController, 'seo']);
         $setup->post('/seo', [$setupController, 'updateSeo'])->add(new TrimInputMiddleware());
+        $setup->get('/hero', [$setupController, 'hero']);
+        $setup->post('/hero', [$setupController, 'updateHero'])->add(new TrimInputMiddleware());
         $setup->get('/themes', [$setupController, 'themes']);
         $setup->post('/themes', [$setupController, 'updateThemes'])->add(new TrimInputMiddleware());
         $setup->get('/payments', [$setupController, 'payments']);

@@ -54,6 +54,116 @@
                                     </label>
                                 {% endif %}
                             </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_address_line1">
+                                    <span class="label-text font-semibold">Address Line 1</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="address_line1"
+                                    id="shop_address_line1"
+                                    value="{{ data.address_line1 ?? shop.address_line1 ?? '' }}"
+                                    class="admin-input {% if errors.address_line1 %}input-error{% endif %}"
+                                />
+                                {% if errors.address_line1 %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors.address_line1 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="shop_address_line2">
+                                    <span class="label-text font-semibold">Address Line 2</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="address_line2"
+                                    id="shop_address_line2"
+                                    value="{{ data.address_line2 ?? shop.address_line2 ?? '' }}"
+                                    class="admin-input {% if errors.address_line2 %}input-error{% endif %}"
+                                />
+                                {% if errors.address_line2 %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors.address_line2 }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div class="admin-form-control">
+                                    <label class="label" for="shop_city">
+                                        <span class="label-text font-semibold">City</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="city"
+                                        id="shop_city"
+                                        value="{{ data.city ?? shop.city ?? '' }}"
+                                        class="admin-input {% if errors.city %}input-error{% endif %}"
+                                    />
+                                    {% if errors.city %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors.city }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+
+                                <div class="admin-form-control">
+                                    <label class="label" for="shop_state">
+                                        <span class="label-text font-semibold">State</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="state"
+                                        id="shop_state"
+                                        value="{{ data.state ?? shop.state ?? '' }}"
+                                        class="admin-input {% if errors.state %}input-error{% endif %}"
+                                    />
+                                    {% if errors.state %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors.state }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+
+                                <div class="admin-form-control">
+                                    <label class="label" for="shop_postal_code">
+                                        <span class="label-text font-semibold">Postal Code</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="postal_code"
+                                        id="shop_postal_code"
+                                        value="{{ data.postal_code ?? shop.postal_code ?? '' }}"
+                                        class="admin-input {% if errors.postal_code %}input-error{% endif %}"
+                                    />
+                                    {% if errors.postal_code %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors.postal_code }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+
+                                <div class="admin-form-control">
+                                    <label class="label" for="shop_country">
+                                        <span class="label-text font-semibold">Country</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="country"
+                                        id="shop_country"
+                                        value="{{ data.country ?? shop.country ?? 'India' }}"
+                                        class="admin-input {% if errors.country %}input-error{% endif %}"
+                                    />
+                                    {% if errors.country %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors.country }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
 

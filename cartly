@@ -138,7 +138,7 @@ function handleServe($args) {
     
     // Change to public directory and start server
     chdir(__DIR__ . '/public');
-    passthru("php -S $host:$port");
+    passthru("php -S $host:$port router.php");
 }
 
 function handleMigrate($args) {

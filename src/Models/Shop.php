@@ -13,6 +13,12 @@ class Shop extends Model
         'slug',
         'shop_name',
         'shop_description',
+        'address_line1',
+        'address_line2',
+        'city',
+        'state',
+        'postal_code',
+        'country',
         'status',
         'theme',
         'theme_config',
@@ -20,7 +26,10 @@ class Shop extends Model
         'favicon_path',
         'hero_type',
         'hero_settings',
-        'sitemap_enabled',
+    ];
+
+    protected $casts = [
+        'hero_settings' => 'array',
     ];
 
     public function domains(): HasMany

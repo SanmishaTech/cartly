@@ -22,6 +22,8 @@ return [
             $table->string('og_title', 255)->nullable();
             $table->string('og_description', 500)->nullable();
             $table->string('og_image', 255)->nullable();
+            $table->string('facebook', 255)->nullable();
+            $table->string('instagram', 255)->nullable();
 
             $table->json('schema_json')->nullable();
 

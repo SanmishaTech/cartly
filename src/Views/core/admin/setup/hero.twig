@@ -1,0 +1,468 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Hero Setup{% endblock %}
+{% block page_title %}Hero Setup{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">Hero Setup</h2>
+            <form method="POST" action="/admin/setup/hero" enctype="multipart/form-data" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                {% if errors %}
+                    <div class="alert alert-error mb-6">
+                        <div>
+                            <p class="font-semibold">Please fix the highlighted issues.</p>
+                            <ul class="list-disc ml-4 text-sm">
+                                {% for message in errors %}
+                                    <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% set currentHero = data.hero.type ?? hero_type ?? shop.hero_type ?? 'banner' %}
+                {% set heroValues = (hero_settings ?? {})|merge(data.hero.settings ?? {}) %}
+
+                <div
+                    class="card bg-base-200/40 border border-base-300 mb-6"
+                    x-data='{
+                        heroType: {{ currentHero|json_encode|raw }},
+                        allSettings: {{ heroValues|json_encode|raw }},
+                        init() {
+                            if (!this.allSettings.banner) {
+                                this.allSettings.banner = { content: {} };
+                            }
+                            if (!this.allSettings.banner.content) {
+                                this.allSettings.banner.content = {};
+                            }
+                            if (!this.allSettings.banner.content.cta) {
+                                this.allSettings.banner.content.cta = {};
+                            }
+                            if (!this.allSettings.banner.content.align) {
+                                this.allSettings.banner.content.align = "left";
+                            }
+                            if (this.allSettings.banner.content.overlay === undefined || this.allSettings.banner.content.overlay === null) {
+                                this.allSettings.banner.content.overlay = 0.4;
+                            }
+
+                            if (!this.allSettings.slider) {
+                                this.allSettings.slider = { config: { autoplay: true, interval: 4000 }, slides: [] };
+                            }
+                            if (!this.allSettings.slider.config) {
+                                this.allSettings.slider.config = { autoplay: true, interval: 4000 };
+                            }
+                            if (!Array.isArray(this.allSettings.slider.slides)) {
+                                this.allSettings.slider.slides = [];
+                            }
+                            this.allSettings.slider.slides = this.allSettings.slider.slides.map((slide) => ({
+                                title: slide.title || "",
+                                subtitle: slide.subtitle || "",
+                                image: slide.image || "",
+                                cta: {
+                                    text: (slide.cta && slide.cta.text) ? slide.cta.text : "",
+                                    link: (slide.cta && slide.cta.link) ? slide.cta.link : ""
+                                }
+                            }));
+                            if (this.allSettings.slider.slides.length === 0) {
+                                this.addSlide();
+                            }
+
+                            if (!this.allSettings.headline) {
+                                this.allSettings.headline = { content: {} };
+                            }
+                            if (!this.allSettings.headline.content) {
+                                this.allSettings.headline.content = {};
+                            }
+                            if (!this.allSettings.headline.content.cta) {
+                                this.allSettings.headline.content.cta = {};
+                            }
+                        },
+                        setHeroType(type) {
+                            if (this.heroType === type) {
+                                return;
+                            }
+                            this.heroType = type;
+                        },
+                        addSlide() {
+                            this.allSettings.slider.slides.push({ title: "", subtitle: "", image: "", cta: { text: "", link: "" } });
+                        },
+                        removeSlide(index) {
+                            if (this.allSettings.slider.slides.length > 1) {
+                                this.allSettings.slider.slides.splice(index, 1);
+                            }
+                        }
+                    }'
+                >
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Hero Type</h3>
+                        <input type="hidden" name="hero[type]" x-model="heroType">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <label class="card border border-base-300 bg-base-100 cursor-pointer">
+                                <div class="card-body">
+                                    <div class="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            class="radio radio-primary"
+                                            name="hero_type_selector"
+                                            value="banner"
+                                            :checked="heroType === 'banner'"
+                                            @change="setHeroType('banner')"
+                                        />
+                                        <span class="font-semibold">Banner</span>
+                                    </div>
+                                    <p class="text-sm text-base-content/70">Single image with heading and CTA.</p>
+                                </div>
+                            </label>
+                            <label class="card border border-base-300 bg-base-100 cursor-pointer">
+                                <div class="card-body">
+                                    <div class="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            class="radio radio-primary"
+                                            name="hero_type_selector"
+                                            value="slider"
+                                            :checked="heroType === 'slider'"
+                                            @change="setHeroType('slider')"
+                                        />
+                                        <span class="font-semibold">Slider</span>
+                                    </div>
+                                    <p class="text-sm text-base-content/70">Multiple banners that slide.</p>
+                                </div>
+                            </label>
+                            <label class="card border border-base-300 bg-base-100 cursor-pointer">
+                                <div class="card-body">
+                                    <div class="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            class="radio radio-primary"
+                                            name="hero_type_selector"
+                                            value="headline"
+                                            :checked="heroType === 'headline'"
+                                            @change="setHeroType('headline')"
+                                        />
+                                        <span class="font-semibold">Headline</span>
+                                    </div>
+                                    <p class="text-sm text-base-content/70">Text-only, SEO focused.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="admin-card-body">
+                        <template x-if="heroType === 'banner'">
+                            <div class="space-y-4">
+                                <h3 class="admin-section-title">Banner Content</h3>
+                                <input type="hidden" name="hero[settings][banner][content][image]" x-model="allSettings.banner.content.image">
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div class="admin-form-control">
+                                        <label class="label" for="banner_title">
+                                            <span class="label-text font-semibold">Title</span>
+                                            <span class="text-error">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="banner_title"
+                                            name="hero[settings][banner][content][title]"
+                                            class="admin-input {% if errors['hero.content.title'] %}input-error{% endif %}"
+                                            x-model="allSettings.banner.content.title"
+                                            required
+                                        />
+                                    </div>
+                                    <div class="admin-form-control">
+                                        <label class="label" for="banner_subtitle">
+                                            <span class="label-text font-semibold">Subtitle</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="banner_subtitle"
+                                            name="hero[settings][banner][content][subtitle]"
+                                            class="admin-input"
+                                            x-model="allSettings.banner.content.subtitle"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div class="admin-form-control">
+                                        <label class="label" for="banner_cta_text">
+                                            <span class="label-text font-semibold">CTA Text</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="banner_cta_text"
+                                            name="hero[settings][banner][content][cta][text]"
+                                            class="admin-input"
+                                            x-model="allSettings.banner.content.cta.text"
+                                        />
+                                    </div>
+                                    <div class="admin-form-control">
+                                        <label class="label" for="banner_cta_link">
+                                            <span class="label-text font-semibold">CTA Link</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="banner_cta_link"
+                                            name="hero[settings][banner][content][cta][link]"
+                                            class="admin-input"
+                                            x-model="allSettings.banner.content.cta.link"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                    <div class="admin-form-control">
+                                        <label class="label" for="banner_align">
+                                            <span class="label-text font-semibold">Text Alignment</span>
+                                        </label>
+                                        <select
+                                            id="banner_align"
+                                            name="hero[settings][banner][content][align]"
+                                            class="admin-select"
+                                            x-model="allSettings.banner.content.align"
+                                        >
+                                            <option value="left">Left</option>
+                                            <option value="center">Center</option>
+                                        </select>
+                                    </div>
+                                    <div class="admin-form-control">
+                                        <label class="label" for="banner_overlay">
+                                            <span class="label-text font-semibold">Overlay</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            min="0"
+                                            max="0.8"
+                                            id="banner_overlay"
+                                            name="hero[settings][banner][content][overlay]"
+                                            class="admin-input"
+                                            x-model="allSettings.banner.content.overlay"
+                                        />
+                                        <p class="text-xs text-base-content/60 mt-1">Range 0.0 to 0.8.</p>
+                                    </div>
+                                    <div class="admin-form-control">
+                                        <label class="label" for="banner_image">
+                                            <span class="label-text font-semibold">Banner Image</span>
+                                            <span class="text-error">*</span>
+                                        </label>
+                                        <input
+                                            type="file"
+                                            name="hero_banner_image"
+                                            id="banner_image"
+                                            accept="image/png,image/jpeg,image/webp"
+                                            class="file-input file-input-bordered w-full"
+                                        />
+                                        <p class="text-xs text-base-content/60 mt-1">We convert uploads to WebP.</p>
+                                        <img
+                                            :src="allSettings.banner.content.image ? '/media/' + allSettings.banner.content.image : ''"
+                                            alt="Banner preview"
+                                            class="mt-2 h-20 w-32 rounded bg-base-200 object-cover"
+                                            x-show="allSettings.banner.content.image"
+                                        />
+                                        {% if errors['hero.content.image'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['hero.content.image'] }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="heroType === 'slider'">
+                            <div class="space-y-4">
+                                <h3 class="admin-section-title">Slider Content</h3>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div class="admin-form-control">
+                                        <label class="label cursor-pointer justify-start gap-2" for="slider_autoplay">
+                                            <input
+                                                type="checkbox"
+                                                id="slider_autoplay"
+                                                name="hero[settings][slider][config][autoplay]"
+                                                value="1"
+                                                class="checkbox checkbox-primary checkbox-sm"
+                                                x-model="allSettings.slider.config.autoplay"
+                                            />
+                                            <span class="label-text text-sm">Autoplay</span>
+                                        </label>
+                                    </div>
+                                    <div class="admin-form-control">
+                                        <label class="label" for="slider_interval">
+                                            <span class="label-text font-semibold">Interval (ms)</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="slider_interval"
+                                            name="hero[settings][slider][config][interval]"
+                                            class="admin-input"
+                                            min="1000"
+                                            step="500"
+                                            x-model="allSettings.slider.config.interval"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-semibold">Slides</h4>
+                                        <button type="button" class="btn btn-outline btn-sm" @click="addSlide()">Add Slide</button>
+                                    </div>
+                                    <template x-for="(slide, index) in allSettings.slider.slides" :key="index">
+                                        <div class="card bg-base-100 border border-base-300">
+                                            <div class="admin-card-body space-y-4">
+                                                <div class="flex items-center justify-between">
+                                                    <h5 class="font-semibold">Slide <span x-text="index + 1"></span></h5>
+                                                    <button type="button" class="btn btn-ghost btn-xs" @click="removeSlide(index)" :disabled="allSettings.slider.slides.length === 1">Remove</button>
+                                                </div>
+                                                <input type="hidden" :name="'hero[settings][slider][slides][' + index + '][image]'" x-model="slide.image">
+                                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                    <div class="admin-form-control">
+                                                        <label class="label" :for="'slide_title_' + index">
+                                                            <span class="label-text font-semibold">Title</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            :id="'slide_title_' + index"
+                                                            :name="'hero[settings][slider][slides][' + index + '][title]'"
+                                                            class="admin-input"
+                                                            x-model="slide.title"
+                                                        />
+                                                    </div>
+                                                    <div class="admin-form-control">
+                                                        <label class="label" :for="'slide_subtitle_' + index">
+                                                            <span class="label-text font-semibold">Subtitle</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            :id="'slide_subtitle_' + index"
+                                                            :name="'hero[settings][slider][slides][' + index + '][subtitle]'"
+                                                            class="admin-input"
+                                                            x-model="slide.subtitle"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                    <div class="admin-form-control">
+                                                        <label class="label" :for="'slide_cta_text_' + index">
+                                                            <span class="label-text font-semibold">CTA Text</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            :id="'slide_cta_text_' + index"
+                                                            :name="'hero[settings][slider][slides][' + index + '][cta][text]'"
+                                                            class="admin-input"
+                                                            x-model="slide.cta.text"
+                                                        />
+                                                    </div>
+                                                    <div class="admin-form-control">
+                                                        <label class="label" :for="'slide_cta_link_' + index">
+                                                            <span class="label-text font-semibold">CTA Link</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            :id="'slide_cta_link_' + index"
+                                                            :name="'hero[settings][slider][slides][' + index + '][cta][link]'"
+                                                            class="admin-input"
+                                                            x-model="slide.cta.link"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div class="admin-form-control">
+                                                    <label class="label" :for="'slide_image_' + index">
+                                                        <span class="label-text font-semibold">Slide Image</span>
+                                                        <span class="text-error">*</span>
+                                                    </label>
+                                                    <input
+                                                        type="file"
+                                                        :name="'hero_slide_images[' + index + ']'"
+                                                        :id="'slide_image_' + index"
+                                                        accept="image/png,image/jpeg,image/webp"
+                                                        class="file-input file-input-bordered w-full"
+                                                    />
+                                                    <p class="text-xs text-base-content/60 mt-1">We convert uploads to WebP.</p>
+                                                    <img
+                                                        :src="slide.image ? '/media/' + slide.image : ''"
+                                                        alt="Slide preview"
+                                                        class="mt-2 h-20 w-32 rounded bg-base-200 object-cover"
+                                                        x-show="slide.image"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="heroType === 'headline'">
+                            <div class="space-y-4">
+                                <h3 class="admin-section-title">Headline Content</h3>
+                                <div class="admin-form-control">
+                                    <label class="label" for="headline_title">
+                                        <span class="label-text font-semibold">Title</span>
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="headline_title"
+                                        name="hero[settings][headline][content][title]"
+                                        class="admin-input {% if errors['hero.content.title'] %}input-error{% endif %}"
+                                        x-model="allSettings.headline.content.title"
+                                        required
+                                    />
+                                </div>
+                                <div class="admin-form-control">
+                                    <label class="label" for="headline_description">
+                                        <span class="label-text font-semibold">Description</span>
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <textarea
+                                        id="headline_description"
+                                        name="hero[settings][headline][content][description]"
+                                        class="admin-textarea {% if errors['hero.content.description'] %}textarea-error{% endif %}"
+                                        rows="4"
+                                        x-model="allSettings.headline.content.description"
+                                        required
+                                    ></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div class="admin-form-control">
+                                        <label class="label" for="headline_cta_text">
+                                            <span class="label-text font-semibold">CTA Text</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="headline_cta_text"
+                                            name="hero[settings][headline][content][cta][text]"
+                                            class="admin-input"
+                                            x-model="allSettings.headline.content.cta.text"
+                                        />
+                                    </div>
+                                    <div class="admin-form-control">
+                                        <label class="label" for="headline_cta_link">
+                                            <span class="label-text font-semibold">CTA Link</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="headline_cta_link"
+                                            name="hero[settings][headline][content][cta][link]"
+                                            class="admin-input"
+                                            x-model="allSettings.headline.content.cta.link"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="admin-form-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">Save Hero Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

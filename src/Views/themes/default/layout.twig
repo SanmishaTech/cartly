@@ -1,32 +1,157 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ shop.shop_name }}{% endblock %}</title>
-    {% if shop.seo_description %}
-        <meta name="description" content="{{ shop.seo_description }}">
-    {% endif %}
-    {% if shop.favicon_path %}
-        <link rel="icon" type="image/webp" href="/media/{{ shop.favicon_path }}">
-    {% endif %}
-    {% if shop.social_image_path %}
-        <meta property="og:image" content="/media/{{ shop.social_image_path }}">
-        <meta name="twitter:image" content="/media/{{ shop.social_image_path }}">
-    {% endif %}
-    
-    {# Compiled Tailwind + DaisyUI CSS #}
-    <link rel="stylesheet" href="/assets/css/output.css">
-    
-    {# Alpine.js for interactivity #}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    {# Theme-specific styles #}
-    <link rel="stylesheet" href="{{ theme_asset('css/style.css') }}">
-    
-    {% block head %}{% endblock %}
+
+{# ==========================
+   SEO: Title & Meta
+   ========================== #}
+<title>
+    {% block title %}
+        {% if seo and seo.title %}
+            {{ seo.title }}
+        {% else %}
+            {{ shop.shop_name }}
+        {% endif %}
+    {% endblock %}
+</title>
+
+{% if seo and seo.description %}
+    <meta name="description" content="{{ seo.description }}">
+{% elseif shop.shop_description %}
+    <meta name="description" content="{{ shop.shop_description }}">
+{% endif %}
+
+{% if seo and seo.keywords %}
+    <meta name="keywords" content="{{ seo.keywords }}">
+{% endif %}
+
+{% if seo and seo.canonical_url %}
+    <link rel="canonical" href="{{ seo.canonical_url }}">
+{% endif %}
+
+{# ==========================
+   Favicon
+   ========================== #}
+{% if shop.favicon_path %}
+    <link rel="icon" type="image/webp" href="/media/{{ shop.favicon_path }}">
+{% endif %}
+
+{# ==========================
+   Open Graph / Social
+   ========================== #}
+{% if seo and seo.og_title %}
+    <meta property="og:title" content="{{ seo.og_title }}">
+{% endif %}
+
+{% if seo and seo.og_description %}
+    <meta property="og:description" content="{{ seo.og_description }}">
+{% endif %}
+
+{% if seo and seo.canonical_url %}
+    <meta property="og:url" content="{{ seo.canonical_url }}">
+{% endif %}
+
+{% if seo and seo.og_image %}
+    <meta property="og:image" content="/media/{{ seo.og_image }}">
+    <meta name="twitter:image" content="/media/{{ seo.og_image }}">
+{% elseif shop.social_image_path %}
+    <meta property="og:image" content="/media/{{ shop.social_image_path }}">
+    <meta name="twitter:image" content="/media/{{ shop.social_image_path }}">
+{% endif %}
+
+{# ==========================
+   Structured Data (JSON-LD)
+   ========================== #}
+{% if seo and seo.schema_json %}
+    <script type="application/ld+json">
+        {{ seo.schema_json|json_encode|raw }}
+    </script>
+{% endif %}
+
+{# ==========================
+   Cartly Runtime Theme Colors
+   ========================== #}
+{% set theme_colors = theme_config.colors ?? {} %}
+{% set base_background = theme_colors.background ?? theme_colors.light ?? '#ffffff' %}
+{% set base_surface = theme_colors.surface ?? base_background %}
+{% set base_surface_alt = theme_colors.surface_alt ?? theme_colors.base_200 ?? '#f1f5f9' %}
+{% set base_border = theme_colors.border ?? theme_colors.base_300 ?? '#e2e8f0' %}
+{% set base_text = theme_colors.text ?? theme_colors.dark ?? '#0f172a' %}
+{% set text_muted = theme_colors.text_muted ?? theme_colors.secondary ?? '#64748b' %}
+{% set base_font_stack = font_profiles.base.css ?? 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' %}
+{% set heading_font_stack = font_profiles.heading.css ?? base_font_stack %}
+{% set radius_sm = theme_config.radii.sm ?? '4px' %}
+{% set radius_md = theme_config.radii.md ?? '6px' %}
+{% set radius_lg = theme_config.radii.lg ?? '10px' %}
+{% set text_xs = theme_config.text_sizes.xs ?? '12px' %}
+{% set text_sm = theme_config.text_sizes.sm ?? '14px' %}
+{% set text_base = theme_config.text_sizes.base ?? '16px' %}
+{% set text_lg = theme_config.text_sizes.lg ?? '18px' %}
+{% set text_xl = theme_config.text_sizes.xl ?? '22px' %}
+{% if font_profiles.base.load %}
+    <link rel="stylesheet" href="{{ font_profiles.base.load }}">
+{% endif %}
+{% if font_profiles.heading.load and font_profiles.heading.load != font_profiles.base.load %}
+    <link rel="stylesheet" href="{{ font_profiles.heading.load }}">
+{% endif %}
+<style>
+    :root {
+        --color-primary: {{ theme_colors.primary ?? '#2563eb' }};
+        --color-primary-content: {{ theme_colors.primary_content ?? '#ffffff' }};
+
+        --color-secondary: {{ theme_colors.secondary ?? '#64748b' }};
+        --color-secondary-content: {{ theme_colors.secondary_content ?? '#ffffff' }};
+
+        --color-accent: {{ theme_colors.accent ?? theme_colors.warning ?? '#f59e0b' }};
+        --color-accent-content: {{ theme_colors.accent_content ?? '#ffffff' }};
+
+        --color-bg: {{ base_background }};
+        --color-surface: {{ base_surface }};
+        --color-surface-alt: {{ base_surface_alt }};
+
+        --color-background: {{ base_background }};
+        --color-text: {{ base_text }};
+        --color-text-muted: {{ text_muted }};
+        --border-color: {{ base_border }};
+
+        --radius-sm: {{ radius_sm }};
+        --radius-md: {{ radius_md }};
+        --radius-lg: {{ radius_lg }};
+
+        --font-base: {{ base_font_stack|raw }};
+        --font-heading: {{ heading_font_stack|raw }};
+
+        --text-xs: {{ text_xs }};
+        --text-sm: {{ text_sm }};
+        --text-base: {{ text_base }};
+        --text-lg: {{ text_lg }};
+        --text-xl: {{ text_xl }};
+
+        --base-100: {{ base_background }};
+        --base-200: {{ base_surface_alt }};
+        --base-300: {{ base_border }};
+        --base-content: {{ base_text }};
+    }
+</style>
+
+{# ==========================
+   Theme Styles (Pure CSS)
+   ========================== #}
+<link rel="stylesheet" href="{{ theme_asset('css/style.css') }}">
+
+{# ==========================
+   JS (CDN only)
+   ========================== #}
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+{% block head %}{% endblock %}
+
 </head>
-<body class="bg-base-100 text-base-content">
+
+<body>
     {# Header/Navbar #}
     {% include 'partials/header.twig' %}
     

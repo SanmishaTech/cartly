@@ -3,22 +3,15 @@
 {% block title %}{{ shop.shop_name }} - Home{% endblock %}
 
 {% block content %}
-<div class="space-y-12 p-4 md:p-8">
-    {% set allowed_hero_types = ['static', 'carousel', 'text', 'grid', 'category_grid'] %}
-    {% set resolved_hero_type = hero_type ?? shop.hero_type ?? 'carousel' %}
-    {% if resolved_hero_type == 'category_grid' %}
-        {% set resolved_hero_type = 'grid' %}
-    {% endif %}
-    {% if resolved_hero_type not in allowed_hero_types %}
-        {% set resolved_hero_type = 'carousel' %}
-    {% endif %}
-    {% include 'partials/hero/' ~ resolved_hero_type ~ '.twig' with {
+<div class="space-y-12 p-4 md:p-8 w-full max-w-7xl mx-auto">
+    {% include 'partials/hero/index.twig' with {
         hero_settings: hero_settings ?? {},
-        shop: shop
+        shop: shop,
+        hero_type: hero_type ?? null
     } only %}
     
     {% if shop.shop_description %}
-    <section class="px-4">
+    <section>
         <div class="rounded-lg bg-base-200/40 border border-base-300 p-6 text-base-content">
             <h2 class="text-2xl font-semibold mb-2">About {{ shop.shop_name }}</h2>
             <p class="text-base-content/70">{{ shop.shop_description }}</p>
@@ -27,8 +20,11 @@
     {% endif %}
     
     {# Featured Products #}
-    <section class="px-4">
-        <h2 class="text-3xl font-bold mb-8 text-base-content">Featured Products</h2>
+    <section>
+        <div class="space-y-1 mb-8">
+            <h2 class="text-3xl font-bold text-base-content">Featured Products</h2>
+            <p class="text-base text-base-content/70">Handpicked favorites for every day</p>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {% set featured_products = [
                 { 'name': 'Classic Cotton T-Shirt', 'slug': 'classic-cotton-tshirt', 'price': '₹899', 'badge': 'New' },
@@ -43,8 +39,11 @@
     </section>
     
     {# Categories #}
-    <section class="px-4">
-        <h2 class="text-3xl font-bold mb-8 text-base-content">Shop by Category</h2>
+    <section>
+        <div class="space-y-1 mb-8">
+            <h2 class="text-3xl font-bold text-base-content">Shop by Category</h2>
+            <p class="text-base text-base-content/70">Browse collections by lifestyle</p>
+        </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             {% for category in ['Electronics', 'Fashion', 'Home & Living', 'Sports'] %}
             <a href="/category/{{ category|lower }}" class="btn btn-outline btn-primary h-auto flex-col p-6 gap-2 rounded-lg hover:bg-primary hover:text-primary-content">
@@ -52,6 +51,107 @@
                 <h3 class="font-semibold text-base">{{ category }}</h3>
             </a>
             {% endfor %}
+        </div>
+    </section>
+
+    {# Popular & New Products #}
+    <section>
+        <div class="space-y-1 mb-8">
+            <h2 class="text-3xl font-bold text-base-content">Popular & New</h2>
+            <p class="text-base text-base-content/70">Trending picks and fresh arrivals</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% set popular_products = [
+                { 'name': 'Smart Fitness Watch', 'slug': 'smart-fitness-watch', 'price': '₹3,299', 'badge': 'Popular' },
+                { 'name': 'Organic Skincare Kit', 'slug': 'organic-skincare-kit', 'price': '₹1,299', 'badge': 'New' },
+                { 'name': 'Noise-Canceling Headphones', 'slug': 'noise-canceling-headphones', 'price': '₹5,499', 'badge': 'Trending' },
+                { 'name': 'Eco Water Bottle', 'slug': 'eco-water-bottle', 'price': '₹699', 'badge': 'New' }
+            ] %}
+            {% for product in popular_products %}
+                {% include 'partials/product_card.twig' with { product: product } only %}
+            {% endfor %}
+        </div>
+    </section>
+
+    {# Promotions #}
+    <section>
+        <div class="card bg-base-200/60 border border-base-300 text-base-content shadow-sm">
+            <div class="card-body">
+                <p class="text-sm uppercase tracking-wide text-base-content/70">Limited time offer</p>
+                <h3 class="text-2xl font-semibold">Save 25% on new season essentials</h3>
+                <p class="text-base-content/80">Use code <span class="font-semibold">WELCOME25</span> at checkout to upgrade your everyday picks.</p>
+                <div class="card-actions">
+                    <a class="btn btn-primary" href="/collections/new">Shop Promotions</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# Testimonials #}
+    <section>
+        {% set testimonials = [
+            { 'quote': 'The delivery was fast and the quality exceeded expectations.', 'name': 'Ananya R., Verified Buyer' },
+            { 'quote': 'Beautiful packaging and the products feel premium. Will order again.', 'name': 'Rohan S., Verified Buyer' },
+            { 'quote': 'Great customer support and the recommendations were spot on.', 'name': 'Meera K., Verified Buyer' }
+        ] %}
+        <div class="testimonial-marquee testimonial-carousel overflow-hidden">
+            <div class="testimonial-track">
+                {% for testimonial in testimonials %}
+                    <div class="card bg-base-200/60 border border-base-300 testimonial-card">
+                        <div class="card-body">
+                            <div class="rating rating-sm mb-2">
+                                <input type="radio" class="mask mask-star-2 bg-primary" checked />
+                                <input type="radio" class="mask mask-star-2 bg-primary" checked />
+                                <input type="radio" class="mask mask-star-2 bg-primary" checked />
+                                <input type="radio" class="mask mask-star-2 bg-primary" checked />
+                                <input type="radio" class="mask mask-star-2 bg-primary" checked />
+                            </div>
+                            <p class="text-base-content/80">"{{ testimonial.quote }}"</p>
+                            <p class="text-sm font-semibold text-base-content">{{ testimonial.name }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+                {% for testimonial in testimonials %}
+                    <div class="card bg-base-200/60 border border-base-300 testimonial-card" aria-hidden="true">
+                        <div class="card-body">
+                            <div class="rating rating-sm mb-2">
+                                <input type="radio" class="mask mask-star-2 bg-primary" checked />
+                                <input type="radio" class="mask mask-star-2 bg-primary" checked />
+                                <input type="radio" class="mask mask-star-2 bg-primary" checked />
+                                <input type="radio" class="mask mask-star-2 bg-primary" checked />
+                                <input type="radio" class="mask mask-star-2 bg-primary" checked />
+                            </div>
+                            <p class="text-base-content/80">"{{ testimonial.quote }}"</p>
+                            <p class="text-sm font-semibold text-base-content">{{ testimonial.name }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# Newsletter Signup #}
+    <section class="pb-4">
+        <div class="card bg-base-200/40 border border-base-300">
+            <div class="card-body lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div>
+                    <h2 class="text-2xl font-semibold text-base-content">Stay in the loop</h2>
+                    <p class="text-base-content/70">Get weekly drops, exclusive offers, and store updates.</p>
+                </div>
+                <form class="w-full lg:w-auto" method="post" action="/newsletter/subscribe">
+                    <input type="hidden" name="_token" value="{{ csrf_token }}">
+                    <div class="join w-full sm:w-auto">
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="you@example.com"
+                            class="input input-bordered join-item w-full sm:w-72"
+                            required
+                        />
+                        <button class="btn btn-primary join-item" type="submit">Subscribe</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </section>
 </div>

@@ -22,11 +22,14 @@ class HomeController
         
         $subscription = $request->getAttribute('subscription');
         $subscriptionState = $request->getAttribute('subscriptionState');
-        $heroSettings = json_decode((string)($shop->hero_settings ?? ''), true);
+        $heroSettings = $shop->hero_settings ?? [];
+        if (!is_array($heroSettings)) {
+            $heroSettings = json_decode((string)$heroSettings, true);
+        }
         if (!is_array($heroSettings)) {
             $heroSettings = [];
         }
-        $heroType = (string)($shop->hero_type ?? 'carousel');
+        $heroType = (string)($shop->hero_type ?? 'banner');
 
         return $this->view->render($response, 'pages/home.twig', [
             'title' => 'Slim + Twig + Alpine Ecommerce',

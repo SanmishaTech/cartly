@@ -13,11 +13,11 @@ use App\Middleware\SubscriptionEnforcerMiddleware;
 use App\Middleware\ThemeMiddleware;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
+use App\Services\SeoService;
 use App\Services\ThemeResolver;
+use App\Controllers\ThemeAssetController;
 use App\Twig\ThemeExtension;
 use App\Config\LocalizationConfig;
-use Twig\Loader\ChainLoader;
-use Twig\Loader\FilesystemLoader;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -27,34 +27,9 @@ $dotenv->load();
 // Initialize timezone and localization
 LocalizationConfig::initializeTimezone();
 
-// Create a loader with multiple paths for theme fallback
+// Base views path for Twig (theme middleware overrides loader per request)
 $viewsPath = __DIR__ . '/../src/Views';
-
-// Use FilesystemLoader with multiple paths instead of ChainLoader
-$loaderPaths = [
-    // Admin theme paths (complete admin system)
-    $viewsPath . '/core/admin',
-    $viewsPath . '/core/admin/layouts',
-    $viewsPath . '/core/admin/partials',
-    $viewsPath . '/core/admin/auth',
-    $viewsPath . '/core/admin/dashboard',
-    $viewsPath . '/core/admin/packages',
-    $viewsPath . '/core/admin/shops',
-    $viewsPath . '/core/admin/setup',
-    // Landing pages
-    $viewsPath . '/core/landing',
-    // Theme paths (for shop customers)
-    $viewsPath . '/themes/default',
-    $viewsPath . '/themes/default/pages',
-    $viewsPath . '/themes/default/partials',
-    // Base fallback
-    $viewsPath,
-];
-
-$loader = new FilesystemLoader($loaderPaths);
-
 $twig = Twig::create($viewsPath, ['cache' => false]);
-$twig->getEnvironment()->setLoader($loader);
 
 $capsule = new Capsule;
 $capsule->addConnection([
@@ -85,6 +60,12 @@ $containerBuilder->addDefinitions([
     ThemeResolver::class => function () {
         return new ThemeResolver(__DIR__ . '/../src/Views');
     },
+    SeoService::class => function () {
+        return new SeoService();
+    },
+    ThemeAssetController::class => function () {
+        return new ThemeAssetController();
+    },
 ]);
 $container = $containerBuilder->build();
 
@@ -92,6 +73,7 @@ AppFactory::setContainer($container);
 $app = AppFactory::create();
 
 $themeResolver = $container->get(ThemeResolver::class);
+$seoService = $container->get(SeoService::class);
 
 // Add extensions to Twig
 $twig->getEnvironment()->addExtension(new ThemeExtension($themeResolver));
@@ -106,7 +88,7 @@ $app->addErrorMiddleware(true, true, true);
 // Execution order: CsrfMiddleware -> AuthMiddleware -> ShopResolverMiddleware -> SubscriptionEnforcerMiddleware -> ThemeMiddleware -> Routes
 
 // Configure theme system based on context and shop (runs 4th)
-$app->add(new ThemeMiddleware($twig, $themeResolver));
+$app->add(new ThemeMiddleware($twig, $themeResolver, $seoService));
 // Compute subscription state (active/grace/expired) (runs 3rd)
 $app->add(new SubscriptionEnforcerMiddleware());
 // Resolve shop from Host header (runs 2nd)

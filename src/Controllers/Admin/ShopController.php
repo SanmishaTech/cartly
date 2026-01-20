@@ -75,6 +75,12 @@ class ShopController extends AppController
         $subscriptionType = $subscriptionInput['type'] ?? 'package';
         $validator = new Validator($data);
         $validator->rule('required', 'shop.shop_name')->message('Shop name is required.');
+        $validator->rule('lengthMax', 'shop.address_line1', 255)->message('Address line 1 is too long.');
+        $validator->rule('lengthMax', 'shop.address_line2', 255)->message('Address line 2 is too long.');
+        $validator->rule('lengthMax', 'shop.city', 100)->message('City is too long.');
+        $validator->rule('lengthMax', 'shop.state', 100)->message('State is too long.');
+        $validator->rule('lengthMax', 'shop.postal_code', 20)->message('Postal code is too long.');
+        $validator->rule('lengthMax', 'shop.country', 100)->message('Country is too long.');
         $validator->rule('required', 'user.name')->message('Shop admin name is required.');
         $validator->rule('required', 'user.email')->message('Shop admin email is required.');
         $validator->rule('email', 'user.email')->message('Enter a valid email address.');
@@ -132,11 +138,27 @@ class ShopController extends AppController
             return $this->redirect($response, '/admin/shops/create');
         }
 
+        $addressLine1 = trim((string)($shopInput['address_line1'] ?? ''));
+        $addressLine2 = trim((string)($shopInput['address_line2'] ?? ''));
+        $city = trim((string)($shopInput['city'] ?? ''));
+        $state = trim((string)($shopInput['state'] ?? ''));
+        $postalCode = trim((string)($shopInput['postal_code'] ?? ''));
+        $country = trim((string)($shopInput['country'] ?? ''));
+        if ($country === '') {
+            $country = 'India';
+        }
+
         $shopData = [
             'shop_name' => (string)($shopInput['shop_name'] ?? ''),
             'slug' => $slug,
             'status' => 'active',
             'theme' => 'default',
+            'address_line1' => $addressLine1 !== '' ? $addressLine1 : null,
+            'address_line2' => $addressLine2 !== '' ? $addressLine2 : null,
+            'city' => $city !== '' ? $city : null,
+            'state' => $state !== '' ? $state : null,
+            'postal_code' => $postalCode !== '' ? $postalCode : null,
+            'country' => $country,
         ];
         $shop = Shop::create($shopData);
 
@@ -257,6 +279,12 @@ class ShopController extends AppController
         $validator->rule('required', 'shop_name')->message('Shop name is required.');
         $validator->rule('required', 'status')->message('Invalid status.');
         $validator->rule('in', 'status', ['active', 'inactive'])->message('Invalid status.');
+        $validator->rule('lengthMax', 'address_line1', 255)->message('Address line 1 is too long.');
+        $validator->rule('lengthMax', 'address_line2', 255)->message('Address line 2 is too long.');
+        $validator->rule('lengthMax', 'city', 100)->message('City is too long.');
+        $validator->rule('lengthMax', 'state', 100)->message('State is too long.');
+        $validator->rule('lengthMax', 'postal_code', 20)->message('Postal code is too long.');
+        $validator->rule('lengthMax', 'country', 100)->message('Country is too long.');
         $validator->rule('required', 'user.name')->message('Shop admin name is required.');
         $validator->rule('required', 'user.email')->message('Shop admin email is required.');
         $validator->rule('email', 'user.email')->message('Enter a valid email address.');
@@ -298,10 +326,26 @@ class ShopController extends AppController
             return $this->redirect($response, '/admin/shops/' . $shop->id . '/edit');
         }
 
+        $addressLine1 = trim((string)($data['address_line1'] ?? ''));
+        $addressLine2 = trim((string)($data['address_line2'] ?? ''));
+        $city = trim((string)($data['city'] ?? ''));
+        $state = trim((string)($data['state'] ?? ''));
+        $postalCode = trim((string)($data['postal_code'] ?? ''));
+        $country = trim((string)($data['country'] ?? ''));
+        if ($country === '') {
+            $country = 'India';
+        }
+
         $shop->update([
             'shop_name' => $shopName,
             'slug' => $slug,
             'status' => $status,
+            'address_line1' => $addressLine1 !== '' ? $addressLine1 : null,
+            'address_line2' => $addressLine2 !== '' ? $addressLine2 : null,
+            'city' => $city !== '' ? $city : null,
+            'state' => $state !== '' ? $state : null,
+            'postal_code' => $postalCode !== '' ? $postalCode : null,
+            'country' => $country,
         ]);
 
         $adminUser->update([

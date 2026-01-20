@@ -1,8 +1,16 @@
 {% extends 'layout.twig' %}
 
 {% block content %}
-<div class="min-h-screen flex flex-col justify-center items-center bg-base-100">
-    <section class="text-center mb-24 px-4">
+<div class="min-h-screen flex flex-col items-center bg-base-100 px-4 py-10 space-y-16">
+    <div class="w-full max-w-6xl">
+        {% include 'partials/hero/index.twig' with {
+            hero_settings: hero_settings ?? {},
+            shop: shop,
+            hero_type: hero_type ?? null
+        } only %}
+    </div>
+
+    <section class="text-center max-w-4xl">
         <h1 class="text-6xl md:text-8xl font-black mb-6 text-base-content">
             {{ shop.shop_name }}
         </h1>
@@ -12,7 +20,7 @@
         </a>
     </section>
     
-    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4 max-w-7xl w-full pb-12">
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl w-full pb-12">
         {% for i in 1..4 %}
         <div class="group cursor-pointer">
             <div class="aspect-square bg-base-200 rounded-2xl mb-4 group-hover:bg-base-300 transition flex items-center justify-center border border-base-300">

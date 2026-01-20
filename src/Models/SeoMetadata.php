@@ -18,6 +18,8 @@ class SeoMetadata extends Model
         'og_title',
         'og_description',
         'og_image',
+        'facebook',
+        'instagram',
         'schema_json',
     ];
 

@@ -4,18 +4,11 @@
 
 {% block content %}
 <div class="space-y-12 p-4 md:p-8">
-    {# Hero Section with DaisyUI #}
-    <section class="hero bg-primary text-primary-content rounded-lg shadow-xl">
-        <div class="hero-content text-center py-20">
-            <div class="max-w-md">
-                <h1 class="mb-5 text-5xl font-bold">Welcome to {{ shop.shop_name }}</h1>
-                <p class="mb-5 text-lg opacity-90">Discover amazing products at great prices</p>
-                <a href="/products" class="btn btn-secondary btn-lg">
-                    Shop Now
-                </a>
-            </div>
-        </div>
-    </section>
+    {% include 'partials/hero/index.twig' with {
+        hero_settings: hero_settings ?? {},
+        shop: shop,
+        hero_type: hero_type ?? null
+    } only %}
     
     {# Featured Products #}
     <section class="px-4">

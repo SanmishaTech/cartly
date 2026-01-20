@@ -2,6 +2,9 @@
 
 namespace App\Middleware;
 
+use App\Config\FontConfig;
+use App\Models\Shop;
+use App\Services\SeoService;
 use App\Services\ThemeResolver;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -19,11 +22,13 @@ class ThemeMiddleware implements MiddlewareInterface
 {
     private Twig $twig;
     private ThemeResolver $themeResolver;
+    private SeoService $seoService;
     
-    public function __construct(Twig $twig, ThemeResolver $themeResolver)
+    public function __construct(Twig $twig, ThemeResolver $themeResolver, SeoService $seoService)
     {
         $this->twig = $twig;
         $this->themeResolver = $themeResolver;
+        $this->seoService = $seoService;
     }
     
     public function process(
@@ -72,6 +77,10 @@ class ThemeMiddleware implements MiddlewareInterface
         $environment->addGlobal('theme', $this->themeResolver);
         $environment->addGlobal('request', $request);
         $environment->addGlobal('current_path', $path);
+        $environment->addGlobal('seo', $this->buildSeoPayload($context, $shop, $request));
+        $themeConfig = $this->buildThemeConfig($shop);
+        $environment->addGlobal('theme_config', $themeConfig);
+        $environment->addGlobal('font_profiles', $this->resolveFontProfiles($themeConfig));
         
         // Add context to request for controllers
         $request = $request->withAttribute('context', $context);
@@ -99,5 +108,80 @@ class ThemeMiddleware implements MiddlewareInterface
         
         // Everything else is storefront (customer-facing)
         return 'storefront';
+    }
+
+    private function buildSeoPayload(string $context, mixed $shop, ServerRequestInterface $request): ?array
+    {
+        if ($context !== 'storefront' || !$shop) {
+            return null;
+        }
+
+        return $this->seoService->buildForShop($shop, $request);
+    }
+
+    private function buildThemeConfig(?Shop $shop): array
+    {
+        $themeName = $shop?->theme ?: 'default';
+        $defaults = $this->themeResolver->getThemeMetadata($themeName) ?? [];
+        $overrides = $this->decodeThemeConfig($shop?->theme_config ?? null);
+
+        if (empty($overrides)) {
+            return $defaults ?: [];
+        }
+
+        if (empty($defaults)) {
+            return $overrides;
+        }
+
+        return $this->mergeThemeConfig($defaults, $overrides);
+    }
+
+    private function decodeThemeConfig(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (!is_string($value) || trim($value) === '') {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    private function mergeThemeConfig(array $defaults, array $overrides): array
+    {
+        return array_replace_recursive($defaults, $overrides);
+    }
+
+    private function resolveFontProfiles(array $themeConfig): array
+    {
+        $defaultKey = 'system';
+        if (isset($themeConfig['font_profile']) && is_string($themeConfig['font_profile'])) {
+            $defaultKey = $themeConfig['font_profile'];
+        }
+
+        $baseKey = $defaultKey;
+        $headingKey = $defaultKey;
+
+        if (isset($themeConfig['font_profile_base']) && is_string($themeConfig['font_profile_base'])) {
+            $baseKey = $themeConfig['font_profile_base'];
+        }
+        if (isset($themeConfig['font_profile_heading']) && is_string($themeConfig['font_profile_heading'])) {
+            $headingKey = $themeConfig['font_profile_heading'];
+        }
+
+        return [
+            'base' => $this->decorateProfile($baseKey),
+            'heading' => $this->decorateProfile($headingKey),
+        ];
+    }
+
+    private function decorateProfile(string $key): array
+    {
+        $profile = FontConfig::getProfile($key);
+        $profile['key'] = $key;
+        return $profile;
     }
 }

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "author": "Cartly",
   "description": "Sleek, contemporary ecommerce storefront with purple accents",
-  "preview_image": "preview.png",
+  "preview_image": "preview_image.png",
   "supports": {
     "dark_mode": true,
     "product_variants": true,

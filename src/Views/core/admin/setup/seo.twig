@@ -84,6 +84,44 @@
                                 </label>
                             {% endif %}
                         </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="admin-form-control">
+                                <label class="label" for="seo_facebook">
+                                    <span class="label-text font-semibold">Facebook</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seo[facebook]"
+                                    id="seo_facebook"
+                                    value="{{ data.seo.facebook ?? seo_metadata.facebook ?? '' }}"
+                                    class="admin-input {% if errors['seo.facebook'] %}input-error{% endif %}"
+                                />
+                                {% if errors['seo.facebook'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['seo.facebook'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="seo_instagram">
+                                    <span class="label-text font-semibold">Instagram</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seo[instagram]"
+                                    id="seo_instagram"
+                                    value="{{ data.seo.instagram ?? seo_metadata.instagram ?? '' }}"
+                                    class="admin-input {% if errors['seo.instagram'] %}input-error{% endif %}"
+                                />
+                                {% if errors['seo.instagram'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['seo.instagram'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
