@@ -3,8 +3,10 @@
 namespace App\Controllers\Admin;
 
 use App\Config\FontConfig;
+use App\Helpers\HomeSectionConfig;
 use App\Models\Shop;
 use App\Models\SeoMetadata;
+use App\Models\ShopMetadata;
 use App\Services\LocalStorageService;
 use Slim\Psr7\Response;
 use Valitron\Validator;
@@ -106,10 +108,12 @@ class SetupController extends AppController
             'entity_type' => 'shop',
             'entity_id' => $shop->id,
         ]);
-        $seoRecord->schema_json = $this->buildShopSchema($shop, $request, [
-            'facebook' => $seoRecord->facebook ?? null,
-            'instagram' => $seoRecord->instagram ?? null,
-        ]);
+        $shopMetadata = ShopMetadata::where('shop_id', $shop->id)->first();
+        $socialLinks = $shopMetadata?->social_media_links ?? [];
+        if (!is_array($socialLinks)) {
+            $socialLinks = [];
+        }
+        $seoRecord->schema_json = $this->buildShopSchema($shop, $request, $socialLinks);
         $seoRecord->save();
         $this->flashSet('success', 'Basic setup saved.');
 
@@ -126,10 +130,12 @@ class SetupController extends AppController
         $seoMetadata = SeoMetadata::where('entity_type', 'shop')
             ->where('entity_id', $shop->id)
             ->first();
+        $shopMetadata = ShopMetadata::where('shop_id', $shop->id)->first();
 
         return $this->render($response, 'setup/seo.twig', [
             'shop' => $shop,
             'seo_metadata' => $seoMetadata,
+            'shop_metadata' => $shopMetadata,
             'errors' => $this->flashGet('errors', []),
             'data' => $this->flashGet('old', []),
         ]);
@@ -144,6 +150,7 @@ class SetupController extends AppController
 
         $data = (array)$request->getParsedBody();
         $seo = $data['seo'] ?? [];
+        $thirdPartyInput = $data['third_party'] ?? [];
 
         $validator = new Validator($data);
         $validator->rule('lengthMax', 'seo.seo_title', 255)->message('SEO title is too long.');
@@ -152,10 +159,23 @@ class SetupController extends AppController
         $validator->rule('lengthMax', 'seo.canonical_url', 255)->message('Canonical URL is too long.');
         $validator->rule('lengthMax', 'seo.facebook', 255)->message('Facebook link is too long.');
         $validator->rule('lengthMax', 'seo.instagram', 255)->message('Instagram link is too long.');
+        $validator->rule('lengthMax', 'seo.x', 255)->message('X link is too long.');
+        $validator->rule('lengthMax', 'seo.linkedin', 255)->message('LinkedIn link is too long.');
+        $validator->rule('lengthMax', 'seo.youtube', 255)->message('YouTube link is too long.');
+        $validator->rule('lengthMax', 'seo.pinterest', 255)->message('Pinterest link is too long.');
+        $validator->rule('lengthMax', 'seo.whatsapp', 255)->message('WhatsApp link is too long.');
+        $validator->rule('url', 'seo.facebook')->message('Enter a valid Facebook URL.');
+        $validator->rule('url', 'seo.instagram')->message('Enter a valid Instagram URL.');
+        $validator->rule('url', 'seo.x')->message('Enter a valid X URL.');
+        $validator->rule('url', 'seo.linkedin')->message('Enter a valid LinkedIn URL.');
+        $validator->rule('url', 'seo.youtube')->message('Enter a valid YouTube URL.');
+        $validator->rule('url', 'seo.pinterest')->message('Enter a valid Pinterest URL.');
+        $validator->rule('url', 'seo.whatsapp')->message('Enter a valid WhatsApp URL.');
         $validator->rule('lengthMax', 'seo.og_title', 255)->message('OG title is too long.');
         $validator->rule('lengthMax', 'seo.og_description', 500)->message('OG description is too long.');
 
         $errors = $validator->validate() ? [] : $this->formatValitronErrors($validator->errors());
+        $thirdParty = $this->sanitizeThirdParty($thirdPartyInput, $errors);
         $uploads = $request->getUploadedFiles();
         $ogImageFile = $uploads['og_image'] ?? null;
         if ($ogImageFile) {
@@ -177,9 +197,8 @@ class SetupController extends AppController
         $record->seo_description = $seo['seo_description'] ?? null;
         $record->seo_keywords = $seo['seo_keywords'] ?? null;
         $record->canonical_url = $seo['canonical_url'] ?? null;
-        $record->facebook = $seo['facebook'] ?? null;
-        $record->instagram = $seo['instagram'] ?? null;
-        $record->schema_json = $this->buildShopSchema($shop, $request, $seo);
+        $socialLinks = $this->sanitizeSocialLinks($seo);
+        $record->schema_json = $this->buildShopSchema($shop, $request, $socialLinks);
         $record->og_title = $seo['og_title'] ?? null;
         $record->og_description = $seo['og_description'] ?? null;
         if ($ogImageFile && $ogImageFile->getError() === UPLOAD_ERR_OK) {
@@ -193,6 +212,13 @@ class SetupController extends AppController
             }
         }
         $record->save();
+
+        $shopMetadata = ShopMetadata::firstOrNew([
+            'shop_id' => $shop->id,
+        ]);
+        $shopMetadata->social_media_links = $socialLinks;
+        $shopMetadata->third_party = $thirdParty;
+        $shopMetadata->save();
 
         $this->flashSet('success', 'SEO settings saved.');
 
@@ -494,6 +520,140 @@ class SetupController extends AppController
         return $this->redirect($response, '/admin/setup/themes');
     }
 
+    public function home($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $shopMetadata = ShopMetadata::where('shop_id', $shop->id)->first();
+        $data = $this->flashGet('old', []);
+        $sectionsInput = $data['home_sections'] ?? ($shopMetadata?->home_sections ?? []);
+        $homeSections = HomeSectionConfig::normalizeSections(is_array($sectionsInput) ? $sectionsInput : []);
+        $homeContent = $data['home_content'] ?? ($shopMetadata?->home_content ?? []);
+        if (!is_array($homeContent)) {
+            $homeContent = [];
+        }
+
+        return $this->render($response, 'setup/home.twig', [
+            'shop' => $shop,
+            'home_sections' => $homeSections,
+            'home_content' => $homeContent,
+            'content_defaults' => HomeSectionConfig::defaultContent(),
+            'section_labels' => HomeSectionConfig::sectionLabels(),
+            'errors' => $this->flashGet('errors', []),
+            'data' => $data,
+        ]);
+    }
+
+    public function updateHome($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $data = (array)$request->getParsedBody();
+        $resetHome = !empty($data['reset_home']);
+        $sectionsInput = $data['home_sections'] ?? [];
+        $contentInput = $data['home_content'] ?? [];
+
+        $validator = new Validator($data);
+        $validator->rule('lengthMax', 'home_content.about.title', 255)->message('About heading is too long.');
+        $validator->rule('lengthMax', 'home_content.about.description', 500)->message('About description is too long.');
+        $validator->rule('lengthMax', 'home_content.featured_products.title', 255)->message('Featured heading is too long.');
+        $validator->rule('lengthMax', 'home_content.featured_products.subtitle', 255)->message('Featured subheading is too long.');
+        $validator->rule('lengthMax', 'home_content.categories.title', 255)->message('Categories heading is too long.');
+        $validator->rule('lengthMax', 'home_content.categories.subtitle', 255)->message('Categories subheading is too long.');
+        $validator->rule('lengthMax', 'home_content.popular_new.title', 255)->message('Popular & New heading is too long.');
+        $validator->rule('lengthMax', 'home_content.popular_new.subtitle', 255)->message('Popular & New subheading is too long.');
+        $validator->rule('lengthMax', 'home_content.promo.badge', 120)->message('Promo badge is too long.');
+        $validator->rule('lengthMax', 'home_content.promo.title', 255)->message('Promo heading is too long.');
+        $validator->rule('lengthMax', 'home_content.promo.body', 500)->message('Promo description is too long.');
+        $validator->rule('lengthMax', 'home_content.promo.cta_text', 120)->message('Promo button text is too long.');
+        $validator->rule('lengthMax', 'home_content.promo.cta_link', 255)->message('Promo link is too long.');
+        $validator->rule('lengthMax', 'home_content.testimonials.title', 255)->message('Testimonials heading is too long.');
+        $validator->rule('lengthMax', 'home_content.testimonials.subtitle', 255)->message('Testimonials subheading is too long.');
+        $validator->rule('lengthMax', 'home_content.newsletter.title', 255)->message('Newsletter heading is too long.');
+        $validator->rule('lengthMax', 'home_content.newsletter.subtitle', 255)->message('Newsletter subheading is too long.');
+        $validator->rule('lengthMax', 'home_content.newsletter.cta_text', 120)->message('Newsletter button text is too long.');
+
+        $errors = $validator->validate() ? [] : $this->formatValitronErrors($validator->errors());
+
+        $homeSections = $resetHome ? HomeSectionConfig::defaultSections() : HomeSectionConfig::normalizeSections(is_array($sectionsInput) ? $sectionsInput : []);
+        $homeContent = $resetHome ? HomeSectionConfig::defaultContent() : $this->sanitizeHomeContent(is_array($contentInput) ? $contentInput : [], $errors);
+
+        if (!empty($errors)) {
+            $this->flashSet('errors', $errors);
+            $this->flashSet('old', $data);
+            return $this->redirect($response, '/admin/setup/home');
+        }
+
+        $shopMetadata = ShopMetadata::firstOrNew([
+            'shop_id' => $shop->id,
+        ]);
+        $shopMetadata->home_sections = $homeSections;
+        $shopMetadata->home_content = empty($homeContent) ? null : $homeContent;
+        $shopMetadata->save();
+
+        $this->flashSet('success', $resetHome ? 'Home settings reset.' : 'Home settings saved.');
+
+        return $this->redirect($response, '/admin/setup/home');
+    }
+
+    public function footer($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $shopMetadata = ShopMetadata::where('shop_id', $shop->id)->first();
+        $data = $this->flashGet('old', []);
+        $footerContent = $data['footer'] ?? ($shopMetadata?->footer_content ?? []);
+        if (!is_array($footerContent)) {
+            $footerContent = [];
+        }
+
+        return $this->render($response, 'setup/footer.twig', [
+            'shop' => $shop,
+            'footer_content' => $footerContent,
+            'errors' => $this->flashGet('errors', []),
+            'data' => $data,
+        ]);
+    }
+
+    public function updateFooter($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $data = (array)$request->getParsedBody();
+        $footerInput = $data['footer'] ?? [];
+        $errors = [];
+
+        $footerContent = $this->sanitizeFooterContent(is_array($footerInput) ? $footerInput : [], $errors);
+
+        if (!empty($errors)) {
+            $this->flashSet('errors', $errors);
+            $this->flashSet('old', $data);
+            return $this->redirect($response, '/admin/setup/footer');
+        }
+
+        $shopMetadata = ShopMetadata::firstOrNew([
+            'shop_id' => $shop->id,
+        ]);
+        $shopMetadata->footer_content = empty($footerContent) ? null : $footerContent;
+        $shopMetadata->save();
+
+        $this->flashSet('success', 'Footer settings saved.');
+
+        return $this->redirect($response, '/admin/setup/footer');
+    }
+
     public function payments($request, Response $response): Response
     {
         return $this->render($response, 'setup/payments.twig');
@@ -665,7 +825,7 @@ class SetupController extends AppController
             }
         }
 
-        $textSizeFields = ['xs', 'sm', 'base', 'lg', 'xl'];
+        $textSizeFields = ['base'];
         foreach ($textSizeFields as $field) {
             $value = $this->sanitizeSize($textSizes[$field] ?? null, "theme_config.text_sizes.{$field}", $errors);
             if ($value !== null) {
@@ -770,7 +930,7 @@ class SetupController extends AppController
         return $previews;
     }
 
-    private function buildShopSchema(Shop $shop, $request, array $seo): array
+    private function buildShopSchema(Shop $shop, $request, array $socialLinks): array
     {
         $baseUrl = $this->resolveShopUrl($shop, $request);
         $logoUrl = $this->resolveShopLogoUrl($shop, $baseUrl);
@@ -800,7 +960,7 @@ class SetupController extends AppController
             'areaServed' => $areaServed,
             'paymentAccepted' => ['UPI', 'Credit Card', 'Cash on Delivery'],
             'currenciesAccepted' => 'INR',
-            'sameAs' => $this->buildSameAsLinks($seo),
+            'sameAs' => $this->buildSameAsLinks($socialLinks),
             'contactPoint' => [
                 '@type' => 'ContactPoint',
                 'contactType' => 'Customer Support',
@@ -868,17 +1028,276 @@ class SetupController extends AppController
         return $country;
     }
 
-    private function buildSameAsLinks(array $seo): array
+    private function buildSameAsLinks(array $socialLinks): array
     {
         $links = [];
-        $instagram = trim((string)($seo['instagram'] ?? ''));
-        $facebook = trim((string)($seo['facebook'] ?? ''));
+        $instagram = trim((string)($socialLinks['instagram'] ?? ''));
+        $facebook = trim((string)($socialLinks['facebook'] ?? ''));
+        $x = trim((string)($socialLinks['x'] ?? ''));
+        $linkedin = trim((string)($socialLinks['linkedin'] ?? ''));
+        $youtube = trim((string)($socialLinks['youtube'] ?? ''));
+        $pinterest = trim((string)($socialLinks['pinterest'] ?? ''));
+        $whatsapp = trim((string)($socialLinks['whatsapp'] ?? ''));
         if ($instagram !== '') {
             $links[] = $instagram;
         }
         if ($facebook !== '') {
             $links[] = $facebook;
         }
+        if ($x !== '') {
+            $links[] = $x;
+        }
+        if ($linkedin !== '') {
+            $links[] = $linkedin;
+        }
+        if ($youtube !== '') {
+            $links[] = $youtube;
+        }
+        if ($pinterest !== '') {
+            $links[] = $pinterest;
+        }
+        if ($whatsapp !== '') {
+            $links[] = $whatsapp;
+        }
         return $links;
+    }
+
+    private function sanitizeHomeContent(array $input, array &$errors): array
+    {
+        $clean = [];
+
+        $aboutTitle = $this->cleanText($input, ['about', 'title'], 255, 'home_content.about.title', $errors);
+        $aboutDescription = $this->cleanText($input, ['about', 'description'], 500, 'home_content.about.description', $errors);
+        if ($aboutTitle !== null || $aboutDescription !== null) {
+            $clean['about'] = array_filter([
+                'title' => $aboutTitle,
+                'description' => $aboutDescription,
+            ], static fn($value) => $value !== null);
+        }
+
+        $featuredTitle = $this->cleanText($input, ['featured_products', 'title'], 255, 'home_content.featured_products.title', $errors);
+        $featuredSubtitle = $this->cleanText($input, ['featured_products', 'subtitle'], 255, 'home_content.featured_products.subtitle', $errors);
+        if ($featuredTitle !== null || $featuredSubtitle !== null) {
+            $clean['featured_products'] = array_filter([
+                'title' => $featuredTitle,
+                'subtitle' => $featuredSubtitle,
+            ], static fn($value) => $value !== null);
+        }
+
+        $categoriesTitle = $this->cleanText($input, ['categories', 'title'], 255, 'home_content.categories.title', $errors);
+        $categoriesSubtitle = $this->cleanText($input, ['categories', 'subtitle'], 255, 'home_content.categories.subtitle', $errors);
+        if ($categoriesTitle !== null || $categoriesSubtitle !== null) {
+            $clean['categories'] = array_filter([
+                'title' => $categoriesTitle,
+                'subtitle' => $categoriesSubtitle,
+            ], static fn($value) => $value !== null);
+        }
+
+        $popularTitle = $this->cleanText($input, ['popular_new', 'title'], 255, 'home_content.popular_new.title', $errors);
+        $popularSubtitle = $this->cleanText($input, ['popular_new', 'subtitle'], 255, 'home_content.popular_new.subtitle', $errors);
+        if ($popularTitle !== null || $popularSubtitle !== null) {
+            $clean['popular_new'] = array_filter([
+                'title' => $popularTitle,
+                'subtitle' => $popularSubtitle,
+            ], static fn($value) => $value !== null);
+        }
+
+        $promoBadge = $this->cleanText($input, ['promo', 'badge'], 120, 'home_content.promo.badge', $errors);
+        $promoTitle = $this->cleanText($input, ['promo', 'title'], 255, 'home_content.promo.title', $errors);
+        $promoBody = $this->cleanText($input, ['promo', 'body'], 500, 'home_content.promo.body', $errors);
+        $promoCtaText = $this->cleanText($input, ['promo', 'cta_text'], 120, 'home_content.promo.cta_text', $errors);
+        $promoCtaLink = $this->cleanText($input, ['promo', 'cta_link'], 255, 'home_content.promo.cta_link', $errors);
+        if ($promoBadge !== null || $promoTitle !== null || $promoBody !== null || $promoCtaText !== null || $promoCtaLink !== null) {
+            $clean['promo'] = array_filter([
+                'badge' => $promoBadge,
+                'title' => $promoTitle,
+                'body' => $promoBody,
+                'cta_text' => $promoCtaText,
+                'cta_link' => $promoCtaLink,
+            ], static fn($value) => $value !== null);
+        }
+
+        $testimonialTitle = $this->cleanText($input, ['testimonials', 'title'], 255, 'home_content.testimonials.title', $errors);
+        $testimonialSubtitle = $this->cleanText($input, ['testimonials', 'subtitle'], 255, 'home_content.testimonials.subtitle', $errors);
+        $testimonialItems = $this->cleanTestimonials($input['testimonials']['items'] ?? [], $errors);
+        if ($testimonialTitle !== null || $testimonialSubtitle !== null || !empty($testimonialItems)) {
+            $clean['testimonials'] = array_filter([
+                'title' => $testimonialTitle,
+                'subtitle' => $testimonialSubtitle,
+                'items' => !empty($testimonialItems) ? $testimonialItems : null,
+            ], static fn($value) => $value !== null);
+        }
+
+        $newsletterTitle = $this->cleanText($input, ['newsletter', 'title'], 255, 'home_content.newsletter.title', $errors);
+        $newsletterSubtitle = $this->cleanText($input, ['newsletter', 'subtitle'], 255, 'home_content.newsletter.subtitle', $errors);
+        $newsletterCta = $this->cleanText($input, ['newsletter', 'cta_text'], 120, 'home_content.newsletter.cta_text', $errors);
+        if ($newsletterTitle !== null || $newsletterSubtitle !== null || $newsletterCta !== null) {
+            $clean['newsletter'] = array_filter([
+                'title' => $newsletterTitle,
+                'subtitle' => $newsletterSubtitle,
+                'cta_text' => $newsletterCta,
+            ], static fn($value) => $value !== null);
+        }
+
+        return $clean;
+    }
+
+    private function sanitizeFooterContent(array $input, array &$errors): array
+    {
+        $clean = [];
+
+        $summary = $this->cleanText($input, ['summary'], 500, 'footer.summary', $errors);
+        $legal = $this->cleanText($input, ['legal'], 255, 'footer.legal', $errors);
+        if ($summary !== null) {
+            $clean['summary'] = $summary;
+        }
+        if ($legal !== null) {
+            $clean['legal'] = $legal;
+        }
+
+        $contactEmail = $this->cleanText($input, ['contact', 'email'], 255, 'footer.contact.email', $errors);
+        $contactPhone = $this->cleanText($input, ['contact', 'phone'], 50, 'footer.contact.phone', $errors);
+        if ($contactEmail !== null || $contactPhone !== null) {
+            $clean['contact'] = array_filter([
+                'email' => $contactEmail,
+                'phone' => $contactPhone,
+            ], static fn($value) => $value !== null);
+        }
+
+        $quickLinks = $this->cleanFooterLinks($input['links']['quick'] ?? [], 'footer.links.quick', $errors);
+        $supportLinks = $this->cleanFooterLinks($input['links']['support'] ?? [], 'footer.links.support', $errors);
+        if (!empty($quickLinks) || !empty($supportLinks)) {
+            $clean['links'] = array_filter([
+                'quick' => !empty($quickLinks) ? $quickLinks : null,
+                'support' => !empty($supportLinks) ? $supportLinks : null,
+            ], static fn($value) => $value !== null);
+        }
+
+        return $clean;
+    }
+
+    private function cleanFooterLinks(mixed $itemsInput, string $fieldPrefix, array &$errors): array
+    {
+        if (!is_array($itemsInput)) {
+            return [];
+        }
+
+        $clean = [];
+        foreach ($itemsInput as $index => $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $label = $this->cleanText($item, ['label'], 80, "{$fieldPrefix}.{$index}.label", $errors, true);
+            $url = $this->cleanText($item, ['url'], 255, "{$fieldPrefix}.{$index}.url", $errors, true);
+            $labelValue = $label ?? '';
+            $urlValue = $url ?? '';
+            if ($labelValue === '' && $urlValue === '') {
+                continue;
+            }
+            if ($labelValue === '' || $urlValue === '') {
+                $errors["{$fieldPrefix}.{$index}.pair"] = 'Link label and URL are required together.';
+                continue;
+            }
+            $clean[] = [
+                'label' => $labelValue,
+                'url' => $urlValue,
+            ];
+        }
+
+        return array_slice($clean, 0, 6);
+    }
+
+    private function cleanTestimonials(mixed $itemsInput, array &$errors): array
+    {
+        if (!is_array($itemsInput)) {
+            return [];
+        }
+
+        $clean = [];
+        foreach ($itemsInput as $index => $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $quote = $this->cleanText($item, ['quote'], 500, "home_content.testimonials.items.{$index}.quote", $errors);
+            $name = $this->cleanText($item, ['name'], 255, "home_content.testimonials.items.{$index}.name", $errors);
+            if ($quote === null && $name === null) {
+                continue;
+            }
+            $clean[] = [
+                'quote' => $quote ?? '',
+                'name' => $name ?? '',
+            ];
+        }
+
+        return array_slice($clean, 0, 10);
+    }
+
+    private function cleanText(array $input, array $path, int $maxLength, string $field, array &$errors, bool $allowEmpty = false): ?string
+    {
+        $value = $input;
+        foreach ($path as $segment) {
+            if (!is_array($value) || !array_key_exists($segment, $value)) {
+                return null;
+            }
+            $value = $value[$segment];
+        }
+
+        $value = trim((string)$value);
+        if ($value === '') {
+            return $allowEmpty ? '' : null;
+        }
+
+        if (strlen($value) > $maxLength) {
+            $errors[$field] = 'Value is too long.';
+        }
+
+        return $value;
+    }
+
+    private function sanitizeSocialLinks(array $seo): array
+    {
+        $links = [
+            'facebook' => trim((string)($seo['facebook'] ?? '')),
+            'instagram' => trim((string)($seo['instagram'] ?? '')),
+            'x' => trim((string)($seo['x'] ?? '')),
+            'linkedin' => trim((string)($seo['linkedin'] ?? '')),
+            'youtube' => trim((string)($seo['youtube'] ?? '')),
+            'pinterest' => trim((string)($seo['pinterest'] ?? '')),
+            'whatsapp' => trim((string)($seo['whatsapp'] ?? '')),
+        ];
+
+        return array_filter($links, static fn($value) => $value !== '');
+    }
+
+    private function sanitizeThirdParty(mixed $input, array &$errors): array
+    {
+        if (!is_array($input)) {
+            return [];
+        }
+
+        $fields = [
+            'head_html' => 50000,
+            'body_start_html' => 50000,
+            'body_end_html' => 50000,
+        ];
+
+        $sanitized = [];
+        foreach ($fields as $field => $maxLength) {
+            $value = $input[$field] ?? '';
+            if (is_array($value) || is_object($value)) {
+                $value = '';
+            }
+            $value = str_replace("\0", '', trim((string)$value));
+            if ($value === '') {
+                continue;
+            }
+            if (strlen($value) > $maxLength) {
+                $errors["third_party.{$field}"] = 'Snippet is too long.';
+                continue;
+            }
+            $sanitized[$field] = $value;
+        }
+
+        return $sanitized;
     }
 }

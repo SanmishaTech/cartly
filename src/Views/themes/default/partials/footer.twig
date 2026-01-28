@@ -1,40 +1,122 @@
 <footer class="bg-base-200 text-base-content mt-16">
+    {% set social_links = social_links ?? {} %}
+    {% set menus = menus ?? {} %}
+    {% set footer = footer_content ?? {} %}
+    {% set footer_summary = footer.summary ?? 'Your trusted online store for quality products.' %}
+    {% set footer_contact = footer.contact ?? {} %}
+    {% set footer_links = footer.links ?? {} %}
+    {% set quick_links = menus.footer_quick ?? [] %}
+    {% set support_links = menus.footer_customer ?? [] %}
+    {% set footer_email = footer_contact.email ?? 'support@example.com' %}
+    {% set footer_phone = footer_contact.phone ?? '+91 1234567890' %}
+    {% set footer_line = footer.legal ?? 'All rights reserved.' %}
     <div class="max-w-6xl mx-auto px-4 py-12">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div class="space-y-2">
                 <h3 class="text-lg font-semibold">{{ shop.shop_name }}</h3>
-                <p class="text-base-content/70">Your trusted online store for quality products.</p>
+                <p class="text-base-content/70">{{ footer_summary }}</p>
             </div>
 
-            <div>
-                <h3 class="text-lg font-semibold mb-3">Quick Links</h3>
-                <ul class="menu menu-vertical p-0 space-y-1">
-                    <li><a href="/products">Products</a></li>
-                    <li><a href="/categories">Categories</a></li>
-                    <li><a href="/about">About Us</a></li>
-                    <li><a href="/contact">Contact</a></li>
-                </ul>
-            </div>
+            {% if quick_links|length %}
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Quick Links</h3>
+                    <ul class="menu menu-vertical p-0 space-y-1">
+                        {% for link in quick_links %}
+                            <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
 
-            <div>
-                <h3 class="text-lg font-semibold mb-3">Customer Service</h3>
-                <ul class="menu menu-vertical p-0 space-y-1">
-                    <li><a href="/shipping">Shipping Info</a></li>
-                    <li><a href="/returns">Returns</a></li>
-                    <li><a href="/faq">FAQ</a></li>
-                    <li><a href="/support">Support</a></li>
-                </ul>
-            </div>
+            {% if support_links|length %}
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Customer Service</h3>
+                    <ul class="menu menu-vertical p-0 space-y-1">
+                        {% for link in support_links %}
+                            <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
 
             <div class="space-y-2">
                 <h3 class="text-lg font-semibold">Contact Us</h3>
-                <p class="text-base-content/70">Email: support@example.com</p>
-                <p class="text-base-content/70">Phone: +91 1234567890</p>
+                <p class="text-base-content/70">Email: {{ footer_email }}</p>
+                <p class="text-base-content/70">Phone: {{ footer_phone }}</p>
+
+                {% set social_items = [
+                    {
+                        'label': 'Facebook',
+                        'url': social_links.facebook ?? '',
+                        'icon': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true"><path fill="currentColor" d="M13 9h4V6h-4c-1.9 0-3 1.6-3 3.6V12H7v3h3v6h3v-6h3l1-3h-4V9.6c0-.4.2-.6.6-.6Z"/></svg>'
+                    },
+                    {
+                        'label': 'Instagram',
+                        'url': social_links.instagram ?? '',
+                        'icon': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true"><path fill="currentColor" d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Zm10 2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm-5 3.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 0 1 12 8.5Zm0 2A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 10.5Zm4.75-3a1 1 0 1 1-1 1 1 1 0 0 1 1-1Z"/></svg>'
+                    },
+                    {
+                        'label': 'X',
+                        'url': social_links.x ?? '',
+                        'icon': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true"><path fill="currentColor" d="M5 4h4.3l3.1 4.2L15.9 4H19l-5.1 6.8L19 20h-4.3l-3.5-4.8L7.2 20H4l5.6-7.4L5 4Z"/></svg>'
+                    },
+                    {
+                        'label': 'LinkedIn',
+                        'url': social_links.linkedin ?? '',
+                        'icon': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true"><path fill="currentColor" d="M6.9 8.6H3.8V20h3.1V8.6ZM5.4 7.2a1.8 1.8 0 1 0-1.8-1.8 1.8 1.8 0 0 0 1.8 1.8ZM20.2 13.1c0-3.1-1.6-4.6-3.8-4.6a3.3 3.3 0 0 0-3 1.6V8.6h-3.1V20h3.1v-6.3c0-1.7.6-2.8 2.1-2.8s1.7 1.2 1.7 2.9V20h3.1Z"/></svg>'
+                    },
+                    {
+                        'label': 'YouTube',
+                        'url': social_links.youtube ?? '',
+                        'icon': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true"><path fill="currentColor" d="M21.7 8.1a3 3 0 0 0-2.1-2.1C17.7 5.5 12 5.5 12 5.5s-5.7 0-7.6.5A3 3 0 0 0 2.3 8.1 31 31 0 0 0 1.9 12a31 31 0 0 0 .4 3.9 3 3 0 0 0 2.1 2.1c1.9.5 7.6.5 7.6.5s5.7 0 7.6-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .4-3.9 31 31 0 0 0-.4-3.9ZM10 14.9V9.1l5.2 2.9L10 14.9Z"/></svg>'
+                    },
+                    {
+                        'label': 'Pinterest',
+                        'url': social_links.pinterest ?? '',
+                        'icon': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 0 0-3.5 17.3l1-3.9c-.2-.4-.4-1-.4-1.6 0-1.5.9-2.6 2-2.6.9 0 1.3.7 1.3 1.5 0 .9-.6 2.2-.9 3.4-.2 1 .5 1.8 1.5 1.8 1.8 0 3.1-1.9 3.1-4.6 0-2.4-1.7-4.1-4.2-4.1-2.9 0-4.6 2.2-4.6 4.4 0 .9.3 1.8.8 2.3.1.1.1.2.1.4l-.3 1.2c0 .2-.2.3-.4.2-1.4-.6-2.2-2.4-2.2-3.9 0-3.2 2.3-6.1 6.6-6.1 3.5 0 6.2 2.5 6.2 5.8 0 3.5-2.2 6.3-5.2 6.3-1 0-1.9-.5-2.2-1.2l-.6 2.4c-.2.9-.8 2-1.2 2.7A9 9 0 1 0 12 3Z"/></svg>'
+                    },
+                    {
+                        'label': 'WhatsApp',
+                        'url': social_links.whatsapp ?? '',
+                        'icon': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.6-1.2A9 9 0 1 0 12 3Zm5.2 12.7c-.2.6-1.1 1.1-1.5 1.1-.4.1-.8.1-1.3 0a11 11 0 0 1-3.4-1.5 12.3 12.3 0 0 1-2.6-2.6 4.7 4.7 0 0 1-1-2.5c0-.7.3-1.4.7-1.8.3-.3.6-.4.9-.4h.6l.4.1c.1 0 .3.1.4.4l.6 1.6c.1.3.1.5 0 .7l-.2.3-.3.3c-.1.2-.3.4-.2.6a6.5 6.5 0 0 0 1.2 1.8 6.9 6.9 0 0 0 1.9 1.2c.2.1.4 0 .6-.1l.4-.4c.2-.2.4-.2.7-.1l1.6.6c.3.1.5.3.6.4.1.2.1.7-.1 1.2Z"/></svg>'
+                    }
+                ] %}
+
+                {% set has_social_links = false %}
+                {% for item in social_items %}
+                    {% if item.url %}
+                        {% set has_social_links = true %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if has_social_links %}
+                    <div class="pt-2">
+                        <h4 class="text-sm font-semibold">Follow Us</h4>
+                        <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm list-none p-0 m-0">
+                            {% for item in social_items %}
+                                {% if item.url %}
+                                    <li class="inline-flex">
+                                        <a class="link link-hover inline-flex items-center gap-2" href="{{ item.url }}" target="_blank" rel="noopener noreferrer">
+                                            <span class="text-base-content/60">
+                                                {{ item.icon|raw }}
+                                            </span>
+                                            {{ item.label }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
             </div>
         </div>
 
         <div class="border-t border-base-300 mt-8 pt-6 text-center text-base-content/70">
-            <p>&copy; {{ "now"|date("Y") }} {{ shop.shop_name }}. All rights reserved.</p>
+            {% if footer_line and ('©' in footer_line or 'copyright' in footer_line|lower) %}
+                <p>{{ footer_line }}</p>
+            {% else %}
+                <p>&copy; {{ "now"|date("Y") }} {{ shop.shop_name }}. {{ footer_line }}</p>
+            {% endif %}
             <p class="text-sm mt-2">Powered by Cartly</p>
         </div>
     </div>

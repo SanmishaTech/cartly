@@ -67,24 +67,12 @@
                             {% endif %}
                         </div>
 
-                        <div class="admin-form-control">
-                            <label class="label" for="canonical_url">
-                                <span class="label-text font-semibold">Canonical URL</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="seo[canonical_url]"
-                                id="canonical_url"
-                                value="{{ data.seo.canonical_url ?? seo_metadata.canonical_url ?? '' }}"
-                                class="admin-input {% if errors['seo.canonical_url'] %}input-error{% endif %}"
-                            />
-                            {% if errors['seo.canonical_url'] %}
-                                <label class="label">
-                                    <span class="label-text-alt text-error">{{ errors['seo.canonical_url'] }}</span>
-                                </label>
-                            {% endif %}
-                        </div>
+                    </div>
+                </div>
 
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Social Media Links</h3>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div class="admin-form-control">
                                 <label class="label" for="seo_facebook">
@@ -94,7 +82,8 @@
                                     type="text"
                                     name="seo[facebook]"
                                     id="seo_facebook"
-                                    value="{{ data.seo.facebook ?? seo_metadata.facebook ?? '' }}"
+                                    value="{{ data.seo.facebook ?? shop_metadata.social_media_links.facebook ?? '' }}"
+                                    placeholder="https://facebook.com/YourPageName"
                                     class="admin-input {% if errors['seo.facebook'] %}input-error{% endif %}"
                                 />
                                 {% if errors['seo.facebook'] %}
@@ -112,12 +101,108 @@
                                     type="text"
                                     name="seo[instagram]"
                                     id="seo_instagram"
-                                    value="{{ data.seo.instagram ?? seo_metadata.instagram ?? '' }}"
+                                    value="{{ data.seo.instagram ?? shop_metadata.social_media_links.instagram ?? '' }}"
+                                    placeholder="https://instagram.com/YourUsername"
                                     class="admin-input {% if errors['seo.instagram'] %}input-error{% endif %}"
                                 />
                                 {% if errors['seo.instagram'] %}
                                     <label class="label">
                                         <span class="label-text-alt text-error">{{ errors['seo.instagram'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="seo_x">
+                                    <span class="label-text font-semibold">X (formerly Twitter)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seo[x]"
+                                    id="seo_x"
+                                    value="{{ data.seo.x ?? shop_metadata.social_media_links.x ?? '' }}"
+                                    placeholder="https://x.com/YourHandle"
+                                    class="admin-input {% if errors['seo.x'] %}input-error{% endif %}"
+                                />
+                                {% if errors['seo.x'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['seo.x'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="seo_linkedin">
+                                    <span class="label-text font-semibold">LinkedIn</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seo[linkedin]"
+                                    id="seo_linkedin"
+                                    value="{{ data.seo.linkedin ?? shop_metadata.social_media_links.linkedin ?? '' }}"
+                                    placeholder="https://linkedin.com/company/YourCompany"
+                                    class="admin-input {% if errors['seo.linkedin'] %}input-error{% endif %}"
+                                />
+                                {% if errors['seo.linkedin'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['seo.linkedin'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="seo_youtube">
+                                    <span class="label-text font-semibold">YouTube</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seo[youtube]"
+                                    id="seo_youtube"
+                                    value="{{ data.seo.youtube ?? shop_metadata.social_media_links.youtube ?? '' }}"
+                                    placeholder="https://youtube.com/YourChannel"
+                                    class="admin-input {% if errors['seo.youtube'] %}input-error{% endif %}"
+                                />
+                                {% if errors['seo.youtube'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['seo.youtube'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="seo_pinterest">
+                                    <span class="label-text font-semibold">Pinterest</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seo[pinterest]"
+                                    id="seo_pinterest"
+                                    value="{{ data.seo.pinterest ?? shop_metadata.social_media_links.pinterest ?? '' }}"
+                                    placeholder="https://pinterest.com/YourBoard"
+                                    class="admin-input {% if errors['seo.pinterest'] %}input-error{% endif %}"
+                                />
+                                {% if errors['seo.pinterest'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['seo.pinterest'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="seo_whatsapp">
+                                    <span class="label-text font-semibold">WhatsApp</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seo[whatsapp]"
+                                    id="seo_whatsapp"
+                                    value="{{ data.seo.whatsapp ?? shop_metadata.social_media_links.whatsapp ?? '' }}"
+                                    placeholder="https://wa.me/15551234567"
+                                    class="admin-input {% if errors['seo.whatsapp'] %}input-error{% endif %}"
+                                />
+                                {% if errors['seo.whatsapp'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['seo.whatsapp'] }}</span>
                                     </label>
                                 {% endif %}
                             </div>
@@ -185,6 +270,66 @@
                             {% if errors.og_image %}
                                 <label class="label">
                                     <span class="label-text-alt text-error">{{ errors.og_image }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Third-Party Scripts</h3>
+                        <p class="text-sm text-base-content/70 mb-4">Add trusted scripts for analytics, chat, or widgets. These render only on the storefront.</p>
+                        <div class="admin-form-control">
+                            <label class="label" for="third_party_head_html">
+                                <span class="label-text font-semibold">Head HTML</span>
+                            </label>
+                            <textarea
+                                name="third_party[head_html]"
+                                id="third_party_head_html"
+                                class="admin-textarea {% if errors['third_party.head_html'] %}textarea-error{% endif %}"
+                                rows="4"
+                            >{{ data.third_party.head_html ?? shop_metadata.third_party.head_html ?? '' }}</textarea>
+                            <p class="text-xs text-base-content/60 mt-1">For analytics scripts that must load inside &lt;head&gt;.</p>
+                            {% if errors['third_party.head_html'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['third_party.head_html'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+
+                        <div class="admin-form-control">
+                            <label class="label" for="third_party_body_start_html">
+                                <span class="label-text font-semibold">Body Start HTML</span>
+                            </label>
+                            <textarea
+                                name="third_party[body_start_html]"
+                                id="third_party_body_start_html"
+                                class="admin-textarea {% if errors['third_party.body_start_html'] %}textarea-error{% endif %}"
+                                rows="4"
+                            >{{ data.third_party.body_start_html ?? shop_metadata.third_party.body_start_html ?? '' }}</textarea>
+                            <p class="text-xs text-base-content/60 mt-1">For noscript or tag manager body snippets.</p>
+                            {% if errors['third_party.body_start_html'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['third_party.body_start_html'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+
+                        <div class="admin-form-control">
+                            <label class="label" for="third_party_body_end_html">
+                                <span class="label-text font-semibold">Body End HTML</span>
+                            </label>
+                            <textarea
+                                name="third_party[body_end_html]"
+                                id="third_party_body_end_html"
+                                class="admin-textarea {% if errors['third_party.body_end_html'] %}textarea-error{% endif %}"
+                                rows="4"
+                            >{{ data.third_party.body_end_html ?? shop_metadata.third_party.body_end_html ?? '' }}</textarea>
+                            <p class="text-xs text-base-content/60 mt-1">For chat widgets or scripts that should load late.</p>
+                            {% if errors['third_party.body_end_html'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['third_party.body_end_html'] }}</span>
                                 </label>
                             {% endif %}
                         </div>

@@ -4,6 +4,7 @@ use Slim\App;
 use Slim\Views\Twig;
 use App\Controllers\HomeController;
 use App\Controllers\StorefrontController;
+use App\Controllers\PageController;
 use App\Controllers\Admin\AuthController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\PackageController;
@@ -12,6 +13,8 @@ use App\Controllers\Admin\SubscriptionController;
 use App\Controllers\Admin\SudoController;
 use App\Controllers\Admin\UserController;
 use App\Controllers\Admin\SetupController;
+use App\Controllers\Admin\PageController as AdminPageController;
+use App\Controllers\Admin\MenuController;
 use App\Controllers\MediaController;
 use App\Controllers\ThemeAssetController;
 use App\Middleware\RequirePermissionMiddleware;
@@ -24,6 +27,7 @@ return function (App $app, Twig $twig) {
     $mediaController = $container->get(MediaController::class);
     $themeAssetController = $container->get(ThemeAssetController::class);
     $storefrontController = $container->get(StorefrontController::class);
+    $pageController = $container->get(PageController::class);
 
     // Public routes
     $app->get('/', [$homeController, 'index']);
@@ -69,6 +73,8 @@ return function (App $app, Twig $twig) {
     $userController = $container->get(UserController::class);
     $sudoController = $container->get(SudoController::class);
     $setupController = $container->get(SetupController::class);
+    $adminPageController = $container->get(AdminPageController::class);
+    $menuController = $container->get(MenuController::class);
     $authorization = new AuthorizationService();
     
     // Admin dashboard (protected)
@@ -153,6 +159,10 @@ return function (App $app, Twig $twig) {
         $setup->post('/seo', [$setupController, 'updateSeo'])->add(new TrimInputMiddleware());
         $setup->get('/hero', [$setupController, 'hero']);
         $setup->post('/hero', [$setupController, 'updateHero'])->add(new TrimInputMiddleware());
+        $setup->get('/home', [$setupController, 'home']);
+        $setup->post('/home', [$setupController, 'updateHome'])->add(new TrimInputMiddleware());
+        $setup->get('/footer', [$setupController, 'footer']);
+        $setup->post('/footer', [$setupController, 'updateFooter'])->add(new TrimInputMiddleware());
         $setup->get('/themes', [$setupController, 'themes']);
         $setup->post('/themes', [$setupController, 'updateThemes'])->add(new TrimInputMiddleware());
         $setup->get('/payments', [$setupController, 'payments']);
@@ -160,6 +170,35 @@ return function (App $app, Twig $twig) {
         $setup->get('/discounts', [$setupController, 'discounts']);
     });
     $setupGroup->add(
+        new RequirePermissionMiddleware(
+            $authorization,
+            AuthorizationService::PERMISSION_SETUP_ACCESS
+        )
+    );
+
+    // Pages management
+    $pagesGroup = $app->group('/admin/pages', function ($pages) use ($adminPageController) {
+        $pages->get('', [$adminPageController, 'index']);
+        $pages->get('/create', [$adminPageController, 'create']);
+        $pages->post('/store', [$adminPageController, 'store'])->add(new TrimInputMiddleware());
+        $pages->get('/{id}/edit', [$adminPageController, 'edit']);
+        $pages->post('/{id}/update', [$adminPageController, 'update'])->add(new TrimInputMiddleware());
+        $pages->post('/{id}/publish', [$adminPageController, 'publish'])->add(new TrimInputMiddleware());
+        $pages->post('/{id}/unpublish', [$adminPageController, 'unpublish'])->add(new TrimInputMiddleware());
+    });
+    $pagesGroup->add(
+        new RequirePermissionMiddleware(
+            $authorization,
+            AuthorizationService::PERMISSION_SETUP_ACCESS
+        )
+    );
+
+    // Menus management
+    $menusGroup = $app->group('/admin/menus', function ($menus) use ($menuController) {
+        $menus->get('', [$menuController, 'edit']);
+        $menus->post('', [$menuController, 'update'])->add(new TrimInputMiddleware());
+    });
+    $menusGroup->add(
         new RequirePermissionMiddleware(
             $authorization,
             AuthorizationService::PERMISSION_SETUP_ACCESS
@@ -177,6 +216,9 @@ return function (App $app, Twig $twig) {
             AuthorizationService::PERMISSION_SUPPORT_SUDO
         )
     );
+
+    // Storefront pages (keep last to avoid collisions)
+    $app->get('/{slug}', [$pageController, 'show']);
 };
 
 

@@ -1,0 +1,6 @@
+<section class="space-y-3">
+    <img src="/media/{{ data.image }}" alt="{{ data.alt }}" class="w-full rounded-xl border border-base-300 object-cover">
+    {% if data.caption %}
+        <p class="text-sm text-base-content/70">{{ data.caption }}</p>
+    {% endif %}
+</section>

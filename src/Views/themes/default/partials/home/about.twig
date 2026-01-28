@@ -1,0 +1,14 @@
+{% set about_title = content.about.title ?? ('About ' ~ shop.shop_name) %}
+{% set about_description = content.about.description ?? shop.shop_description %}
+{% if about_title or about_description %}
+    <section>
+        <div class="rounded-lg bg-base-200/40 border border-base-300 p-6 text-base-content">
+            {% if about_title %}
+                <h2 class="text-2xl font-semibold mb-2">{{ about_title }}</h2>
+            {% endif %}
+            {% if about_description %}
+                <p class="text-base-content/70">{{ about_description }}</p>
+            {% endif %}
+        </div>
+    </section>
+{% endif %}

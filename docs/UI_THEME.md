@@ -9,6 +9,17 @@
 - Theme directories with metadata
 - Active theme set per shop
 - Fallback chain: active → default → core views
+- Storefront semantics and loading rules are in `docs/STOREFRONT_SEMANTICS.md`.
+
+## Default Theme Home Split
+- Home page template is `src/Views/themes/default/pages/home.twig`.
+- Section rendering is split into partials under `src/Views/themes/default/partials/home/`.
+- Sections render in the order defined by `home_sections` and pull text/media from `home_content`.
+- Hero uses `partials/home/hero.twig` for the section and `partials/hero/index.twig` for the fallback when the hero section is disabled.
+- Testimonials carousel behavior is handled in `partials/home/testimonials.twig` using Alpine and respects reduced motion/mobile.
+
+## Default Theme Assets
+- `layout.twig` loads `css/base.css` before `css/style.css` for shared base styles.
 
 ## Theme Resolution
 - ThemeMiddleware determines admin vs storefront

@@ -1,0 +1,31 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ page.title }} - {{ shop.shop_name }}{% endblock %}
+
+{% block content %}
+{% set page_blocks = blocks ?? page.content_json ?? [] %}
+{% if page_blocks is not iterable %}
+    {% set page_blocks = [] %}
+{% endif %}
+{% set allowed_block_types = ['text', 'image_text', 'bullets', 'image', 'faq'] %}
+
+<div class="max-w-5xl mx-auto px-4 py-10 space-y-10">
+    <div class="space-y-2">
+        <h1 class="text-3xl md:text-4xl font-bold text-base-content">{{ page.title }}</h1>
+        {% if page.subtitle %}
+            <p class="text-base-content/70">{{ page.subtitle }}</p>
+        {% endif %}
+    </div>
+
+    {% for block in page_blocks %}
+        {% set type = block.type ?? '' %}
+        {% set data = block.data ?? {} %}
+        {% if type in allowed_block_types %}
+            {% include 'partials/page/blocks/' ~ type ~ '.twig' with {
+                block: block,
+                data: data
+            } only %}
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

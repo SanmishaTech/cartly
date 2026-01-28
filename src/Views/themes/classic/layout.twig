@@ -14,9 +14,16 @@
     {# Theme-specific styles #}
     <link rel="stylesheet" href="{{ theme_asset('css/style.css') }}">
     
+    {% if third_party and third_party.head_html %}
+        {{ third_party.head_html|raw }}
+    {% endif %}
+
     {% block head %}{% endblock %}
 </head>
 <body class="bg-base-100 text-base-content">
+    {% if third_party and third_party.body_start_html %}
+        {{ third_party.body_start_html|raw }}
+    {% endif %}
     {# Header/Navbar #}
     {% include 'partials/header.twig' %}
     
@@ -32,5 +39,9 @@
     <script src="{{ theme_asset('js/script.js') }}"></script>
     
     {% block scripts %}{% endblock %}
+    
+    {% if third_party and third_party.body_end_html %}
+        {{ third_party.body_end_html|raw }}
+    {% endif %}
 </body>
 </html>

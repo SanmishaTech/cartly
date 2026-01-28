@@ -1,0 +1,16 @@
+<section class="space-y-4">
+    {% if data.title %}
+        <h2 class="text-2xl font-semibold">{{ data.title }}</h2>
+    {% endif %}
+    <div class="space-y-3">
+        {% for item in data.items ?? [] %}
+            <div class="collapse collapse-arrow border border-base-300 bg-base-100">
+                <input type="checkbox" />
+                <div class="collapse-title text-base font-semibold">{{ item.question }}</div>
+                <div class="collapse-content text-base-content/80">
+                    {{ item.answer|raw }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>

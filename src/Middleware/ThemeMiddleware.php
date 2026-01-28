@@ -3,8 +3,10 @@
 namespace App\Middleware;
 
 use App\Config\FontConfig;
+use App\Models\ShopMetadata;
 use App\Models\Shop;
 use App\Services\SeoService;
+use App\Services\MenuService;
 use App\Services\ThemeResolver;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -23,12 +25,14 @@ class ThemeMiddleware implements MiddlewareInterface
     private Twig $twig;
     private ThemeResolver $themeResolver;
     private SeoService $seoService;
+    private MenuService $menuService;
     
-    public function __construct(Twig $twig, ThemeResolver $themeResolver, SeoService $seoService)
+    public function __construct(Twig $twig, ThemeResolver $themeResolver, SeoService $seoService, MenuService $menuService)
     {
         $this->twig = $twig;
         $this->themeResolver = $themeResolver;
         $this->seoService = $seoService;
+        $this->menuService = $menuService;
     }
     
     public function process(
@@ -78,6 +82,10 @@ class ThemeMiddleware implements MiddlewareInterface
         $environment->addGlobal('request', $request);
         $environment->addGlobal('current_path', $path);
         $environment->addGlobal('seo', $this->buildSeoPayload($context, $shop, $request));
+        $environment->addGlobal('third_party', $this->buildThirdPartyPayload($context, $shop));
+        $environment->addGlobal('social_links', $this->buildSocialLinksPayload($context, $shop));
+        $environment->addGlobal('footer_content', $this->buildFooterPayload($context, $shop));
+        $environment->addGlobal('menus', $this->buildMenuPayload($context, $shop));
         $themeConfig = $this->buildThemeConfig($shop);
         $environment->addGlobal('theme_config', $themeConfig);
         $environment->addGlobal('font_profiles', $this->resolveFontProfiles($themeConfig));
@@ -117,6 +125,60 @@ class ThemeMiddleware implements MiddlewareInterface
         }
 
         return $this->seoService->buildForShop($shop, $request);
+    }
+
+    private function buildThirdPartyPayload(string $context, mixed $shop): ?array
+    {
+        if ($context !== 'storefront' || !$shop) {
+            return null;
+        }
+
+        $metadata = ShopMetadata::where('shop_id', $shop->id)->first();
+        $thirdParty = $metadata?->third_party ?? [];
+        if (!is_array($thirdParty)) {
+            return null;
+        }
+
+        return $thirdParty;
+    }
+
+    private function buildSocialLinksPayload(string $context, mixed $shop): ?array
+    {
+        if ($context !== 'storefront' || !$shop) {
+            return null;
+        }
+
+        $metadata = ShopMetadata::where('shop_id', $shop->id)->first();
+        $socialLinks = $metadata?->social_media_links ?? [];
+        if (!is_array($socialLinks)) {
+            return null;
+        }
+
+        return $socialLinks;
+    }
+
+    private function buildFooterPayload(string $context, mixed $shop): ?array
+    {
+        if ($context !== 'storefront' || !$shop) {
+            return null;
+        }
+
+        $metadata = ShopMetadata::where('shop_id', $shop->id)->first();
+        $footerContent = $metadata?->footer_content ?? [];
+        if (!is_array($footerContent)) {
+            return null;
+        }
+
+        return $footerContent;
+    }
+
+    private function buildMenuPayload(string $context, mixed $shop): ?array
+    {
+        if ($context !== 'storefront' || !$shop) {
+            return null;
+        }
+
+        return $this->menuService->getMenusForShop($shop);
     }
 
     private function buildThemeConfig(?Shop $shop): array

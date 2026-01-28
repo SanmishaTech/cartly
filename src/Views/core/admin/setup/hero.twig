@@ -32,6 +32,7 @@
                     x-data='{
                         heroType: {{ currentHero|json_encode|raw }},
                         allSettings: {{ heroValues|json_encode|raw }},
+                        errors: {{ errors|json_encode|raw }},
                         init() {
                             if (!this.allSettings.banner) {
                                 this.allSettings.banner = { content: {} };
@@ -150,6 +151,11 @@
                                 </div>
                             </label>
                         </div>
+                        {% if errors['hero.type'] %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ errors['hero.type'] }}</span>
+                            </label>
+                        {% endif %}
                     </div>
 
                     <div class="admin-card-body">
@@ -171,6 +177,11 @@
                                             x-model="allSettings.banner.content.title"
                                             required
                                         />
+                                        {% if errors['hero.content.title'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['hero.content.title'] }}</span>
+                                            </label>
+                                        {% endif %}
                                     </div>
                                     <div class="admin-form-control">
                                         <label class="label" for="banner_subtitle">
@@ -209,6 +220,11 @@
                                             class="admin-input"
                                             x-model="allSettings.banner.content.cta.link"
                                         />
+                                        {% if errors['hero.content.cta'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['hero.content.cta'] }}</span>
+                                            </label>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -225,6 +241,11 @@
                                             <option value="left">Left</option>
                                             <option value="center">Center</option>
                                         </select>
+                                        {% if errors['hero.content.align'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['hero.content.align'] }}</span>
+                                            </label>
+                                        {% endif %}
                                     </div>
                                     <div class="admin-form-control">
                                         <label class="label" for="banner_overlay">
@@ -241,6 +262,11 @@
                                             x-model="allSettings.banner.content.overlay"
                                         />
                                         <p class="text-xs text-base-content/60 mt-1">Range 0.0 to 0.8.</p>
+                                        {% if errors['hero.content.overlay'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['hero.content.overlay'] }}</span>
+                                            </label>
+                                        {% endif %}
                                     </div>
                                     <div class="admin-form-control">
                                         <label class="label" for="banner_image">
@@ -264,6 +290,11 @@
                                         {% if errors['hero.content.image'] %}
                                             <label class="label">
                                                 <span class="label-text-alt text-error">{{ errors['hero.content.image'] }}</span>
+                                            </label>
+                                        {% endif %}
+                                        {% if errors.hero_banner_image %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors.hero_banner_image }}</span>
                                             </label>
                                         {% endif %}
                                     </div>
@@ -367,6 +398,11 @@
                                                             class="admin-input"
                                                             x-model="slide.cta.link"
                                                         />
+                                                        <template x-if="errors['hero.slides.' + index + '.cta']">
+                                                            <label class="label">
+                                                                <span class="label-text-alt text-error" x-text="errors['hero.slides.' + index + '.cta']"></span>
+                                                            </label>
+                                                        </template>
                                                     </div>
                                                 </div>
                                                 <div class="admin-form-control">
@@ -388,10 +424,25 @@
                                                         class="mt-2 h-20 w-32 rounded bg-base-200 object-cover"
                                                         x-show="slide.image"
                                                     />
+                                                    <template x-if="errors['hero.slides.' + index + '.image']">
+                                                        <label class="label">
+                                                            <span class="label-text-alt text-error" x-text="errors['hero.slides.' + index + '.image']"></span>
+                                                        </label>
+                                                    </template>
+                                                    <template x-if="errors['hero_slide_images.' + index]">
+                                                        <label class="label">
+                                                            <span class="label-text-alt text-error" x-text="errors['hero_slide_images.' + index]"></span>
+                                                        </label>
+                                                    </template>
                                                 </div>
                                             </div>
                                         </div>
                                     </template>
+                                    {% if errors['hero.slides'] %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors['hero.slides'] }}</span>
+                                        </label>
+                                    {% endif %}
                                 </div>
                             </div>
                         </template>
@@ -412,6 +463,11 @@
                                         x-model="allSettings.headline.content.title"
                                         required
                                     />
+                                    {% if errors['hero.content.title'] %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors['hero.content.title'] }}</span>
+                                        </label>
+                                    {% endif %}
                                 </div>
                                 <div class="admin-form-control">
                                     <label class="label" for="headline_description">
@@ -426,6 +482,11 @@
                                         x-model="allSettings.headline.content.description"
                                         required
                                     ></textarea>
+                                    {% if errors['hero.content.description'] %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors['hero.content.description'] }}</span>
+                                        </label>
+                                    {% endif %}
                                 </div>
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     <div class="admin-form-control">
@@ -451,6 +512,11 @@
                                             class="admin-input"
                                             x-model="allSettings.headline.content.cta.link"
                                         />
+                                        {% if errors['hero.content.cta'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['hero.content.cta'] }}</span>
+                                            </label>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

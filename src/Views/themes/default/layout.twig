@@ -86,11 +86,7 @@
 {% set radius_sm = theme_config.radii.sm ?? '4px' %}
 {% set radius_md = theme_config.radii.md ?? '6px' %}
 {% set radius_lg = theme_config.radii.lg ?? '10px' %}
-{% set text_xs = theme_config.text_sizes.xs ?? '12px' %}
-{% set text_sm = theme_config.text_sizes.sm ?? '14px' %}
 {% set text_base = theme_config.text_sizes.base ?? '16px' %}
-{% set text_lg = theme_config.text_sizes.lg ?? '18px' %}
-{% set text_xl = theme_config.text_sizes.xl ?? '22px' %}
 {% if font_profiles.base.load %}
     <link rel="stylesheet" href="{{ font_profiles.base.load }}">
 {% endif %}
@@ -124,11 +120,7 @@
         --font-base: {{ base_font_stack|raw }};
         --font-heading: {{ heading_font_stack|raw }};
 
-        --text-xs: {{ text_xs }};
-        --text-sm: {{ text_sm }};
         --text-base: {{ text_base }};
-        --text-lg: {{ text_lg }};
-        --text-xl: {{ text_xl }};
 
         --base-100: {{ base_background }};
         --base-200: {{ base_surface_alt }};
@@ -140,6 +132,7 @@
 {# ==========================
    Theme Styles (Pure CSS)
    ========================== #}
+<link rel="stylesheet" href="{{ theme_asset('css/base.css') }}">
 <link rel="stylesheet" href="{{ theme_asset('css/style.css') }}">
 
 {# ==========================
@@ -147,11 +140,18 @@
    ========================== #}
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+{% if third_party and third_party.head_html %}
+    {{ third_party.head_html|raw }}
+{% endif %}
+
 {% block head %}{% endblock %}
 
 </head>
 
 <body>
+    {% if third_party and third_party.body_start_html %}
+        {{ third_party.body_start_html|raw }}
+    {% endif %}
     {# Header/Navbar #}
     {% include 'partials/header.twig' %}
     
@@ -167,5 +167,9 @@
     <script src="{{ theme_asset('js/script.js') }}"></script>
     
     {% block scripts %}{% endblock %}
+    
+    {% if third_party and third_party.body_end_html %}
+        {{ third_party.body_end_html|raw }}
+    {% endif %}
 </body>
 </html>

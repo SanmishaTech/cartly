@@ -1,0 +1,117 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Footer Setup{% endblock %}
+{% block page_title %}Footer Setup{% endblock %}
+
+{% block content %}
+{% set footer_values = data.footer ?? footer_content ?? {} %}
+{% set contact_values = footer_values.contact ?? {} %}
+
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">Footer Setup</h2>
+            <form method="POST" action="/admin/setup/footer" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Footer Summary</h3>
+                        <div class="admin-form-control">
+                            <label class="label" for="footer_summary">
+                                <span class="label-text font-semibold">Summary Text</span>
+                            </label>
+                            <textarea
+                                id="footer_summary"
+                                name="footer[summary]"
+                                rows="3"
+                                placeholder="Your trusted online store for quality products."
+                                class="admin-textarea {% if errors['footer.summary'] %}textarea-error{% endif %}"
+                            >{{ footer_values.summary ?? '' }}</textarea>
+                            {% if errors['footer.summary'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['footer.summary'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Contact Details</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="admin-form-control">
+                                <label class="label" for="footer_contact_email">
+                                    <span class="label-text font-semibold">Support Email</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    id="footer_contact_email"
+                                    name="footer[contact][email]"
+                                    value="{{ contact_values.email ?? '' }}"
+                                    placeholder="support@example.com"
+                                    class="admin-input {% if errors['footer.contact.email'] %}input-error{% endif %}"
+                                />
+                                {% if errors['footer.contact.email'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['footer.contact.email'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                            <div class="admin-form-control">
+                                <label class="label" for="footer_contact_phone">
+                                    <span class="label-text font-semibold">Support Phone</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="footer_contact_phone"
+                                    name="footer[contact][phone]"
+                                    value="{{ contact_values.phone ?? '' }}"
+                                    placeholder="+91 1234567890"
+                                    class="admin-input {% if errors['footer.contact.phone'] %}input-error{% endif %}"
+                                />
+                                {% if errors['footer.contact.phone'] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors['footer.contact.phone'] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="text-xs text-base-content/60 mt-2">Social links are managed in SEO setup.</p>
+                    </div>
+                </div>
+
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Footer Note</h3>
+                        <div class="admin-form-control">
+                            <label class="label" for="footer_legal">
+                                <span class="label-text font-semibold">Footer Line</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="footer_legal"
+                                name="footer[legal]"
+                                value="{{ footer_values.legal ?? '' }}"
+                                placeholder="All rights reserved."
+                                class="admin-input {% if errors['footer.legal'] %}input-error{% endif %}"
+                            />
+                            {% if errors['footer.legal'] %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ errors['footer.legal'] }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-form-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">Save Footer Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

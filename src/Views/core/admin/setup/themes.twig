@@ -257,43 +257,37 @@
                     <div class="admin-card-body">
                         <h3 class="admin-section-title mb-2">Text Sizes</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {% for field, meta in {
-                                'xs': { 'label': 'Extra Small', 'min': 10, 'max': 14, 'step': 1, 'default': 12 },
-                                'sm': { 'label': 'Small', 'min': 12, 'max': 16, 'step': 1, 'default': 14 },
-                                'base': { 'label': 'Base', 'min': 14, 'max': 18, 'step': 1, 'default': 16 },
-                                'lg': { 'label': 'Large', 'min': 16, 'max': 22, 'step': 1, 'default': 18 },
-                                'xl': { 'label': 'Extra Large', 'min': 20, 'max': 28, 'step': 2, 'default': 22 }
-                            } %}
-                                {% set fieldKey = 'theme_config.text_sizes.' ~ field %}
-                                {% set textValue = theme_text_sizes[field] ?? '' %}
-                                {% set textNumber = textValue != '' ? textValue|replace({'px': ''}) : meta.default %}
-                                <div class="admin-form-control">
-                                    <label class="label" for="theme_text_range_{{ field }}">
-                                        <span class="label-text font-semibold">{{ meta.label }}</span>
-                                    </label>
-                                    <input type="hidden" name="theme_config[text_sizes][{{ field }}]" id="theme_text_{{ field }}" value="{{ textValue }}">
-                                    <div class="flex items-center gap-3">
-                                        <input
-                                            type="range"
-                                            id="theme_text_range_{{ field }}"
-                                            min="{{ meta.min }}"
-                                            max="{{ meta.max }}"
-                                            step="{{ meta.step }}"
-                                            value="{{ textNumber }}"
-                                            class="range range-xs"
-                                            oninput="document.getElementById('theme_text_{{ field }}').value = this.value + 'px'; document.getElementById('theme_text_value_{{ field }}').textContent = this.value + 'px';"
-                                        />
-                                        <span id="theme_text_value_{{ field }}" class="text-sm text-base-content/70">
-                                            {{ textValue != '' ? textValue : (meta.default ~ 'px') }}
-                                        </span>
-                                    </div>
-                                    {% if errors[fieldKey] %}
-                                        <label class="label">
-                                            <span class="label-text-alt text-error">{{ errors[fieldKey] }}</span>
-                                        </label>
-                                    {% endif %}
+                            {% set field = 'base' %}
+                            {% set meta = { 'label': 'Base', 'min': 12, 'max': 24, 'step': 1, 'default': 16 } %}
+                            {% set fieldKey = 'theme_config.text_sizes.' ~ field %}
+                            {% set textValue = theme_text_sizes[field] ?? '' %}
+                            {% set textNumber = textValue != '' ? textValue|replace({'px': ''}) : meta.default %}
+                            <div class="admin-form-control">
+                                <label class="label" for="theme_text_range_{{ field }}">
+                                    <span class="label-text font-semibold">{{ meta.label }}</span>
+                                </label>
+                                <input type="hidden" name="theme_config[text_sizes][{{ field }}]" id="theme_text_{{ field }}" value="{{ textValue }}">
+                                <div class="flex items-center gap-3">
+                                    <input
+                                        type="range"
+                                        id="theme_text_range_{{ field }}"
+                                        min="{{ meta.min }}"
+                                        max="{{ meta.max }}"
+                                        step="{{ meta.step }}"
+                                        value="{{ textNumber }}"
+                                        class="range range-xs"
+                                        oninput="document.getElementById('theme_text_{{ field }}').value = this.value + 'px'; document.getElementById('theme_text_value_{{ field }}').textContent = this.value + 'px';"
+                                    />
+                                    <span id="theme_text_value_{{ field }}" class="text-sm text-base-content/70">
+                                        {{ textValue != '' ? textValue : (meta.default ~ 'px') }}
+                                    </span>
                                 </div>
-                            {% endfor %}
+                                {% if errors[fieldKey] %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-error">{{ errors[fieldKey] }}</span>
+                                    </label>
+                                {% endif %}
+                            </div>
                         </div>
                         <p class="text-xs text-base-content/60 mt-2">Use CSS units (px, rem, em, %).</p>
                     </div>

@@ -1,0 +1,814 @@
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">{{ form_title }}</h2>
+            <form method="POST" action="{{ form_action }}" enctype="multipart/form-data" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                {% set page_input = data.page ?? {} %}
+                {% set seo_input = data.seo ?? {} %}
+                {% set title_value = page_input.title ?? page.title ?? '' %}
+                {% set status_value = page_input.status ?? page.status ?? 'draft' %}
+                {% set seo_title_value = seo_input.seo_title ?? seo_metadata.seo_title ?? '' %}
+                {% set seo_description_value = seo_input.seo_description ?? seo_metadata.seo_description ?? '' %}
+                {% set seo_keywords_value = seo_input.seo_keywords ?? seo_metadata.seo_keywords ?? '' %}
+                {% set canonical_url_value = seo_input.canonical_url ?? seo_metadata.canonical_url ?? '' %}
+                {% set og_title_value = seo_input.og_title ?? seo_metadata.og_title ?? '' %}
+                {% set og_description_value = seo_input.og_description ?? seo_metadata.og_description ?? '' %}
+                {% set og_image_value = seo_input.og_image ?? seo_metadata.og_image ?? '' %}
+
+                <div class="admin-form-grid mb-6">
+                    <div class="card bg-base-200/40 border border-base-300">
+                        <div class="admin-card-body">
+                            <h3 class="admin-section-title mb-2">Page Details</h3>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div class="admin-form-control">
+                                    <label class="label" for="page_title">
+                                        <span class="label-text font-semibold">Title</span>
+                                        <span class="text-error">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="page[title]"
+                                        id="page_title"
+                                        value="{{ title_value }}"
+                                        placeholder="e.g., About Us"
+                                        class="admin-input {% if errors['page.title'] %}input-error{% endif %}"
+                                        required
+                                    />
+                                    {% if errors['page.title'] %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors['page.title'] }}</span>
+                                        </label>
+                                    {% endif %}
+                                    {% if errors['page.slug'] %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors['page.slug'] }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                                <div class="admin-form-control">
+                                    <label class="label" for="page_status">
+                                        <span class="label-text font-semibold">Status</span>
+                                    </label>
+                                    <select
+                                        id="page_status"
+                                        name="page[status]"
+                                        class="admin-select {% if errors['page.status'] %}select-error{% endif %}"
+                                    >
+                                        <option value="draft" {% if status_value == 'draft' %}selected{% endif %}>Draft</option>
+                                        <option value="published" {% if status_value == 'published' %}selected{% endif %}>Published</option>
+                                    </select>
+                                    {% if errors['page.status'] %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ errors['page.status'] }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% set initial_blocks = blocks ?? [] %}
+                <div x-data="{ tab: 'content' }" class="space-y-4 mb-6">
+                    <div class="tabs tabs-boxed">
+                        <button type="button" class="tab" :class="tab === 'content' ? 'tab-active' : ''" @click="tab = 'content'">Content</button>
+                        <button type="button" class="tab" :class="tab === 'seo' ? 'tab-active' : ''" @click="tab = 'seo'">SEO</button>
+                    </div>
+
+                    <div x-show="tab === 'seo'" x-cloak>
+                        <div class="card bg-base-100 border border-base-300">
+                            <div class="admin-card-body">
+                                <h3 class="admin-section-title mb-2">SEO Settings</h3>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div class="admin-form-control">
+                                        <label class="label" for="seo_title">
+                                            <span class="label-text font-semibold">SEO Title</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="seo[seo_title]"
+                                            id="seo_title"
+                                            value="{{ seo_title_value }}"
+                                            class="admin-input {% if errors['seo.seo_title'] %}input-error{% endif %}"
+                                        />
+                                        {% if errors['seo.seo_title'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['seo.seo_title'] }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+                                    <div class="admin-form-control">
+                                        <label class="label" for="seo_keywords">
+                                            <span class="label-text font-semibold">SEO Keywords</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="seo[seo_keywords]"
+                                            id="seo_keywords"
+                                            value="{{ seo_keywords_value }}"
+                                            class="admin-input {% if errors['seo.seo_keywords'] %}input-error{% endif %}"
+                                        />
+                                        {% if errors['seo.seo_keywords'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['seo.seo_keywords'] }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+                                    <div class="admin-form-control lg:col-span-2">
+                                        <label class="label" for="seo_description">
+                                            <span class="label-text font-semibold">SEO Description</span>
+                                        </label>
+                                        <textarea
+                                            rows="3"
+                                            name="seo[seo_description]"
+                                            id="seo_description"
+                                            class="admin-textarea {% if errors['seo.seo_description'] %}textarea-error{% endif %}"
+                                        >{{ seo_description_value }}</textarea>
+                                        {% if errors['seo.seo_description'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['seo.seo_description'] }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+                                    <div class="admin-form-control lg:col-span-2">
+                                        <label class="label" for="canonical_url">
+                                            <span class="label-text font-semibold">Canonical URL</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="seo[canonical_url]"
+                                            id="canonical_url"
+                                            value="{{ canonical_url_value }}"
+                                            class="admin-input {% if errors['seo.canonical_url'] %}input-error{% endif %}"
+                                        />
+                                        {% if errors['seo.canonical_url'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['seo.canonical_url'] }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="divider my-6"></div>
+
+                                <h4 class="font-semibold text-base-content mb-3">Open Graph</h4>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div class="admin-form-control">
+                                        <label class="label" for="og_title">
+                                            <span class="label-text font-semibold">OG Title</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="seo[og_title]"
+                                            id="og_title"
+                                            value="{{ og_title_value }}"
+                                            class="admin-input {% if errors['seo.og_title'] %}input-error{% endif %}"
+                                        />
+                                        {% if errors['seo.og_title'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['seo.og_title'] }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+                                    <div class="admin-form-control">
+                                        <label class="label" for="og_image">
+                                            <span class="label-text font-semibold">OG Image Path</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="seo[og_image]"
+                                            id="og_image"
+                                            value="{{ og_image_value }}"
+                                            class="admin-input {% if errors['seo.og_image'] %}input-error{% endif %}"
+                                        />
+                                        {% if errors['seo.og_image'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['seo.og_image'] }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+                                    <div class="admin-form-control lg:col-span-2">
+                                        <label class="label" for="og_description">
+                                            <span class="label-text font-semibold">OG Description</span>
+                                        </label>
+                                        <textarea
+                                            rows="3"
+                                            name="seo[og_description]"
+                                            id="og_description"
+                                            class="admin-textarea {% if errors['seo.og_description'] %}textarea-error{% endif %}"
+                                        >{{ og_description_value }}</textarea>
+                                        {% if errors['seo.og_description'] %}
+                                            <label class="label">
+                                                <span class="label-text-alt text-error">{{ errors['seo.og_description'] }}</span>
+                                            </label>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="tab === 'content'" x-cloak>
+                        <div class="card bg-base-100 border border-base-300" x-data="{
+                    blocks: {{ initial_blocks|json_encode|e('html_attr') }},
+                    errors: {{ (errors ?? {})|json_encode|e('html_attr') }},
+                    showAddPanel: false,
+                    init() {
+                        if (!Array.isArray(this.blocks)) {
+                            this.blocks = [];
+                        }
+                        this.blocks.forEach((block) => this.applyDefaults(block));
+                        if (typeof this.$nextTick === 'function') {
+                            this.$nextTick(() => this.initSortable());
+                        } else {
+                            setTimeout(() => this.initSortable(), 0);
+                        }
+                    },
+                    initSortable() {
+                        if (!this.$refs.blockList || typeof Sortable === 'undefined') {
+                            return;
+                        }
+                        if (this.sortable) {
+                            this.sortable.destroy();
+                        }
+                        this.sortable = new Sortable(this.$refs.blockList, {
+                            animation: 150,
+                            handle: '[data-drag-handle]',
+                            draggable: '[data-block-item]',
+                            onEnd: () => {
+                                const ordered = [];
+                                this.$refs.blockList.querySelectorAll('[data-block-id]').forEach((el) => {
+                                    const id = el.getAttribute('data-block-id');
+                                    const block = this.blocks.find((item) => item.id === id);
+                                    if (block) {
+                                        ordered.push(block);
+                                    }
+                                });
+                                if (ordered.length === this.blocks.length) {
+                                    this.blocks = ordered;
+                                }
+                            },
+                        });
+                    },
+                    generateId() {
+                        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                            return crypto.randomUUID();
+                        }
+                        return 'block_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+                    },
+                    addBlock(type) {
+                        if (!type) {
+                            return;
+                        }
+                        const block = { id: this.generateId(), type: type, data: {} };
+                        this.applyDefaults(block);
+                        this.blocks.push(block);
+                    },
+                    removeBlock(index) {
+                        this.blocks.splice(index, 1);
+                    },
+                    applyDefaults(block) {
+                        if (!block || !block.type) {
+                            return;
+                        }
+                        block.id = block.id || this.generateId();
+                        block.data = block.data ?? {};
+                        if (block.type === 'text') {
+                            block.data.html = block.data.html ?? block.html ?? '';
+                        }
+                        if (block.type === 'image_text') {
+                            block.variant = block.variant ?? 'image_left';
+                            block.data.image = block.data.image ?? block.image ?? '';
+                            block.data.alt = block.data.alt ?? block.alt ?? '';
+                            block.data.title = block.data.title ?? block.title ?? '';
+                            block.data.html = block.data.html ?? block.html ?? '';
+                        }
+                        if (block.type === 'bullets') {
+                            block.data.title = block.data.title ?? block.title ?? '';
+                            if (!Array.isArray(block.data.items) || block.data.items.length === 0) {
+                                block.data.items = Array.isArray(block.items) && block.items.length > 0
+                                    ? block.items
+                                    : [''];
+                            }
+                        }
+                        if (block.type === 'image') {
+                            block.data.image = block.data.image ?? block.image ?? '';
+                            block.data.alt = block.data.alt ?? block.alt ?? '';
+                            block.data.caption = block.data.caption ?? block.caption ?? '';
+                        }
+                        if (block.type === 'faq') {
+                            block.data.title = block.data.title ?? block.title ?? '';
+                            if (!Array.isArray(block.data.items) || block.data.items.length === 0) {
+                                block.data.items = Array.isArray(block.items) && block.items.length > 0
+                                    ? block.items
+                                    : [{ question: '', answer: '' }];
+                            }
+                        }
+                    },
+                    addBullet(block) {
+                        block.data.items.push('');
+                    },
+                    removeBullet(block, index) {
+                        block.data.items.splice(index, 1);
+                    },
+                    addFaq(block) {
+                        block.data.items.push({ question: '', answer: '' });
+                    },
+                    removeFaq(block, index) {
+                        block.data.items.splice(index, 1);
+                    }
+                }">
+                    <div class="admin-card-body">
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                            <div>
+                                <h3 class="admin-section-title">Page Content Blocks</h3>
+                                <p class="text-sm text-base-content/60">
+                                    Only content-focused blocks are allowed. Hero or product/category blocks are not permitted on pages.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4" id="page-block-list" x-ref="blockList">
+                            <template x-if="blocks.length === 0">
+                                <div class="text-sm text-base-content/60 border border-dashed border-base-300 rounded-lg p-4">
+                                    No blocks yet. Add a block to start building this page.
+                                </div>
+                            </template>
+
+                            <template x-for="(block, index) in blocks" :key="block.id">
+                                <div class="card bg-base-200/40 border border-base-300" data-block-item :data-block-id="block.id" x-data="{ open: true }">
+                                    <div class="admin-card-body space-y-4">
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <button type="button" class="btn btn-ghost btn-sm cursor-move" aria-label="Drag to reorder" data-drag-handle>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-ghost btn-sm gap-2"
+                                                    @click="open = !open"
+                                                    :aria-expanded="open"
+                                                    :aria-label="open ? 'Collapse block' : 'Expand block'"
+                                                >
+                                                    <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                                    </svg>
+                                                    <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                    <span class="text-sm font-semibold">Block <span x-text="index + 1"></span></span>
+                                                </button>
+                                                <span class="badge badge-outline" x-text="block.type"></span>
+                                            </div>
+                                            <button type="button" class="btn btn-ghost btn-sm text-error" @click="removeBlock(index)">
+                                                Remove
+                                            </button>
+                                        </div>
+
+                                        <div x-show="open" class="space-y-4">
+                                            <input type="hidden" :name="`content_json[blocks][${index}][type]`" x-model="block.type" />
+                                            <input type="hidden" :name="`content_json[blocks][${index}][id]`" x-model="block.id" />
+                                            <template x-if="errors[`content_json.blocks.${index}.type`]">
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.type`]"></span>
+                                                </label>
+                                            </template>
+                                            <template x-if="errors[`content_json.blocks.${index}.id`]">
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.id`]"></span>
+                                                </label>
+                                            </template>
+
+                                        <template x-if="block.type === 'text'">
+                                            <div class="admin-form-control">
+                                                <div class="flex flex-wrap items-start gap-3">
+                                                    <label class="label w-32 shrink-0" :for="`block_text_${index}`">
+                                                        <span class="label-text font-semibold">Rich Text</span>
+                                                    </label>
+                                                    <div class="flex-1">
+                                                        <textarea
+                                                            class="admin-textarea min-h-[140px] w-full"
+                                                            :id="`block_text_${index}`"
+                                                            :name="`content_json[blocks][${index}][data][html]`"
+                                                            x-model="block.data.html"
+                                                        ></textarea>
+                                                        <p class="text-xs text-base-content/60 mt-1">Use HTML for formatting.</p>
+                                                    </div>
+                                                </div>
+                                                <template x-if="errors[`content_json.blocks.${index}.data.html`]">
+                                                    <label class="label">
+                                                        <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.data.html`]"></span>
+                                                    </label>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="block.type === 'image_text'">
+                                            <div class="grid grid-cols-2 gap-6">
+                                                <div class="space-y-4 col-span-1">
+                                                    <div class="admin-form-control">
+                                                        <div class="flex flex-wrap items-center gap-3">
+                                                            <label class="label w-32 shrink-0" :for="`block_image_text_variant_${index}`">
+                                                                <span class="label-text font-semibold">Layout</span>
+                                                            </label>
+                                                            <select
+                                                                class="admin-select flex-1"
+                                                                :id="`block_image_text_variant_${index}`"
+                                                                :name="`content_json[blocks][${index}][variant]`"
+                                                                x-model="block.variant"
+                                                            >
+                                                                <option value="image_left">Image Left</option>
+                                                                <option value="image_right">Image Right</option>
+                                                            </select>
+                                                        </div>
+                                                        <template x-if="errors[`content_json.blocks.${index}.variant`]">
+                                                            <label class="label">
+                                                                <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.variant`]"></span>
+                                                            </label>
+                                                        </template>
+                                                    </div>
+                                                    <div class="admin-form-control">
+                                                        <div class="flex flex-wrap items-center gap-3">
+                                                            <label class="label w-32 shrink-0" :for="`block_image_text_file_${index}`">
+                                                                <span class="label-text font-semibold">Image</span>
+                                                            </label>
+                                                            <input
+                                                                type="file"
+                                                                accept="image/png,image/jpeg,image/webp"
+                                                                class="file-input file-input-bordered flex-1"
+                                                                :id="`block_image_text_file_${index}`"
+                                                                :name="`block_images[${index}]`"
+                                                            />
+                                                        </div>
+                                                        <p class="text-xs text-base-content/60 mt-1">Upload to replace the image path.</p>
+                                                        <div class="mt-3" x-show="block.data.image">
+                                                            <p class="text-xs text-base-content/60 mb-2">Current image preview</p>
+                                                            <img
+                                                                :src="`/media/${block.data.image}`"
+                                                                :alt="block.data.alt || 'Page image'"
+                                                                class="h-24 w-24 rounded-lg border border-base-300 object-cover"
+                                                            />
+                                                        </div>
+                                                        <template x-if="errors[`content_json.blocks.${index}.data.image`]">
+                                                            <label class="label">
+                                                                <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.data.image`]"></span>
+                                                            </label>
+                                                        </template>
+                                                    </div>
+                                                    <div class="admin-form-control">
+                                                        <div class="flex flex-wrap items-center gap-3">
+                                                            <label class="label w-32 shrink-0" :for="`block_image_text_alt_${index}`">
+                                                                <span class="label-text font-semibold">Alt Text</span>
+                                                            </label>
+                                                            <input type="hidden" :name="`content_json[blocks][${index}][data][image]`" x-model="block.data.image" />
+                                                            <input
+                                                                type="text"
+                                                                class="admin-input flex-1"
+                                                                :id="`block_image_text_alt_${index}`"
+                                                                :name="`content_json[blocks][${index}][data][alt]`"
+                                                                x-model="block.data.alt"
+                                                            />
+                                                        </div>
+                                                        <template x-if="errors[`content_json.blocks.${index}.data.alt`]">
+                                                            <label class="label">
+                                                                <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.data.alt`]"></span>
+                                                            </label>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-4 col-span-1">
+                                                    <div class="admin-form-control">
+                                                        <div class="flex flex-wrap items-center gap-3">
+                                                            <label class="label w-32 shrink-0" :for="`block_image_text_title_${index}`">
+                                                                <span class="label-text font-semibold">Title</span>
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                class="admin-input flex-1"
+                                                                :id="`block_image_text_title_${index}`"
+                                                                :name="`content_json[blocks][${index}][data][title]`"
+                                                                x-model="block.data.title"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div class="admin-form-control">
+                                                        <div class="flex flex-wrap items-start gap-3">
+                                                            <label class="label w-32 shrink-0" :for="`block_image_text_html_${index}`">
+                                                                <span class="label-text font-semibold">Rich Text</span>
+                                                            </label>
+                                                            <textarea
+                                                                class="admin-textarea min-h-[120px] flex-1"
+                                                                :id="`block_image_text_html_${index}`"
+                                                                :name="`content_json[blocks][${index}][data][html]`"
+                                                                x-model="block.data.html"
+                                                            ></textarea>
+                                                        </div>
+                                                        <template x-if="errors[`content_json.blocks.${index}.data.html`]">
+                                                            <label class="label">
+                                                                <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.data.html`]"></span>
+                                                            </label>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="block.type === 'bullets'">
+                                            <div class="space-y-4">
+                                                <div class="admin-form-control">
+                                                    <div class="flex flex-wrap items-center gap-3">
+                                                        <label class="label w-40 shrink-0" :for="`block_bullets_title_${index}`">
+                                                            <span class="label-text font-semibold">Title (optional)</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            class="admin-input flex-1"
+                                                            :id="`block_bullets_title_${index}`"
+                                                            :name="`content_json[blocks][${index}][data][title]`"
+                                                            x-model="block.data.title"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-3">
+                                                    <template x-for="(item, itemIndex) in block.data.items" :key="itemIndex">
+                                                        <div class="flex flex-wrap items-center gap-2">
+                                                            <div class="flex-1 admin-form-control">
+                                                                <div class="flex flex-wrap items-center gap-3">
+                                                                    <label class="label w-32 shrink-0" :for="`block_bullets_item_${index}_${itemIndex}`">
+                                                                        <span class="label-text font-semibold">Bullet <span x-text="itemIndex + 1"></span></span>
+                                                                    </label>
+                                                                    <input
+                                                                        type="text"
+                                                                        class="admin-input flex-1"
+                                                                        :id="`block_bullets_item_${index}_${itemIndex}`"
+                                                                        :name="`content_json[blocks][${index}][data][items][${itemIndex}]`"
+                                                                        x-model="block.data.items[itemIndex]"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <button type="button" class="btn btn-ghost btn-sm text-error" @click="removeBullet(block, itemIndex)">
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                    <div>
+                                                        <button type="button" class="btn btn-outline btn-sm" @click="addBullet(block)">Add Bullet</button>
+                                                    </div>
+                                                    <template x-if="errors[`content_json.blocks.${index}.data.items`]">
+                                                        <label class="label">
+                                                            <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.data.items`]"></span>
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="block.type === 'image'">
+                                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                <div class="admin-form-control">
+                                                    <div class="flex flex-wrap items-center gap-3">
+                                                        <label class="label w-32 shrink-0" :for="`block_image_alt_${index}`">
+                                                            <span class="label-text font-semibold">Alt Text</span>
+                                                        </label>
+                                                        <input type="hidden" :name="`content_json[blocks][${index}][data][image]`" x-model="block.data.image" />
+                                                        <input
+                                                            type="text"
+                                                            class="admin-input flex-1"
+                                                            :id="`block_image_alt_${index}`"
+                                                            :name="`content_json[blocks][${index}][data][alt]`"
+                                                            x-model="block.data.alt"
+                                                        />
+                                                    </div>
+                                                    <template x-if="errors[`content_json.blocks.${index}.data.alt`]">
+                                                        <label class="label">
+                                                            <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.data.alt`]"></span>
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                                <div class="admin-form-control">
+                                                    <div class="flex flex-wrap items-center gap-3">
+                                                        <label class="label w-32 shrink-0" :for="`block_image_caption_${index}`">
+                                                            <span class="label-text font-semibold">Caption</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            class="admin-input flex-1"
+                                                            :id="`block_image_caption_${index}`"
+                                                            :name="`content_json[blocks][${index}][data][caption]`"
+                                                            x-model="block.data.caption"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div class="admin-form-control">
+                                                    <div class="flex flex-wrap items-center gap-3">
+                                                        <label class="label w-32 shrink-0" :for="`block_image_file_${index}`">
+                                                            <span class="label-text font-semibold">Image</span>
+                                                        </label>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/png,image/jpeg,image/webp"
+                                                            class="file-input file-input-bordered flex-1"
+                                                            :id="`block_image_file_${index}`"
+                                                            :name="`block_images[${index}]`"
+                                                        />
+                                                    </div>
+                                                    <p class="text-xs text-base-content/60 mt-1">Upload to replace the image path.</p>
+                                                    <div class="mt-3" x-show="block.data.image">
+                                                        <p class="text-xs text-base-content/60 mb-2">Current image preview</p>
+                                                        <img
+                                                            :src="`/media/${block.data.image}`"
+                                                            :alt="block.data.alt || 'Page image'"
+                                                            class="h-24 w-24 rounded-lg border border-base-300 object-cover"
+                                                        />
+                                                    </div>
+                                                    <template x-if="errors[`content_json.blocks.${index}.data.image`]">
+                                                        <label class="label">
+                                                            <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.data.image`]"></span>
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <template x-if="block.type === 'faq'">
+                                            <div class="space-y-4">
+                                                <div class="admin-form-control">
+                                                    <div class="flex flex-wrap items-center gap-3">
+                                                        <label class="label w-32 shrink-0" :for="`block_faq_title_${index}`">
+                                                            <span class="label-text font-semibold">Title</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            class="admin-input flex-1"
+                                                            :id="`block_faq_title_${index}`"
+                                                            :name="`content_json[blocks][${index}][data][title]`"
+                                                            x-model="block.data.title"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-3">
+                                                    <template x-for="(item, itemIndex) in block.data.items" :key="itemIndex">
+                                                        <div class="grid grid-cols-1 gap-4 items-end">
+                                                            <div class="admin-form-control">
+                                                                <div class="flex flex-wrap items-center gap-3">
+                                                                    <label class="label w-32 shrink-0" :for="`block_faq_question_${index}_${itemIndex}`">
+                                                                        <span class="label-text font-semibold">Question</span>
+                                                                    </label>
+                                                                    <input
+                                                                        type="text"
+                                                                        class="admin-input flex-1"
+                                                                        :id="`block_faq_question_${index}_${itemIndex}`"
+                                                                        :name="`content_json[blocks][${index}][data][items][${itemIndex}][question]`"
+                                                                        x-model="item.question"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div class="admin-form-control">
+                                                                <div class="flex flex-wrap items-start gap-3">
+                                                                    <label class="label w-32 shrink-0" :for="`block_faq_answer_${index}_${itemIndex}`">
+                                                                        <span class="label-text font-semibold">Answer</span>
+                                                                    </label>
+                                                                    <textarea
+                                                                        class="admin-textarea min-h-[96px] flex-1"
+                                                                        :id="`block_faq_answer_${index}_${itemIndex}`"
+                                                                        :name="`content_json[blocks][${index}][data][items][${itemIndex}][answer]`"
+                                                                        x-model="item.answer"
+                                                                    ></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex items-center">
+                                                                <button type="button" class="btn btn-ghost btn-sm text-error" @click="removeFaq(block, itemIndex)">
+                                                                    Remove
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                    <div>
+                                                        <button type="button" class="btn btn-outline btn-sm" @click="addFaq(block)">Add FAQ</button>
+                                                    </div>
+                                                    <template x-if="errors[`content_json.blocks.${index}.data.items`]">
+                                                        <label class="label">
+                                                            <span class="label-text-alt text-error" x-text="errors[`content_json.blocks.${index}.data.items`]"></span>
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-sm btn-primary" @click="showAddPanel = !showAddPanel">
+                                Add Section
+                            </button>
+                        </div>
+
+                        <div x-show="showAddPanel" x-cloak class="mt-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                <div class="card bg-base-100 border border-base-300">
+                                    <div class="admin-card-body space-y-3">
+                                        <div>
+                                            <h4 class="font-semibold">Text</h4>
+                                            <p class="text-sm text-base-content/60">Long-form content like About or Policies.</p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <div class="h-2 bg-base-200 rounded"></div>
+                                            <div class="h-2 bg-base-200 rounded w-5/6"></div>
+                                            <div class="h-2 bg-base-200 rounded w-4/6"></div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline btn-sm" @click="addBlock('text'); showAddPanel = false;">
+                                            Add Text Section
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card bg-base-100 border border-base-300">
+                                    <div class="admin-card-body space-y-3">
+                                        <div>
+                                            <h4 class="font-semibold">Image + Text</h4>
+                                            <p class="text-sm text-base-content/60">Visual with supporting copy.</p>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div class="h-16 bg-base-200 rounded"></div>
+                                            <div class="space-y-2">
+                                                <div class="h-2 bg-base-200 rounded"></div>
+                                                <div class="h-2 bg-base-200 rounded w-5/6"></div>
+                                                <div class="h-2 bg-base-200 rounded w-4/6"></div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline btn-sm" @click="addBlock('image_text'); showAddPanel = false;">
+                                            Add Image + Text
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card bg-base-100 border border-base-300">
+                                    <div class="admin-card-body space-y-3">
+                                        <div>
+                                            <h4 class="font-semibold">Bullets</h4>
+                                            <p class="text-sm text-base-content/60">Highlights, policies, or features.</p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="h-2 w-2 bg-base-200 rounded-full"></span>
+                                                <div class="h-2 bg-base-200 rounded w-2/3"></div>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="h-2 w-2 bg-base-200 rounded-full"></span>
+                                                <div class="h-2 bg-base-200 rounded w-1/2"></div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline btn-sm" @click="addBlock('bullets'); showAddPanel = false;">
+                                            Add Bullets
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card bg-base-100 border border-base-300">
+                                    <div class="admin-card-body space-y-3">
+                                        <div>
+                                            <h4 class="font-semibold">Image</h4>
+                                            <p class="text-sm text-base-content/60">Standalone image with caption.</p>
+                                        </div>
+                                        <div class="h-20 bg-base-200 rounded"></div>
+                                        <div class="h-2 bg-base-200 rounded w-1/2"></div>
+                                        <button type="button" class="btn btn-outline btn-sm" @click="addBlock('image'); showAddPanel = false;">
+                                            Add Image
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card bg-base-100 border border-base-300">
+                                    <div class="admin-card-body space-y-3">
+                                        <div>
+                                            <h4 class="font-semibold">FAQ</h4>
+                                            <p class="text-sm text-base-content/60">Questions and answers.</p>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <div class="h-8 bg-base-200 rounded"></div>
+                                            <div class="h-8 bg-base-200 rounded"></div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline btn-sm" @click="addBlock('faq'); showAddPanel = false;">
+                                            Add FAQ
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                    </div>
+                </div>
+
+                <div class="admin-form-actions">
+                    <a href="/admin/pages" class="btn btn-sm bg-base-200 hover:bg-base-300 border-base-300">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-sm">{{ submit_label }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

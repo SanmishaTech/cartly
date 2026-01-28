@@ -14,6 +14,7 @@ use App\Middleware\ThemeMiddleware;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
 use App\Services\SeoService;
+use App\Services\MenuService;
 use App\Services\ThemeResolver;
 use App\Controllers\ThemeAssetController;
 use App\Twig\ThemeExtension;
@@ -63,6 +64,9 @@ $containerBuilder->addDefinitions([
     SeoService::class => function () {
         return new SeoService();
     },
+    MenuService::class => function () {
+        return new MenuService();
+    },
     ThemeAssetController::class => function () {
         return new ThemeAssetController();
     },
@@ -74,6 +78,7 @@ $app = AppFactory::create();
 
 $themeResolver = $container->get(ThemeResolver::class);
 $seoService = $container->get(SeoService::class);
+$menuService = $container->get(MenuService::class);
 
 // Add extensions to Twig
 $twig->getEnvironment()->addExtension(new ThemeExtension($themeResolver));
@@ -88,7 +93,7 @@ $app->addErrorMiddleware(true, true, true);
 // Execution order: CsrfMiddleware -> AuthMiddleware -> ShopResolverMiddleware -> SubscriptionEnforcerMiddleware -> ThemeMiddleware -> Routes
 
 // Configure theme system based on context and shop (runs 4th)
-$app->add(new ThemeMiddleware($twig, $themeResolver, $seoService));
+$app->add(new ThemeMiddleware($twig, $themeResolver, $seoService, $menuService));
 // Compute subscription state (active/grace/expired) (runs 3rd)
 $app->add(new SubscriptionEnforcerMiddleware());
 // Resolve shop from Host header (runs 2nd)

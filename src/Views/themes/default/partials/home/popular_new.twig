@@ -1,0 +1,12 @@
+{% set popular_limit = section.limit ?? 4 %}
+<section>
+    <div class="space-y-1 mb-8">
+        <h2 class="text-3xl font-bold text-base-content">{{ content.popular_new.title ?? 'Popular & New' }}</h2>
+        <p class="text-base text-base-content/70">{{ content.popular_new.subtitle ?? '' }}</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for product in popular_products|slice(0, popular_limit) %}
+            {% include 'partials/product_card.twig' with { product: product } only %}
+        {% endfor %}
+    </div>
+</section>

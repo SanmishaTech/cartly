@@ -1,6 +1,49 @@
 <footer class="bg-base-200 text-base-content mt-24">
-    <div class="max-w-6xl mx-auto px-4 py-12 text-center space-y-2">
-        <p class="text-base-content/70">&copy; {{ "now"|date("Y") }} {{ shop.shop_name }}</p>
-        <p class="text-sm text-base-content/60">Powered by Cartly</p>
+    {% set footer = footer_content ?? {} %}
+    {% set menus = menus ?? {} %}
+    {% set quick_links = menus.footer_quick ?? [] %}
+    {% set support_links = menus.footer_customer ?? [] %}
+    {% set footer_summary = footer.summary ?? '' %}
+    {% set footer_line = footer.legal ?? 'All rights reserved.' %}
+    <div class="max-w-6xl mx-auto px-4 py-12 space-y-6">
+        <div class="text-center space-y-2">
+            {% if footer_summary %}
+                <p class="text-base-content/70">{{ footer_summary }}</p>
+            {% endif %}
+        </div>
+
+        {% if quick_links|length or support_links|length %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center md:text-left">
+                {% if quick_links|length %}
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3">Quick Links</h3>
+                        <ul class="menu menu-vertical p-0 space-y-1">
+                            {% for link in quick_links %}
+                                <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+                {% if support_links|length %}
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3">Customer Service</h3>
+                        <ul class="menu menu-vertical p-0 space-y-1">
+                            {% for link in support_links %}
+                                <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="text-center space-y-2">
+            {% if footer_line and ('©' in footer_line or 'copyright' in footer_line|lower) %}
+                <p class="text-base-content/70">{{ footer_line }}</p>
+            {% else %}
+                <p class="text-base-content/70">&copy; {{ "now"|date("Y") }} {{ shop.shop_name }}. {{ footer_line }}</p>
+            {% endif %}
+            <p class="text-sm text-base-content/60">Powered by Cartly</p>
+        </div>
     </div>
 </footer>

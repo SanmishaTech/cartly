@@ -9,17 +9,82 @@
 
 {% if has_slides %}
 <section class="rounded-lg bg-base-200 shadow-sm overflow-hidden">
-    <div class="carousel w-full" data-autoplay="{{ config.autoplay ? '1' : '0' }}" data-interval="{{ config.interval ?? 4000 }}">
+    <div
+        class="carousel w-full"
+        data-autoplay="{{ config.autoplay ? '1' : '0' }}"
+        data-interval="{{ config.interval ?? 4000 }}"
+        x-data="{
+            items: [],
+            index: 0,
+            timer: null,
+            delay: 4000,
+            autoplay: false,
+            init() {
+                this.autoplay = this.$el.getAttribute('data-autoplay') === '1';
+                this.delay = parseInt(this.$el.getAttribute('data-interval') || '4000', 10);
+                if (!Number.isFinite(this.delay) || this.delay <= 0) {
+                    this.delay = 4000;
+                }
+                this.items = Array.from(this.$el.querySelectorAll('.carousel-item'));
+                if (!this.autoplay || this.items.length < 2) {
+                    return;
+                }
+                this.start();
+            },
+            goToSlide(nextIndex) {
+                if (!this.items.length) {
+                    return;
+                }
+                this.index = nextIndex % this.items.length;
+                const target = this.items[this.index];
+                if (target) {
+                    this.$el.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+                }
+            },
+            start() {
+                if (!this.autoplay || this.items.length < 2 || this.timer) {
+                    return;
+                }
+                this.timer = window.setInterval(() => {
+                    this.goToSlide(this.index + 1);
+                }, this.delay);
+            },
+            stop() {
+                if (!this.timer) {
+                    return;
+                }
+                window.clearInterval(this.timer);
+                this.timer = null;
+            }
+        }"
+        x-init="init()"
+        x-on:mouseenter="stop()"
+        x-on:mouseleave="start()"
+        x-on:focusin="stop()"
+        x-on:focusout="start()"
+    >
         {% for slide in slides %}
+            {% set slide_alt_default = slide.title ? (slide.title ~ ' – ' ~ shop.shop_name) : shop.shop_name %}
+            {% set slide_alt = slide.alt_text ?? slide.alt ?? slide.image_alt ?? slide_alt_default %}
             <div id="hero-slide-{{ loop.index }}" class="carousel-item relative w-full">
                 <div class="w-full">
                     <div class="relative h-80 md:h-96">
-                        <img src="/media/{{ slide.image }}" alt="{{ slide.title ?? 'Hero slide' }}" class="h-full w-full object-cover" loading="lazy" />
+                        <img
+                            src="/media/{{ slide.image }}"
+                            alt="{{ slide_alt }}"
+                            class="h-full w-full object-cover"
+                            loading="{{ loop.first ? 'eager' : 'lazy' }}"
+                            {% if loop.first %}fetchpriority="high"{% endif %}
+                        />
                         <div class="absolute inset-0 bg-black/40"></div>
                         <div class="absolute inset-0 flex items-center">
                             <div class="p-8 md:p-12 text-white max-w-2xl">
                                 {% if slide.title %}
-                                    <h1 class="text-4xl md:text-5xl font-bold">{{ slide.title }}</h1>
+                                    {% if loop.first %}
+                                        <h1 class="text-4xl md:text-5xl font-bold">{{ slide.title }}</h1>
+                                    {% else %}
+                                        <h2 class="text-4xl md:text-5xl font-bold">{{ slide.title }}</h2>
+                                    {% endif %}
                                 {% endif %}
                                 {% if slide.subtitle %}
                                     <p class="mt-4 text-lg text-white/80">{{ slide.subtitle }}</p>
@@ -41,58 +106,4 @@
         {% endfor %}
     </div>
 </section>
-<script>
-(() => {
-    const script = document.currentScript;
-    if (!script) {
-        return;
-    }
-    const section = script.previousElementSibling;
-    if (!section) {
-        return;
-    }
-    const carousel = section.querySelector('.carousel[data-autoplay="1"]');
-    if (!carousel) {
-        return;
-    }
-    const items = Array.from(carousel.querySelectorAll('.carousel-item'));
-    if (items.length < 2) {
-        return;
-    }
-    const intervalMs = parseInt(carousel.getAttribute('data-interval') || '4000', 10);
-    const delay = Number.isFinite(intervalMs) && intervalMs > 0 ? intervalMs : 4000;
-    let index = 0;
-    let timer = null;
-
-    const goToSlide = (nextIndex) => {
-        index = nextIndex % items.length;
-        const target = items[index];
-        carousel.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
-    };
-
-    const start = () => {
-        if (timer) {
-            return;
-        }
-        timer = window.setInterval(() => {
-            goToSlide(index + 1);
-        }, delay);
-    };
-
-    const stop = () => {
-        if (!timer) {
-            return;
-        }
-        window.clearInterval(timer);
-        timer = null;
-    };
-
-    carousel.addEventListener('mouseenter', stop);
-    carousel.addEventListener('mouseleave', start);
-    carousel.addEventListener('focusin', stop);
-    carousel.addEventListener('focusout', start);
-
-    start();
-})();
-</script>
 {% endif %}

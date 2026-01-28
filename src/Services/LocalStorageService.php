@@ -95,6 +95,47 @@ class LocalStorageService
         return 'shops/' . $shopId . '/branding/' . $storedName;
     }
 
+    public function storeShopPageImage(
+        UploadedFileInterface $file,
+        int $shopId,
+        string $label,
+        int $targetWidth,
+        int $targetHeight
+    ): string {
+        if (!function_exists('imagecreatefromstring') || !function_exists('imagewebp')) {
+            throw new \RuntimeException('GD extension is required for image processing.');
+        }
+
+        $directory = $this->basePath . '/' . $shopId . '/pages';
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $safeLabel = preg_replace('/[^a-z0-9_-]+/', '_', strtolower($label));
+        $storedName = $safeLabel . '_' . uniqid() . '.webp';
+        $targetPath = $directory . '/' . $storedName;
+
+        $stream = $file->getStream();
+        $contents = $stream->getContents();
+        $image = @\imagecreatefromstring($contents);
+        if (!$image) {
+            throw new \RuntimeException('Invalid image file.');
+        }
+
+        $resized = $this->resizeToFit($image, $targetWidth, $targetHeight);
+        $saved = \imagewebp($resized, $targetPath, 85);
+        if (!$saved || !is_file($targetPath)) {
+            \imagedestroy($image);
+            \imagedestroy($resized);
+            throw new \RuntimeException('Failed to save WebP image. Check GD WebP support.');
+        }
+
+        \imagedestroy($image);
+        \imagedestroy($resized);
+
+        return 'shops/' . $shopId . '/pages/' . $storedName;
+    }
+
     private function resizeAndCrop($image, int $targetWidth, int $targetHeight)
     {
         $sourceWidth = \imagesx($image);

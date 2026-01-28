@@ -10,9 +10,16 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="{{ theme_asset('css/style.css') }}">
     
+    {% if third_party and third_party.head_html %}
+        {{ third_party.head_html|raw }}
+    {% endif %}
+
     {% block head %}{% endblock %}
 </head>
 <body class="bg-base-100 text-base-content">
+    {% if third_party and third_party.body_start_html %}
+        {{ third_party.body_start_html|raw }}
+    {% endif %}
     {% include 'partials/header.twig' %}
     
     <main class="min-h-screen">
@@ -23,5 +30,9 @@
     
     <script src="{{ theme_asset('js/script.js') }}"></script>
     {% block scripts %}{% endblock %}
+    
+    {% if third_party and third_party.body_end_html %}
+        {{ third_party.body_end_html|raw }}
+    {% endif %}
 </body>
 </html>

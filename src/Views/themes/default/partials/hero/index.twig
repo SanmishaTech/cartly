@@ -27,7 +27,7 @@
     <section class="card bg-base-200/60 border border-base-300">
         <div class="card-body">
             <p class="text-sm uppercase tracking-wide text-base-content/60">Welcome to {{ shop.shop_name }}</p>
-            <h1 class="text-4xl md:text-5xl font-bold text-base-content">Discover new favorites every week</h1>
+            <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ shop.shop_name }}</h1>
             {% if shop.shop_description %}
                 <p class="text-base-content/70 max-w-2xl">{{ shop.shop_description }}</p>
             {% else %}

@@ -1,0 +1,93 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ page.title }} - {{ shop.shop_name }}{% endblock %}
+
+{% block content %}
+{% set page_blocks = blocks ?? page.content_json ?? [] %}
+{% if page_blocks is not iterable %}
+    {% set page_blocks = [] %}
+{% endif %}
+
+<div class="max-w-5xl mx-auto px-4 py-10 space-y-10">
+    <div class="space-y-2">
+        <h1 class="text-3xl md:text-4xl font-bold text-base-content">{{ page.title }}</h1>
+    </div>
+
+    {% for block in page_blocks %}
+        {% set type = block.type ?? '' %}
+        {% set data = block.data ?? {} %}
+        {% if type == 'text' %}
+            <section class="prose max-w-none text-base-content">
+                {{ data.html|default('')|raw }}
+            </section>
+        {% elseif type == 'image_text' %}
+            {% set variant = block.variant ?? 'image_left' %}
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                {% if variant == 'image_right' %}
+                    <div class="space-y-3 order-2 lg:order-1">
+                        {% if data.title %}
+                            <h2 class="text-2xl font-semibold">{{ data.title }}</h2>
+                        {% endif %}
+                        <div class="prose max-w-none text-base-content">
+                            {{ data.html|default('')|raw }}
+                        </div>
+                    </div>
+                    <div class="order-1 lg:order-2">
+                        <img src="/media/{{ data.image }}" alt="{{ data.alt }}" class="w-full rounded-lg border border-base-300 object-cover">
+                    </div>
+                {% else %}
+                    <div>
+                        <img src="/media/{{ data.image }}" alt="{{ data.alt }}" class="w-full rounded-lg border border-base-300 object-cover">
+                    </div>
+                    <div class="space-y-3">
+                        {% if data.title %}
+                            <h2 class="text-2xl font-semibold">{{ data.title }}</h2>
+                        {% endif %}
+                        <div class="prose max-w-none text-base-content">
+                            {{ data.html|default('')|raw }}
+                        </div>
+                    </div>
+                {% endif %}
+            </section>
+        {% elseif type == 'bullets' %}
+            <section class="space-y-4">
+                {% if data.title %}
+                    <h2 class="text-2xl font-semibold">{{ data.title }}</h2>
+                {% endif %}
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {% for item in data.items ?? [] %}
+                        <li class="flex items-start gap-3 p-4 border border-base-300 rounded-lg bg-base-100">
+                            <span class="mt-1 h-2 w-2 rounded-full bg-primary"></span>
+                            <span>{{ item }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% elseif type == 'image' %}
+            <section class="space-y-3">
+                <img src="/media/{{ data.image }}" alt="{{ data.alt }}" class="w-full rounded-lg border border-base-300 object-cover">
+                {% if data.caption %}
+                    <p class="text-sm text-base-content/70">{{ data.caption }}</p>
+                {% endif %}
+            </section>
+        {% elseif type == 'faq' %}
+            <section class="space-y-4">
+                {% if data.title %}
+                    <h2 class="text-2xl font-semibold">{{ data.title }}</h2>
+                {% endif %}
+                <div class="space-y-3">
+                    {% for item in data.items ?? [] %}
+                        <div class="collapse collapse-arrow border border-base-300 bg-base-100">
+                            <input type="checkbox" />
+                            <div class="collapse-title text-base font-semibold">{{ item.question }}</div>
+                            <div class="collapse-content text-base-content/80">
+                                {{ item.answer|raw }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% set testimonials = content.testimonials.items ?? [] %}
+{% if testimonials|length > 0 %}
+    <section>
+        {% if content.testimonials.title or content.testimonials.subtitle %}
+            <div class="space-y-1 mb-8">
+                {% if content.testimonials.title %}
+                    <h2 class="text-3xl font-bold text-base-content">{{ content.testimonials.title }}</h2>
+                {% endif %}
+                {% if content.testimonials.subtitle %}
+                    <p class="text-base text-base-content/70">{{ content.testimonials.subtitle }}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+        <div
+            class="testimonial-marquee testimonial-carousel"
+            data-items="{{ testimonials|length }}"
+            x-data="{
+                track: null,
+                speed: 28,
+                offset: 0,
+                frame: null,
+                running: false,
+                lastTime: null,
+                totalWidth: 0,
+                paused: false,
+                reducedMotion: false,
+                isMobile: false,
+                init() {
+                    this.track = this.$el.querySelector('[data-track]');
+                    if (!this.track) {
+                        return;
+                    }
+                    const mediaMobile = window.matchMedia('(max-width: 768px)');
+                    const mediaMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+                    const updateFlags = () => {
+                        this.isMobile = mediaMobile.matches;
+                        this.reducedMotion = mediaMotion.matches;
+                        if (this.isMobile || this.reducedMotion) {
+                            this.stop();
+                            this.offset = 0;
+                            if (this.track) {
+                                this.track.style.transform = 'translateX(0)';
+                            }
+                        } else if (!this.frame) {
+                            this.start();
+                        }
+                    };
+                    updateFlags();
+                    if (mediaMobile.addEventListener) {
+                        mediaMobile.addEventListener('change', updateFlags);
+                        mediaMotion.addEventListener('change', updateFlags);
+                    } else {
+                        mediaMobile.addListener(updateFlags);
+                        mediaMotion.addListener(updateFlags);
+                    }
+                    this.$nextTick(() => {
+                        const itemsCount = parseInt(this.$el.getAttribute('data-items') || '0', 10);
+                        if (!Number.isFinite(itemsCount) || itemsCount < 2) {
+                            return;
+                        }
+                        this.totalWidth = this.track.scrollWidth / 2;
+                        if (!this.isMobile && !this.reducedMotion) {
+                            this.start();
+                        }
+                    });
+                },
+                tick(time) {
+                    if (!this.running || !this.track) {
+                        return;
+                    }
+                    if (this.paused || this.isMobile || this.reducedMotion || !this.totalWidth) {
+                        this.lastTime = time;
+                        this.frame = window.requestAnimationFrame((t) => this.tick(t));
+                        return;
+                    }
+                    if (this.lastTime === null) {
+                        this.lastTime = time;
+                    }
+                    const delta = time - this.lastTime;
+                    this.lastTime = time;
+                    const distance = (delta / 1000) * (this.totalWidth / this.speed);
+                    this.offset = (this.offset + distance) % this.totalWidth;
+                    this.track.style.transform = `translateX(-${this.offset}px)`;
+                    this.frame = window.requestAnimationFrame((t) => this.tick(t));
+                },
+                start() {
+                    if (this.frame) {
+                        return;
+                    }
+                    this.lastTime = null;
+                    this.running = true;
+                    this.frame = window.requestAnimationFrame((t) => this.tick(t));
+                },
+                stop() {
+                    this.running = false;
+                    if (!this.frame) {
+                        return;
+                    }
+                    window.cancelAnimationFrame(this.frame);
+                    this.frame = null;
+                    this.running = false;
+                }
+            }"
+            x-init="init()"
+            x-on:mouseenter="paused = true"
+            x-on:mouseleave="paused = false"
+            x-on:focusin="paused = true"
+            x-on:focusout="paused = false"
+        >
+            <div>
+                <div
+                    class="testimonial-track"
+                    data-track
+                >
+                    {% for testimonial in testimonials %}
+                        <div class="card bg-base-200/60 border border-base-300 testimonial-card" data-item>
+                            <div class="card-body">
+                                <blockquote class="text-base-content/80">"{{ testimonial.quote }}"</blockquote>
+                                <cite class="text-sm font-semibold text-base-content">{{ testimonial.name }}</cite>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <template x-if="!isMobile">
+                        <div style="display: contents;">
+                            {% for testimonial in testimonials %}
+                                <div class="card bg-base-200/60 border border-base-300 testimonial-card" data-item>
+                                    <div class="card-body">
+                                        <blockquote class="text-base-content/80">"{{ testimonial.quote }}"</blockquote>
+                                        <cite class="text-sm font-semibold text-base-content">{{ testimonial.name }}</cite>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endif %}

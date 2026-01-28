@@ -1,0 +1,503 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Home Setup{% endblock %}
+{% block page_title %}Home Setup{% endblock %}
+
+{% block content %}
+{% set section_data = data.home_sections ?? home_sections ?? [] %}
+{% set content_values = data.home_content ?? home_content ?? {} %}
+{% set defaults = content_defaults ?? {} %}
+
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-4">Home Page Sections</h2>
+            <form method="POST" action="/admin/setup/home" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="space-y-6" id="home-section-list">
+                    {% for section in section_data %}
+                        {% set type = section.type ?? '' %}
+                        {% if type != '' %}
+                            {% set label = section_labels[type] ?? type %}
+                            {% set value = content_values[type] ?? {} %}
+                            {% set fallback = defaults[type] ?? {} %}
+                            <div
+                                class="card bg-base-200/40 border border-base-300"
+                                data-section-item
+                                x-data="{ open: {{ loop.first ? 'true' : 'false' }} }"
+                            >
+                                <div class="admin-card-body">
+                                    <div class="flex flex-wrap items-center justify-between gap-4">
+                                        <div class="flex items-center gap-3">
+                                            <button type="button" class="btn btn-ghost btn-sm cursor-move" aria-label="Drag to reorder" data-drag-handle>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn btn-ghost btn-sm gap-2"
+                                                @click="open = !open"
+                                                :aria-expanded="open"
+                                                :aria-label="open ? 'Collapse section' : 'Expand section'"
+                                            >
+                                                <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                                </svg>
+                                                <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                                <span class="font-semibold">{{ label }}</span>
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            <label class="label cursor-pointer gap-2">
+                                                <span class="label-text text-sm">Enabled</span>
+                                                <input
+                                                    type="checkbox"
+                                                    name="home_sections[{{ loop.index0 }}][enabled]"
+                                                    value="1"
+                                                    class="toggle toggle-sm"
+                                                    {% if section.enabled %}checked{% endif %}
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="home_sections[{{ loop.index0 }}][type]" value="{{ type }}">
+                                    <input
+                                        type="hidden"
+                                        name="home_sections[{{ loop.index0 }}][order]"
+                                        value="{{ loop.index }}"
+                                        data-section-order
+                                    >
+
+                                    <div x-show="open" class="mt-4">
+                                {% if type == 'hero' %}
+                                    <p class="text-sm text-base-content/70">
+                                        Hero content is managed in the Hero setup screen. This section controls ordering and visibility only.
+                                    </p>
+                                {% endif %}
+
+                                {% if type == 'about' %}
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                                        <div class="admin-form-control">
+                                            <label class="label" for="about_title">
+                                                <span class="label-text font-semibold">Heading</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="about_title"
+                                                name="home_content[about][title]"
+                                                value="{{ value.title ?? '' }}"
+                                                placeholder="{{ fallback.title ?? 'About ' ~ shop.shop_name }}"
+                                                class="admin-input {% if errors['home_content.about.title'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.about.title'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.about.title'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="admin-form-control">
+                                            <label class="label" for="about_description">
+                                                <span class="label-text font-semibold">Description</span>
+                                            </label>
+                                            <textarea
+                                                id="about_description"
+                                                name="home_content[about][description]"
+                                                rows="3"
+                                                placeholder="{{ fallback.description ?? shop.shop_description ?? '' }}"
+                                                class="admin-textarea {% if errors['home_content.about.description'] %}textarea-error{% endif %}"
+                                            >{{ value.description ?? '' }}</textarea>
+                                            {% if errors['home_content.about.description'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.about.description'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if type in ['featured_products', 'categories', 'popular_new'] %}
+                                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+                                        <div class="admin-form-control">
+                                            <label class="label" for="{{ type }}_title">
+                                                <span class="label-text font-semibold">Heading</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="{{ type }}_title"
+                                                name="home_content[{{ type }}][title]"
+                                                value="{{ value.title ?? '' }}"
+                                                placeholder="{{ fallback.title ?? '' }}"
+                                                class="admin-input {% if errors['home_content.' ~ type ~ '.title'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.' ~ type ~ '.title'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.' ~ type ~ '.title'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="admin-form-control">
+                                            <label class="label" for="{{ type }}_subtitle">
+                                                <span class="label-text font-semibold">Subheading</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="{{ type }}_subtitle"
+                                                name="home_content[{{ type }}][subtitle]"
+                                                value="{{ value.subtitle ?? '' }}"
+                                                placeholder="{{ fallback.subtitle ?? '' }}"
+                                                class="admin-input {% if errors['home_content.' ~ type ~ '.subtitle'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.' ~ type ~ '.subtitle'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.' ~ type ~ '.subtitle'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="admin-form-control">
+                                            <label class="label" for="section_limit_{{ loop.index0 }}">
+                                                <span class="label-text font-semibold">Limit</span>
+                                            </label>
+                                            <input
+                                                type="number"
+                                                id="section_limit_{{ loop.index0 }}"
+                                                name="home_sections[{{ loop.index0 }}][limit]"
+                                                value="{{ section.limit }}"
+                                                min="1"
+                                                max="12"
+                                                class="admin-input"
+                                            />
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if type == 'promo' %}
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                                        <div class="admin-form-control">
+                                            <label class="label" for="promo_badge">
+                                                <span class="label-text font-semibold">Badge</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="promo_badge"
+                                                name="home_content[promo][badge]"
+                                                value="{{ value.badge ?? '' }}"
+                                                placeholder="{{ fallback.badge ?? '' }}"
+                                                class="admin-input {% if errors['home_content.promo.badge'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.promo.badge'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.promo.badge'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="admin-form-control">
+                                            <label class="label" for="promo_title">
+                                                <span class="label-text font-semibold">Heading</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="promo_title"
+                                                name="home_content[promo][title]"
+                                                value="{{ value.title ?? '' }}"
+                                                placeholder="{{ fallback.title ?? '' }}"
+                                                class="admin-input {% if errors['home_content.promo.title'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.promo.title'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.promo.title'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="admin-form-control lg:col-span-2">
+                                            <label class="label" for="promo_body">
+                                                <span class="label-text font-semibold">Description</span>
+                                            </label>
+                                            <textarea
+                                                id="promo_body"
+                                                name="home_content[promo][body]"
+                                                rows="3"
+                                                placeholder="{{ fallback.body ?? '' }}"
+                                                class="admin-textarea {% if errors['home_content.promo.body'] %}textarea-error{% endif %}"
+                                            >{{ value.body ?? '' }}</textarea>
+                                            {% if errors['home_content.promo.body'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.promo.body'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="admin-form-control">
+                                            <label class="label" for="promo_cta_text">
+                                                <span class="label-text font-semibold">Button Text</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="promo_cta_text"
+                                                name="home_content[promo][cta_text]"
+                                                value="{{ value.cta_text ?? '' }}"
+                                                placeholder="{{ fallback.cta_text ?? '' }}"
+                                                class="admin-input {% if errors['home_content.promo.cta_text'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.promo.cta_text'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.promo.cta_text'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="admin-form-control">
+                                            <label class="label" for="promo_cta_link">
+                                                <span class="label-text font-semibold">Button Link</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="promo_cta_link"
+                                                name="home_content[promo][cta_link]"
+                                                value="{{ value.cta_link ?? '' }}"
+                                                placeholder="{{ fallback.cta_link ?? '' }}"
+                                                class="admin-input {% if errors['home_content.promo.cta_link'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.promo.cta_link'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.promo.cta_link'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if type == 'testimonials' %}
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                                        <div class="admin-form-control">
+                                            <label class="label" for="testimonials_title">
+                                                <span class="label-text font-semibold">Heading</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="testimonials_title"
+                                                name="home_content[testimonials][title]"
+                                                value="{{ value.title ?? '' }}"
+                                                placeholder="{{ fallback.title ?? '' }}"
+                                                class="admin-input {% if errors['home_content.testimonials.title'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.testimonials.title'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.testimonials.title'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="admin-form-control">
+                                            <label class="label" for="testimonials_subtitle">
+                                                <span class="label-text font-semibold">Subheading</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="testimonials_subtitle"
+                                                name="home_content[testimonials][subtitle]"
+                                                value="{{ value.subtitle ?? '' }}"
+                                                placeholder="{{ fallback.subtitle ?? '' }}"
+                                                class="admin-input {% if errors['home_content.testimonials.subtitle'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.testimonials.subtitle'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.testimonials.subtitle'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% set testimonial_items = value.items ?? fallback.items ?? [] %}
+                                    <div
+                                        class="mt-4 space-y-4"
+                                        x-data='{
+                                            items: {{ testimonial_items|json_encode|raw }},
+                                            errors: {{ errors|json_encode|raw }},
+                                            maxItems: 10,
+                                            add() { if (this.items.length < this.maxItems) { this.items.push({ quote: "", name: "" }); } },
+                                            remove(index) { this.items.splice(index, 1); }
+                                        }'
+                                    >
+                                        <template x-for="(item, index) in items" :key="index">
+                                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                                <div class="admin-form-control lg:col-span-1">
+                                                    <label class="label" :for="`testimonial_quote_${index}`">
+                                                        <span class="label-text font-semibold">Quote <span x-text="index + 1"></span></span>
+                                                    </label>
+                                                    <textarea
+                                                        :id="`testimonial_quote_${index}`"
+                                                        :name="`home_content[testimonials][items][${index}][quote]`"
+                                                        rows="2"
+                                                        class="admin-textarea"
+                                                        x-model="item.quote"
+                                                    ></textarea>
+                                                    <template x-if="errors[`home_content.testimonials.items.${index}.quote`]">
+                                                        <label class="label">
+                                                            <span class="label-text-alt text-error" x-text="errors[`home_content.testimonials.items.${index}.quote`]"></span>
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                                <div class="admin-form-control">
+                                                    <label class="label" :for="`testimonial_name_${index}`">
+                                                        <span class="label-text font-semibold">Name <span x-text="index + 1"></span></span>
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        :id="`testimonial_name_${index}`"
+                                                        :name="`home_content[testimonials][items][${index}][name]`"
+                                                        class="admin-input"
+                                                        x-model="item.name"
+                                                    />
+                                                    <template x-if="errors[`home_content.testimonials.items.${index}.name`]">
+                                                        <label class="label">
+                                                            <span class="label-text-alt text-error" x-text="errors[`home_content.testimonials.items.${index}.name`]"></span>
+                                                        </label>
+                                                    </template>
+                                                </div>
+                                                <div class="flex items-end">
+                                                    <button type="button" class="btn btn-ghost btn-sm text-error" @click="remove(index)">Remove</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <div>
+                                            <button type="button" class="btn btn-outline btn-sm" @click="add()">Add testimonial</button>
+                                            <p class="text-xs text-base-content/60 mt-2" x-show="items.length >= maxItems">Maximum 10 testimonials.</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if type == 'newsletter' %}
+                                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+                                        <div class="admin-form-control">
+                                            <label class="label" for="newsletter_title">
+                                                <span class="label-text font-semibold">Heading</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="newsletter_title"
+                                                name="home_content[newsletter][title]"
+                                                value="{{ value.title ?? '' }}"
+                                                placeholder="{{ fallback.title ?? '' }}"
+                                                class="admin-input {% if errors['home_content.newsletter.title'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.newsletter.title'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.newsletter.title'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="admin-form-control">
+                                            <label class="label" for="newsletter_subtitle">
+                                                <span class="label-text font-semibold">Subheading</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="newsletter_subtitle"
+                                                name="home_content[newsletter][subtitle]"
+                                                value="{{ value.subtitle ?? '' }}"
+                                                placeholder="{{ fallback.subtitle ?? '' }}"
+                                                class="admin-input {% if errors['home_content.newsletter.subtitle'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.newsletter.subtitle'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.newsletter.subtitle'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                        <div class="admin-form-control">
+                                            <label class="label" for="newsletter_cta_text">
+                                                <span class="label-text font-semibold">Button Text</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="newsletter_cta_text"
+                                                name="home_content[newsletter][cta_text]"
+                                                value="{{ value.cta_text ?? '' }}"
+                                                placeholder="{{ fallback.cta_text ?? '' }}"
+                                                class="admin-input {% if errors['home_content.newsletter.cta_text'] %}input-error{% endif %}"
+                                            />
+                                            {% if errors['home_content.newsletter.cta_text'] %}
+                                                <label class="label">
+                                                    <span class="label-text-alt text-error">{{ errors['home_content.newsletter.cta_text'] }}</span>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="admin-form-actions mt-6">
+                    <button type="submit" name="reset_home" value="1" class="btn btn-outline btn-sm">Reset Home Settings</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Save Home Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+    (function () {
+        const init = () => {
+        const list = document.getElementById('home-section-list');
+        if (!list) {
+            return;
+        }
+
+        const updateOrderInputs = () => {
+            const items = list.querySelectorAll('[data-section-item]');
+            items.forEach((item, index) => {
+                const input = item.querySelector('[data-section-order]');
+                if (input) {
+                    input.value = index + 1;
+                }
+            });
+        };
+
+        const renumberSectionNames = () => {
+            const items = list.querySelectorAll('[data-section-item]');
+            items.forEach((item, index) => {
+                item.querySelectorAll('[name]').forEach((field) => {
+                    const name = field.getAttribute('name');
+                    if (!name || !name.startsWith('home_sections[')) {
+                        return;
+                    }
+                    const updated = name.replace(/home_sections\[\d+\]/, `home_sections[${index}]`);
+                    field.setAttribute('name', updated);
+                });
+            });
+        };
+
+        if (typeof Sortable === 'undefined') {
+            console.warn('Sortable.js not loaded');
+            return;
+        }
+
+        new Sortable(list, {
+            animation: 150,
+            handle: '[data-drag-handle]',
+            draggable: '[data-section-item]',
+            onEnd: () => {
+                renumberSectionNames();
+                updateOrderInputs();
+            },
+        });
+        renumberSectionNames();
+        updateOrderInputs();
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+</script>
+{% endblock %}

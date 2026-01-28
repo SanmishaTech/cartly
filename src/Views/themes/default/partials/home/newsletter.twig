@@ -1,0 +1,23 @@
+<section class="pb-4">
+    <div class="card bg-base-200/40 border border-base-300">
+        <div class="card-body lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+                <h2 class="text-2xl font-semibold text-base-content">{{ content.newsletter.title ?? '' }}</h2>
+                <p class="text-base-content/70">{{ content.newsletter.subtitle ?? '' }}</p>
+            </div>
+            <form class="w-full lg:w-auto" method="post" action="/newsletter/subscribe">
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+                <div class="join w-full sm:w-auto">
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        class="input input-bordered join-item w-full sm:w-72"
+                        required
+                    />
+                    <button class="btn btn-primary join-item" type="submit">{{ content.newsletter.cta_text ?? 'Subscribe' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

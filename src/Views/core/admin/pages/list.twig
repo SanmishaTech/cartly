@@ -1,0 +1,135 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Pages{% endblock %}
+{% block page_title %}Pages{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <h2 class="card-title">Pages</h2>
+                <a href="/admin/pages/create" class="btn btn-primary btn-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Page
+                </a>
+            </div>
+
+            <div class="card bg-base-200/40 border border-base-300 mb-4">
+                <div class="admin-card-body">
+                    <h3 class="admin-section-title mb-2">Filters</h3>
+                    <form method="GET" action="/admin/pages" class="flex flex-wrap gap-2 items-center">
+                        <input type="hidden" name="sort" value="{{ pager.sort }}">
+                        <input type="hidden" name="dir" value="{{ pager.dir }}">
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ pager.query.search ?? '' }}"
+                            placeholder="Search by title or slug"
+                            class="admin-input sm:w-56"
+                        />
+                        <button type="submit" class="btn btn-accent btn-sm">Filter</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if pager.items|length %}
+            <div class="overflow-x-auto">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="{{ pager.sortUrls.title }}" class="link link-hover">
+                                    Title{% if pager.sort == 'title' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ pager.sortUrls.slug }}" class="link link-hover">
+                                    Slug{% if pager.sort == 'slug' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ pager.sortUrls.status }}" class="link link-hover">
+                                    Status{% if pager.sort == 'status' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ pager.sortUrls.updated }}" class="link link-hover">
+                                    Updated{% if pager.sort == 'updated' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                </a>
+                            </th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for page in pager.items %}
+                            <tr class="hover">
+                                <td>
+                                    <div class="font-semibold">{{ page.title }}</div>
+                                </td>
+                                <td class="text-sm text-base-content/70">/{{ page.slug }}</td>
+                                <td>
+                                    {% if page.status == 'published' %}
+                                        <div class="badge badge-success">Published</div>
+                                    {% else %}
+                                        <div class="badge badge-ghost">Draft</div>
+                                    {% endif %}
+                                </td>
+                                <td class="text-sm text-base-content/70">
+                                    {{ page.updated_at ? page.updated_at|date('d M Y') : '-' }}
+                                </td>
+                                <td class="text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <a href="/admin/pages/{{ page.id }}/edit" class="btn btn-sm btn-outline">Edit</a>
+                                        {% if page.status == 'published' %}
+                                            <form method="POST" action="/admin/pages/{{ page.id }}/unpublish" class="inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token }}">
+                                                <button type="submit" class="btn btn-sm btn-warning btn-outline">Unpublish</button>
+                                            </form>
+                                        {% else %}
+                                            <form method="POST" action="/admin/pages/{{ page.id }}/publish" class="inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token }}">
+                                                <button type="submit" class="btn btn-sm btn-success btn-outline">Publish</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="text-sm text-base-content/70">
+                        Showing {{ pager.rangeStart }}-{{ pager.rangeEnd }} of {{ pager.total }}
+                    </div>
+                    <div class="join">
+                        {% if pager.pageUrls.prev %}
+                            <a href="{{ pager.pageUrls.prev }}" class="btn btn-sm join-item">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm join-item btn-disabled">Previous</button>
+                        {% endif %}
+                        <button class="btn btn-sm join-item btn-disabled">Page {{ pager.page }} of {{ pager.lastPage }}</button>
+                        {% if pager.pageUrls.next %}
+                            <a href="{{ pager.pageUrls.next }}" class="btn btn-sm join-item">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm join-item btn-disabled">Next</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="admin-card-body text-center py-12">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-base-content/30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h10" />
+                </svg>
+                <h3 class="text-xl font-semibold mb-2">No pages yet</h3>
+                <p class="text-base-content/60 mb-4">Create your first standard page</p>
+                <a href="/admin/pages/create" class="btn btn-primary btn-sm">Create Page</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

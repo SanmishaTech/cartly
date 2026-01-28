@@ -1,0 +1,18 @@
+<section>
+    <div class="card bg-base-200/60 border border-base-300 text-base-content shadow-sm">
+        <div class="card-body">
+            {% if content.promo.badge %}
+                <p class="text-sm uppercase tracking-wide text-base-content/70">{{ content.promo.badge }}</p>
+            {% endif %}
+            <h3 class="text-2xl font-semibold">{{ content.promo.title ?? '' }}</h3>
+            {% if content.promo.body %}
+                <p class="text-base-content/80">{{ content.promo.body }}</p>
+            {% endif %}
+            {% if content.promo.cta_text and content.promo.cta_link %}
+                <div class="card-actions">
+                    <a class="btn btn-primary" href="{{ content.promo.cta_link }}">{{ content.promo.cta_text }}</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>

@@ -1,0 +1,192 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Menus{% endblock %}
+{% block page_title %}Menus{% endblock %}
+
+{% block content %}
+{% set menu_state = data.menu ?? menus ?? {} %}
+{% set menu_errors = errors ?? {} %}
+{% set locations = {
+    'header': 'Header Menu',
+    'footer_quick': 'Footer Quick Links',
+    'footer_customer': 'Footer Customer Links'
+} %}
+
+<div class="w-full space-y-6">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="card-title">Storefront Menus</h2>
+                    <p class="text-sm text-base-content/60">Manage header and footer links, including custom URLs or pages.</p>
+                </div>
+            </div>
+            <form method="POST" action="/admin/menus" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="space-y-6">
+                    {% for location, label in locations %}
+                        {% set items = menu_state[location].items ?? menu_state[location] ?? [] %}
+                        <div class="card bg-base-200/40 border border-base-300" x-data="{
+                            items: {{ items|json_encode|e('html_attr') }},
+                            errors: {{ menu_errors|json_encode|e('html_attr') }},
+                            addItem() {
+                                this.items.push({ label: '', type: 'page', page_id: '', url: '' });
+                            },
+                            removeItem(index) {
+                                this.items.splice(index, 1);
+                            },
+                            ensureDefaults(item) {
+                                item.label = item.label ?? '';
+                                item.type = item.type ?? 'page';
+                                item.page_id = item.page_id ?? '';
+                                item.url = item.url ?? '';
+                            },
+                            init() {
+                                if (!Array.isArray(this.items)) {
+                                    this.items = [];
+                                }
+                                this.items.forEach((item) => this.ensureDefaults(item));
+                            }
+                        }">
+                            <div class="admin-card-body space-y-4">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h3 class="admin-section-title">{{ label }}</h3>
+                                    <button type="button" class="btn btn-outline btn-sm" @click="addItem()">Add Link</button>
+                                </div>
+
+                                <div class="space-y-3" data-menu-list data-location="{{ location }}">
+                                    <template x-if="items.length === 0">
+                                        <div class="text-sm text-base-content/60 border border-dashed border-base-300 rounded-lg p-4">
+                                            No menu items yet. Add links for this location.
+                                        </div>
+                                    </template>
+
+                                    <template x-for="(item, index) in items" :key="index">
+                                        <div class="card bg-base-100 border border-base-300" data-menu-item>
+                                            <div class="admin-card-body space-y-4">
+                                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                                    <div class="flex items-center gap-2">
+                                                        <button type="button" class="btn btn-ghost btn-sm cursor-move" aria-label="Drag to reorder" data-drag-handle>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+                                                            </svg>
+                                                        </button>
+                                                        <span class="text-sm font-semibold">Item <span x-text="index + 1"></span></span>
+                                                    </div>
+                                                    <button type="button" class="btn btn-ghost btn-sm text-error" @click="removeItem(index)">Remove</button>
+                                                </div>
+
+                                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                                    <div class="admin-form-control">
+                                                        <label class="label" :for="`menu_${location}_label_${index}`">
+                                                            <span class="label-text font-semibold">Label</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            class="admin-input"
+                                                            :id="`menu_${location}_label_${index}`"
+                                                            :name="`menu[{{ location }}][items][${index}][label]`"
+                                                            x-model="item.label"
+                                                        />
+                                                        <template x-if="errors[`menu.{{ location }}.items.${index}.label`]">
+                                                            <label class="label">
+                                                                <span class="label-text-alt text-error" x-text="errors[`menu.{{ location }}.items.${index}.label`]"></span>
+                                                            </label>
+                                                        </template>
+                                                    </div>
+                                                    <div class="admin-form-control">
+                                                        <label class="label" :for="`menu_${location}_type_${index}`">
+                                                            <span class="label-text font-semibold">Type</span>
+                                                        </label>
+                                                        <select
+                                                            class="admin-select"
+                                                            :id="`menu_${location}_type_${index}`"
+                                                            :name="`menu[{{ location }}][items][${index}][type]`"
+                                                            x-model="item.type"
+                                                        >
+                                                            <option value="page">Page</option>
+                                                            <option value="url">Custom URL</option>
+                                                        </select>
+                                                        <template x-if="errors[`menu.{{ location }}.items.${index}.type`]">
+                                                            <label class="label">
+                                                                <span class="label-text-alt text-error" x-text="errors[`menu.{{ location }}.items.${index}.type`]"></span>
+                                                            </label>
+                                                        </template>
+                                                    </div>
+                                                    <div class="admin-form-control" x-show="item.type === 'page'">
+                                                        <label class="label" :for="`menu_${location}_page_${index}`">
+                                                            <span class="label-text font-semibold">Page</span>
+                                                        </label>
+                                                        <select
+                                                            class="admin-select"
+                                                            :id="`menu_${location}_page_${index}`"
+                                                            :name="`menu[{{ location }}][items][${index}][page_id]`"
+                                                            x-model="item.page_id"
+                                                        >
+                                                            <option value="">Select a page</option>
+                                                            {% for page in pages %}
+                                                                <option value="{{ page.id }}">{{ page.title }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        <template x-if="errors[`menu.{{ location }}.items.${index}.page_id`]">
+                                                            <label class="label">
+                                                                <span class="label-text-alt text-error" x-text="errors[`menu.{{ location }}.items.${index}.page_id`]"></span>
+                                                            </label>
+                                                        </template>
+                                                    </div>
+                                                    <div class="admin-form-control lg:col-span-3" x-show="item.type === 'url'">
+                                                        <label class="label" :for="`menu_${location}_url_${index}`">
+                                                            <span class="label-text font-semibold">URL</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            class="admin-input"
+                                                            :id="`menu_${location}_url_${index}`"
+                                                            :name="`menu[{{ location }}][items][${index}][url]`"
+                                                            x-model="item.url"
+                                                            placeholder="/policies/shipping"
+                                                        />
+                                                        <template x-if="errors[`menu.{{ location }}.items.${index}.url`]">
+                                                            <label class="label">
+                                                                <span class="label-text-alt text-error" x-text="errors[`menu.{{ location }}.items.${index}.url`]"></span>
+                                                            </label>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="admin-form-actions mt-6">
+                    <button type="submit" class="btn btn-primary btn-sm">Save Menus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+    (function () {
+        const lists = document.querySelectorAll('[data-menu-list]');
+        if (!lists.length || typeof Sortable === 'undefined') {
+            return;
+        }
+        lists.forEach((list) => {
+            new Sortable(list, {
+                animation: 150,
+                handle: '[data-drag-handle]',
+                draggable: '[data-menu-item]',
+            });
+        });
+    })();
+</script>
+{% endblock %}

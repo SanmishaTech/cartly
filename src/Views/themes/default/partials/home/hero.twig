@@ -1,0 +1,5 @@
+{% include 'partials/hero/index.twig' with {
+    hero_settings: hero_settings ?? {},
+    shop: shop,
+    hero_type: hero_type ?? null
+} only %}

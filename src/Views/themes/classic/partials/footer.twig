@@ -1,40 +1,56 @@
 <footer class="bg-base-200 text-base-content mt-16">
+    {% set footer = footer_content ?? {} %}
+    {% set menus = menus ?? {} %}
+    {% set footer_summary = footer.summary ?? 'Your trusted online store for quality products.' %}
+    {% set footer_links = footer.links ?? {} %}
+    {% set quick_links = menus.footer_quick ?? [] %}
+    {% set support_links = menus.footer_customer ?? [] %}
+    {% set footer_contact = footer.contact ?? {} %}
+    {% set footer_email = footer_contact.email ?? 'support@example.com' %}
+    {% set footer_phone = footer_contact.phone ?? '+91 1234567890' %}
+    {% set footer_line = footer.legal ?? 'All rights reserved.' %}
     <div class="max-w-6xl mx-auto px-4 py-12">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div class="space-y-2">
                 <h3 class="text-lg font-semibold">{{ shop.shop_name }}</h3>
-                <p class="text-base-content/70">Your trusted online store for quality products.</p>
+                <p class="text-base-content/70">{{ footer_summary }}</p>
             </div>
 
-            <div>
-                <h3 class="text-lg font-semibold mb-3">Quick Links</h3>
-                <ul class="menu menu-vertical p-0 space-y-1">
-                    <li><a href="/products">Products</a></li>
-                    <li><a href="/categories">Categories</a></li>
-                    <li><a href="/about">About Us</a></li>
-                    <li><a href="/contact">Contact</a></li>
-                </ul>
-            </div>
+            {% if quick_links|length %}
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Quick Links</h3>
+                    <ul class="menu menu-vertical p-0 space-y-1">
+                        {% for link in quick_links %}
+                            <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
 
-            <div>
-                <h3 class="text-lg font-semibold mb-3">Customer Service</h3>
-                <ul class="menu menu-vertical p-0 space-y-1">
-                    <li><a href="/shipping">Shipping Info</a></li>
-                    <li><a href="/returns">Returns</a></li>
-                    <li><a href="/faq">FAQ</a></li>
-                    <li><a href="/support">Support</a></li>
-                </ul>
-            </div>
+            {% if support_links|length %}
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Customer Service</h3>
+                    <ul class="menu menu-vertical p-0 space-y-1">
+                        {% for link in support_links %}
+                            <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
 
             <div class="space-y-2">
                 <h3 class="text-lg font-semibold">Contact Us</h3>
-                <p class="text-base-content/70">Email: support@example.com</p>
-                <p class="text-base-content/70">Phone: +91 1234567890</p>
+                <p class="text-base-content/70">Email: {{ footer_email }}</p>
+                <p class="text-base-content/70">Phone: {{ footer_phone }}</p>
             </div>
         </div>
 
         <div class="border-t border-base-300 mt-8 pt-6 text-center text-base-content/70">
-            <p>&copy; {{ "now"|date("Y") }} {{ shop.shop_name }}. All rights reserved.</p>
+            {% if footer_line and ('©' in footer_line or 'copyright' in footer_line|lower) %}
+                <p>{{ footer_line }}</p>
+            {% else %}
+                <p>&copy; {{ "now"|date("Y") }} {{ shop.shop_name }}. {{ footer_line }}</p>
+            {% endif %}
             <p class="text-sm mt-2">Powered by Cartly</p>
         </div>
     </div>

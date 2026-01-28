@@ -7,21 +7,24 @@
                         src="/media/{{ shop.logo_path }}"
                         alt="{{ shop.shop_name }} logo"
                         class="h-9 md:h-11 max-w-[140px] md:max-w-[180px] w-auto object-contain"
+                        loading="lazy"
                     />
                 {% endif %}
                 <span class="text-2xl font-bold">{{ shop.shop_name }}</span>
             </a>
         </div>
 
-        <div class="navbar-center hidden md:flex">
-            <ul class="menu menu-horizontal gap-2">
-                <li><a href="/" class="{{ is_active_path('/') ? 'active' : '' }}">Home</a></li>
-                <li><a href="/products" class="{{ is_active_path('/products') ? 'active' : '' }}">Products</a></li>
-                <li><a href="/categories" class="{{ is_active_path('/categories') ? 'active' : '' }}">Categories</a></li>
-                <li><a href="/account" class="{{ is_active_path('/account') ? 'active' : '' }}">Account</a></li>
-                <li><a href="/contact" class="{{ is_active_path('/contact') ? 'active' : '' }}">Contact</a></li>
-            </ul>
-        </div>
+        {% set menus = menus ?? {} %}
+        {% set header_links = menus.header ?? [] %}
+        <nav class="navbar-center hidden md:flex" aria-label="Primary">
+            {% if header_links|length %}
+                <ul class="menu menu-horizontal gap-2">
+                    {% for link in header_links %}
+                        <li><a href="{{ link.url }}" class="{{ is_active_path(link.url) ? 'active' : '' }}">{{ link.label }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </nav>
 
         <div class="navbar-end gap-2">
             <a href="/cart" class="btn btn-ghost btn-circle">
@@ -36,13 +39,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </label>
-                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52" x-show="mobileMenuOpen">
-                    <li><a href="/" class="{{ is_active_path('/') ? 'active' : '' }}">Home</a></li>
-                    <li><a href="/products" class="{{ is_active_path('/products') ? 'active' : '' }}">Products</a></li>
-                    <li><a href="/categories" class="{{ is_active_path('/categories') ? 'active' : '' }}">Categories</a></li>
-                    <li><a href="/account" class="{{ is_active_path('/account') ? 'active' : '' }}">Account</a></li>
-                    <li><a href="/contact" class="{{ is_active_path('/contact') ? 'active' : '' }}">Contact</a></li>
-                </ul>
+                <nav aria-label="Mobile">
+                    {% if header_links|length %}
+                        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52" x-show="mobileMenuOpen">
+                            {% for link in header_links %}
+                                <li><a href="{{ link.url }}" class="{{ is_active_path(link.url) ? 'active' : '' }}">{{ link.label }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </nav>
             </div>
         </div>
     </div>

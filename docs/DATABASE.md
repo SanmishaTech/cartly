@@ -7,6 +7,7 @@
 - subscriptions
 - payments
 - seo_metadata
+- shop_metadata
 
 ## Removed Tables
 - plans
@@ -46,6 +47,12 @@ Note: Subscription billing period determines which cost column is used.
 - og_description (string)
 - og_image (string)
 - schema_json (json)
+
+## Shop Metadata (key fields)
+- shop_id (fk)
+- social_media_links (json)
+- home_sections (json)
+- home_content (json)
 
 ## Subscriptions (key fields)
 - shop_id (fk)
