@@ -89,6 +89,16 @@ class ThemeMiddleware implements MiddlewareInterface
         $themeConfig = $this->buildThemeConfig($shop);
         $environment->addGlobal('theme_config', $themeConfig);
         $environment->addGlobal('font_profiles', $this->resolveFontProfiles($themeConfig));
+
+        // Storefront customer session (for header: Welcome, Logout)
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+        $environment->addGlobal('customer', [
+            'id' => $_SESSION['user_id'] ?? null,
+            'name' => $_SESSION['user_name'] ?? null,
+            'email' => $_SESSION['user_email'] ?? null,
+        ]);
         
         // Add context to request for controllers
         $request = $request->withAttribute('context', $context);
@@ -98,23 +108,16 @@ class ThemeMiddleware implements MiddlewareInterface
     
     /**
      * Determine context from request path
-     * 
-     * Admin context includes:
-     * - /admin/* (admin dashboard and management)
-     * - /login (unified login page)
-     * Landing context:
-     * - Root domain without shop (localhost)
+     *
+     * Admin context: /admin/* (dashboard, management, admin login at /admin/login)
+     * Storefront: /login, /register, /cart, etc. (customer-facing on shop domains)
      */
     private function resolveContext(string $path): string
     {
-        // All admin routes including auth
-        if (str_starts_with($path, '/admin') 
-            || $path === '/login'
-            || str_starts_with($path, '/login/')) {
+        if (str_starts_with($path, '/admin')) {
             return 'admin';
         }
-        
-        // Everything else is storefront (customer-facing)
+
         return 'storefront';
     }
 

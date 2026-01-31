@@ -6,9 +6,9 @@
 <div class="space-y-8 p-4 md:p-8">
     <section class="bg-base-200 rounded-lg p-6 md:p-8">
         <p class="text-sm uppercase tracking-wide text-primary font-semibold">Account</p>
-        <h1 class="mt-2 text-3xl md:text-4xl font-bold">Welcome back</h1>
+        <h1 class="mt-2 text-3xl md:text-4xl font-bold">Welcome, {{ customer.name|default(customer.email)|default('back') }}</h1>
         <p class="mt-2 text-base-content/70">
-            Placeholder account dashboard. Customer login will be enabled later.
+            Manage your orders, profile, and preferences.
         </p>
     </section>
 

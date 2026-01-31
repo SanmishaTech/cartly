@@ -12,7 +12,10 @@ SHOPS=("demo1" "demo2" "admin" "www")
 
 echo "# Cartly $APP_DOMAIN - Add these lines to /etc/hosts:"
 echo ""
-
+echo "# Parent site (landing + admin)"
+echo "$HOST $APP_DOMAIN"
+echo ""
+echo "# Shop subdomains"
 for shop in "${SHOPS[@]}"; do
     echo "$HOST $shop.$APP_DOMAIN"
 done

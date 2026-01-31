@@ -10,20 +10,15 @@ return [
         $schema->create('users', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('email', 255)->unique();
-            $table->string('password');
-            $table->string('name', 255);
-            $table->string('role', 50)->default('shopper');
-            $table->unsignedBigInteger('shop_id')->nullable();
+            $table->string('name', 255)->nullable();
+            $table->string('password', 255)->nullable();
+            $table->enum('global_role', ['root', 'helpdesk'])->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamp('last_login_at')->nullable();
-            $table->string('two_factor_secret')->nullable();
-            $table->boolean('two_factor_enabled')->default(false);
             $table->timestamps();
 
             $table->index('email');
-            $table->index('role');
-            $table->index('shop_id');
-            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('set null');
+            $table->index('global_role');
+            $table->index('status');
         });
     },
     'down' => function (Capsule $capsule) {

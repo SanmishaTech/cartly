@@ -24,7 +24,12 @@
 
 ## Authentication
 - Session-based auth (primary)
-- Role-based access model (root, helpdesk, admin, operations, shopper)
+- Role-based access model (root, helpdesk, shop_owner, operations, shopper)
+- Admin login: /admin/login — email/password only
+- Storefront customer login: email/password or OAuth (Google/Facebook)
+- OAuth (Google/Facebook) for shoppers only; admin-side always email/password
+- Customer OAuth configured per shop in Admin Setup → Customer Auth (`shop_metadata.oauth_config`)
+- shop_customers table records when logged-in shoppers visit a storefront (first_seen_at, last_seen_at) for CRM/analytics
 
 ## Landing Page
 - Marketing content, pricing, FAQ
@@ -33,7 +38,7 @@
 - Shared admin theme across root/shop admin
 
 ## Shops & Subscriptions (Root)
-- Root creates shop + admin user + subscription in one flow
+- Root creates shop + shop owner user + subscription in one flow
 - Root selects Paid Package or Trial (7/10/15 days)
 - Trial uses `trial_days` on subscription; no payment required
 - Paid subscription requires payment details; amount is derived from the package + period

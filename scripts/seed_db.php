@@ -31,7 +31,10 @@ $capsule->setEventDispatcher(new Dispatcher(new Container));
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
-// Seed demo packages
+// Invariants: users = identity only; shop_users = permissions; global_role != shop role;
+// guests never in DB; everything business-related belongs to a shop.
+
+// Seed demo packages (shop-agnostic config)
 $starterPackage = Package::firstOrCreate([
     'name' => 'Starter',
 ], [
@@ -85,54 +88,63 @@ function seedShop($slug, $shopName, $domain, $package, $theme, $adminEmail) {
         'renewal_mode' => 'manual',
     ]);
 
-    User::firstOrCreate(['email' => $adminEmail], [
+    // User = identity only (no role, no shop_id on users)
+    $user = User::firstOrCreate(['email' => $adminEmail], [
         'password' => 'abcd123@',
-        'name' => "{$shopName} Admin",
-        'role' => 'admin',
-        'shop_id' => $shop->id,
         'status' => 'active',
     ]);
+
+    // Permissions = shop_users (owner for this shop)
+    $exists = Capsule::table('shop_users')
+        ->where('user_id', $user->id)
+        ->where('shop_id', $shop->id)
+        ->exists();
+    if (!$exists) {
+        Capsule::table('shop_users')->insert([
+            'user_id' => $user->id,
+            'shop_id' => $shop->id,
+            'role' => 'owner',
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+    }
 
     echo "Seeded {$shopName} with domain '{$domain}' and theme '{$theme}'.\n";
 }
 
-// Seed root and helpdesk users
+// Seed root and helpdesk (global_role only; no shop_users)
 echo "Seeding root and helpdesk users...\n";
 $users = [
     [
         'email' => 'root@demo.com',
-        'name' => 'Root User',
-        'role' => 'root',
+        'global_role' => 'root',
     ],
     [
         'email' => 'helpdesk@demo.com',
-        'name' => 'Helpdesk User',
-        'role' => 'helpdesk',
+        'global_role' => 'helpdesk',
     ],
 ];
 
 foreach ($users as $data) {
     $existing = User::where('email', $data['email'])->first();
     if ($existing) {
-        echo "✓ {$data['role']} user already exists ({$data['email']})\n";
+        echo "✓ {$data['global_role']} user already exists ({$data['email']})\n";
         continue;
     }
 
     User::create([
         'email' => $data['email'],
         'password' => 'abcd123@',
-        'name' => $data['name'],
-        'role' => $data['role'],
-        'shop_id' => null,
+        'global_role' => $data['global_role'],
         'status' => 'active',
     ]);
 
-    echo "✓ {$data['role']} user created successfully\n";
+    echo "✓ {$data['global_role']} user created successfully\n";
     echo "  Email: {$data['email']}\n";
     echo "  Password: abcd123@\n";
 }
 
-// Seed demo shops with subscriptions and admins
+// Seed demo shops (each gets a user + shop_users.role = owner)
 $appDomain = $_ENV['APP_DOMAIN'] ?? 'cartly.test';
 seedShop('demo1', 'Demo 1', "demo1.{$appDomain}", $starterPackage, 'default', 'demo1@demo.com');
 seedShop('demo2', 'Demo 2', "demo2.{$appDomain}", $proPackage, 'modern', 'demo2@demo.com');

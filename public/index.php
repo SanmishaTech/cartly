@@ -8,6 +8,7 @@ use Slim\Views\TwigMiddleware;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Container\Container;
+use App\Middleware\ShopCustomerMiddleware;
 use App\Middleware\ShopResolverMiddleware;
 use App\Middleware\SubscriptionEnforcerMiddleware;
 use App\Middleware\ThemeMiddleware;
@@ -90,13 +91,15 @@ $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
 // NOTE: Middleware in Slim runs in REVERSE order (last added runs first)
-// Execution order: CsrfMiddleware -> AuthMiddleware -> ShopResolverMiddleware -> SubscriptionEnforcerMiddleware -> ThemeMiddleware -> Routes
+// Execution order: CsrfMiddleware -> AuthMiddleware -> ShopResolverMiddleware -> ShopCustomerMiddleware -> SubscriptionEnforcerMiddleware -> ThemeMiddleware -> Routes
 
 // Configure theme system based on context and shop (runs 4th)
 $app->add(new ThemeMiddleware($twig, $themeResolver, $seoService, $menuService));
 // Compute subscription state (active/grace/expired) (runs 3rd)
 $app->add(new SubscriptionEnforcerMiddleware());
-// Resolve shop from Host header (runs 2nd)
+// Record shop_customers when logged-in user is seen on storefront (needs shop from ShopResolver)
+$app->add(new ShopCustomerMiddleware());
+// Resolve shop from Host header (runs 2nd; must run before ShopCustomerMiddleware)
 $app->add(new ShopResolverMiddleware());
 // Check authentication status (runs 1st)
 $app->add(new AuthMiddleware());

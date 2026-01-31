@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Admin;
 
+use App\Models\ShopUser;
 use App\Models\User;
 use App\Services\AuthorizationService;
 use App\Services\FlashService;
@@ -103,16 +104,20 @@ class AuthController extends AppController
                 ->withHeader('Location', '/admin/login');
         }
         
-        // Check if user can access admin area
+        // Check if user can access admin area (global role or at least one shop membership)
         $authorization = new AuthorizationService();
-        if (!$authorization->roleHasPermission($user->role, AuthorizationService::PERMISSION_DASHBOARD_ACCESS)) {
+        $effectiveRole = $user->global_role;
+        if (!$effectiveRole && ShopUser::where('user_id', $user->id)->exists()) {
+            $effectiveRole = AuthorizationService::ROLE_OWNER; // any shop role grants dashboard
+        }
+        if (!$authorization->roleHasPermission($effectiveRole, AuthorizationService::PERMISSION_DASHBOARD_ACCESS)) {
             FlashService::set('error', 'This login is for administrators only. Please use shopper login.');
             FlashService::set('old', ['user' => ['email' => $email]]);
             return $response
                 ->withStatus(302)
                 ->withHeader('Location', '/admin/login');
         }
-        
+
         // Check if user is active
         if ($user->status !== 'active') {
             FlashService::set('error', 'Your account is not active. Please contact support.');
@@ -121,21 +126,21 @@ class AuthController extends AppController
                 ->withStatus(302)
                 ->withHeader('Location', '/admin/login');
         }
-        
-        // Set session
+
+        // Set session: shop_id = first managed shop; user_role = effective role for that shop
         $_SESSION['user_id'] = $user->id;
         $_SESSION['user_email'] = $user->email;
-        $_SESSION['user_name'] = $user->name;
-        $_SESSION['user_role'] = $user->role;
-        $_SESSION['shop_id'] = $user->shop_id;
+        $_SESSION['user_name'] = $user->email;
+        $shopId = $user->getFirstManagedShopId();
+        $_SESSION['shop_id'] = $shopId ?? 0;
+        $_SESSION['user_role'] = $shopId ? $user->getEffectiveRoleForShop($shopId) : $user->global_role;
 
         if (function_exists('session_regenerate_id')) {
             session_regenerate_id(true);
         }
-        
+
         // Handle "Keep me signed in" - extend session lifetime
         if ($remember) {
-            // Set session cookie to expire in 30 days (instead of browser close)
             $sessionName = session_name();
             $sessionId = session_id();
             setcookie(
@@ -148,20 +153,10 @@ class AuthController extends AppController
                 true // httponly
             );
         }
-        
-        // Update last login
-        $user->last_login_at = date('Y-m-d H:i:s');
-        $user->save();
-        
-        // Determine redirect URL based on role
-        $redirectUrl = match($user->role) {
-            'root', 'admin', 'helpdesk', 'operations' => '/admin/dashboard',
-            default => '/admin/dashboard'
-        };
-        
+
         return $response
             ->withStatus(302)
-            ->withHeader('Location', $redirectUrl);
+            ->withHeader('Location', '/admin/dashboard');
     }
 
     /**
@@ -229,9 +224,10 @@ class AuthController extends AppController
 
             $mailService = new MailService();
             $subject = 'Reset your Cartly password';
-            $htmlBody = $this->buildResetEmailHtml($user->name, $resetUrl);
-            $textBody = $this->buildResetEmailText($user->name, $resetUrl);
-            $mailService->send($user->email, $user->name, $subject, $htmlBody, $textBody);
+            $displayName = $user->email;
+            $htmlBody = $this->buildResetEmailHtml($displayName, $resetUrl);
+            $textBody = $this->buildResetEmailText($displayName, $resetUrl);
+            $mailService->send($user->email, $displayName, $subject, $htmlBody, $textBody);
 
             $logger = new AuthLogger();
             $logger->logPasswordResetRequested(

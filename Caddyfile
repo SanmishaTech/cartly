@@ -1,0 +1,30 @@
+# Cartly: one app serves all hosts. Parent site = root domain (landing + admin); shop subdomains = storefronts.
+# Change the path below if your project lives elsewhere (see docs/SETUP.md).
+(my_php_settings) {
+    php_fastcgi unix//run/php/php8.4-fpm.sock
+    file_server
+    tls /home/sanjeev/@Learn/cartly/cartly.test+3.pem /home/sanjeev/@Learn/cartly/cartly.test+3-key.pem
+}
+
+# Parent site: landing at / and admin at /admin (set APP_DOMAIN=cartly.test in .env).
+# TLS: one cert for all names — run: mkcert cartly.test demo1.cartly.test demo2.cartly.test "demo-3.cartly.test"
+#      then set tls in the snippet above to the generated .pem and -key.pem paths (see docs/SETUP.md).
+cartly.test {
+    root * /home/sanjeev/@Learn/cartly/public
+    import my_php_settings
+}
+
+demo1.cartly.test {
+    root * /home/sanjeev/@Learn/cartly/public
+    import my_php_settings
+}
+
+demo2.cartly.test {
+    root * /home/sanjeev/@Learn/cartly/public
+    import my_php_settings
+}
+
+demo-3.cartly.test {
+    root * /home/sanjeev/@Learn/cartly/public
+    import my_php_settings
+}

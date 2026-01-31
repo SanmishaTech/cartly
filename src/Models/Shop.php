@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -45,5 +46,25 @@ class Shop extends Model
     public function latestSubscription(): HasOne
     {
         return $this->hasOne(Subscription::class)->latestOfMany();
+    }
+
+    public function shopUsers(): HasMany
+    {
+        return $this->hasMany(ShopUser::class);
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'shop_users')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    /**
+     * Customers who have been seen in this shop (CRM/history). NOT for auth.
+     */
+    public function shopCustomers(): HasMany
+    {
+        return $this->hasMany(ShopCustomer::class);
     }
 }

@@ -15,6 +15,7 @@ class ShopMetadata extends Model
         'home_content',
         'footer_content',
         'third_party',
+        'oauth_config',
     ];
 
     protected $casts = [
@@ -23,5 +24,6 @@ class ShopMetadata extends Model
         'home_content' => 'array',
         'footer_content' => 'array',
         'third_party' => 'array',
+        'oauth_config' => 'array',
     ];
 }

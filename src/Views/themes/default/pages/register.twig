@@ -1,0 +1,103 @@
+{% extends 'layout.twig' %}
+
+{% block title %}{{ shop.shop_name }} - Register{% endblock %}
+
+{% block content %}
+<div class="space-y-8 p-4 md:p-8">
+    <section class="bg-base-200 rounded-lg p-6 md:p-8">
+        <p class="text-sm uppercase tracking-wide text-primary font-semibold">Customer</p>
+        <h1 class="mt-2 text-3xl md:text-4xl font-bold">Create account</h1>
+        <p class="mt-2 text-base-content/70">
+            Create an account to track orders and save your details.
+        </p>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div class="lg:col-span-2 lg:col-start-2 space-y-6">
+            <div class="card bg-base-100 border border-base-300">
+                <div class="card-body space-y-4">
+                    {% set err = errors ?? {} %}
+                    {% if err.email or err.password or err.password_confirm %}
+                    <div class="p-3 rounded-lg bg-error/10 text-error text-sm">
+                        {{ err.email ?? err.password ?? err.password_confirm }}
+                    </div>
+                    {% endif %}
+
+                    <form method="post" action="/register" class="flex flex-col space-y-4">
+                        <input type="hidden" name="_token" value="{{ csrf_token }}">
+                        <div>
+                            <label for="register_email" class="label">
+                                <span class="label-text font-medium">Email</span>
+                            </label>
+                            <input
+                                type="email"
+                                id="register_email"
+                                name="email"
+                                value="{{ old.email ?? '' }}"
+                                class="input input-bordered w-full {% if err.email %}input-error{% endif %}"
+                                required
+                                autocomplete="email"
+                            />
+                        </div>
+                        <div>
+                            <label for="register_password" class="label">
+                                <span class="label-text font-medium">Password</span>
+                            </label>
+                            <input
+                                type="password"
+                                id="register_password"
+                                name="password"
+                                class="input input-bordered w-full {% if err.password %}input-error{% endif %}"
+                                required
+                                minlength="6"
+                                autocomplete="new-password"
+                            />
+                            <p class="label-text-alt text-base-content/60 mt-1">At least 6 characters</p>
+                        </div>
+                        <div>
+                            <label for="register_password_confirm" class="label">
+                                <span class="label-text font-medium">Confirm password</span>
+                            </label>
+                            <input
+                                type="password"
+                                id="register_password_confirm"
+                                name="password_confirm"
+                                class="input input-bordered w-full {% if err.password_confirm %}input-error{% endif %}"
+                                required
+                                minlength="6"
+                                autocomplete="new-password"
+                            />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full">Create account</button>
+                    </form>
+
+                    <p class="text-sm text-base-content/70">
+                        Already have an account? <a href="/login" class="link link-primary font-medium">Login</a>
+                    </p>
+                </div>
+            </div>
+
+            {% set oauth = oauth_config ?? {} %}
+            {% if (oauth.google.enabled|default(false)) or (oauth.facebook.enabled|default(false)) %}
+            <div class="card bg-base-100 border border-base-300">
+                <div class="card-body space-y-4">
+                    <h2 class="card-title text-lg">Or sign up with</h2>
+                    <div class="flex flex-col gap-2">
+                        {% if oauth.google.enabled|default(false) %}
+                        <a href="/auth/google" class="btn btn-outline gap-2">Sign up with Google</a>
+                        {% endif %}
+                        {% if oauth.facebook.enabled|default(false) %}
+                        <a href="/auth/facebook" class="btn btn-outline gap-2">Sign up with Facebook</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div>
+                <a href="/" class="btn btn-ghost btn-sm">Continue shopping</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

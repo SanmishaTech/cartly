@@ -14,25 +14,7 @@
                 <div class="admin-form-grid mb-6">
                     <div class="card bg-base-200/40 border border-base-300">
                         <div class="admin-card-body">
-                            <h3 class="admin-section-title mb-2">User Details</h3>
-
-                            <div class="admin-form-control">
-                                <label class="label" for="user_name">
-                                    <span class="label-text font-semibold">Name</span>
-                                    <span class="text-error">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    id="user_name"
-                                    name="name"
-                                    value="{{ data.name ?? '' }}"
-                                    class="admin-input {% if errors.name %}input-error{% endif %}"
-                                    required
-                                />
-                                {% if errors.name %}
-                                    <label class="label"><span class="label-text-alt text-error">{{ errors.name }}</span></label>
-                                {% endif %}
-                            </div>
+                            <h3 class="admin-section-title mb-2">Identity</h3>
 
                             <div class="admin-form-control">
                                 <label class="label" for="user_email">
@@ -49,84 +31,6 @@
                                 />
                                 {% if errors.email %}
                                     <label class="label"><span class="label-text-alt text-error">{{ errors.email }}</span></label>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card bg-base-200/40 border border-base-300">
-                        <div class="admin-card-body">
-                            <h3 class="admin-section-title mb-2">Access</h3>
-
-                            <div class="admin-form-control">
-                                <label class="label" for="user_role">
-                                    <span class="label-text font-semibold">Role</span>
-                                    <span class="text-error">*</span>
-                                </label>
-                                <select
-                                    id="user_role"
-                                    name="role"
-                                    class="admin-select {% if errors.role %}select-error{% endif %}"
-                                    required
-                                    data-user-role
-                                >
-                                    {% set currentRole = data.role ?? '' %}
-                                    <option value="">Select role</option>
-                                    {% for role in roles %}
-                                        <option value="{{ role }}" {% if currentRole == role %}selected{% endif %}>
-                                            {{ role|replace({'_': ' '})|capitalize }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                {% if errors.role %}
-                                    <label class="label"><span class="label-text-alt text-error">{{ errors.role }}</span></label>
-                                {% endif %}
-                            </div>
-
-                            <div class="admin-form-control" data-shop-wrapper>
-                                <label class="label" for="user_shop_id">
-                                    <span class="label-text font-semibold">Linked Shop</span>
-                                    <span class="text-error" data-shop-required>*</span>
-                                </label>
-                                <select
-                                    id="user_shop_id"
-                                    name="shop_id"
-                                    class="admin-select {% if errors.shop_id %}select-error{% endif %}"
-                                    data-shop-select
-                                >
-                                    <option value="">No shop</option>
-                                    {% set currentShop = data.shop_id ?? '' %}
-                                    {% for shop in shops %}
-                                        <option value="{{ shop.id }}" {% if currentShop == shop.id %}selected{% endif %}>
-                                            {{ shop.shop_name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                {% if errors.shop_id %}
-                                    <label class="label"><span class="label-text-alt text-error">{{ errors.shop_id }}</span></label>
-                                {% endif %}
-                            </div>
-                            <p class="text-xs text-base-content/60 mt-2">
-                                Root and helpdesk users are not linked to shops.
-                            </p>
-
-                            <div class="admin-form-control">
-                                <label class="label" for="user_status">
-                                    <span class="label-text font-semibold">Status</span>
-                                    <span class="text-error">*</span>
-                                </label>
-                                <select
-                                    id="user_status"
-                                    name="status"
-                                    class="admin-select {% if errors.status %}select-error{% endif %}"
-                                    required
-                                >
-                                    {% set currentStatus = data.status ?? 'active' %}
-                                    <option value="active" {% if currentStatus == 'active' %}selected{% endif %}>Active</option>
-                                    <option value="inactive" {% if currentStatus == 'inactive' %}selected{% endif %}>Inactive</option>
-                                </select>
-                                {% if errors.status %}
-                                    <label class="label"><span class="label-text-alt text-error">{{ errors.status }}</span></label>
                                 {% endif %}
                             </div>
 
@@ -149,6 +53,97 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="card bg-base-200/40 border border-base-300">
+                        <div class="admin-card-body">
+                            <h3 class="admin-section-title mb-2">Access</h3>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="user_global_role">
+                                    <span class="label-text font-semibold">Global role</span>
+                                </label>
+                                <select
+                                    id="user_global_role"
+                                    name="global_role"
+                                    class="admin-select {% if errors.global_role %}select-error{% endif %}"
+                                    data-global-role
+                                >
+                                    {% set currentGlobalRole = data.global_role ?? '' %}
+                                    {% for value, label in global_roles %}
+                                        <option value="{{ value }}" {% if currentGlobalRole == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if errors.global_role %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors.global_role }}</span></label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control" data-shop-wrapper>
+                                <label class="label" for="user_shop_id">
+                                    <span class="label-text font-semibold">Linked shop</span>
+                                    <span class="text-error" data-shop-required>*</span>
+                                </label>
+                                <select
+                                    id="user_shop_id"
+                                    name="shop_id"
+                                    class="admin-select {% if errors.shop_id %}select-error{% endif %}"
+                                    data-shop-select
+                                >
+                                    <option value="">No shop</option>
+                                    {% set currentShop = data.shop_id ?? '' %}
+                                    {% for shop in shops %}
+                                        <option value="{{ shop.id }}" {% if currentShop == shop.id %}selected{% endif %}>{{ shop.shop_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if errors.shop_id %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors.shop_id }}</span></label>
+                                {% endif %}
+                            </div>
+
+                            <div class="admin-form-control" data-shop-wrapper>
+                                <label class="label" for="user_shop_role">
+                                    <span class="label-text font-semibold">Shop role</span>
+                                </label>
+                                <select
+                                    id="user_shop_role"
+                                    name="shop_role"
+                                    class="admin-select {% if errors.shop_role %}select-error{% endif %}"
+                                    data-shop-role
+                                >
+                                    {% set currentShopRole = data.shop_role ?? 'owner' %}
+                                    {% for role in shop_roles %}
+                                        <option value="{{ role }}" {% if currentShopRole == role %}selected{% endif %}>{{ role|capitalize }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if errors.shop_role %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors.shop_role }}</span></label>
+                                {% endif %}
+                            </div>
+                            <p class="text-xs text-base-content/60 mt-2">
+                                Either set a global role (root/helpdesk) or link the user to a shop with a role.
+                            </p>
+
+                            <div class="admin-form-control">
+                                <label class="label" for="user_status">
+                                    <span class="label-text font-semibold">Status</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <select
+                                    id="user_status"
+                                    name="status"
+                                    class="admin-select {% if errors.status %}select-error{% endif %}"
+                                    required
+                                >
+                                    {% set currentStatus = data.status ?? 'active' %}
+                                    <option value="active" {% if currentStatus == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if currentStatus == 'inactive' %}selected{% endif %}>Inactive</option>
+                                </select>
+                                {% if errors.status %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors.status }}</span></label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="admin-form-actions">
@@ -161,23 +156,21 @@
 </div>
 <script>
     (function () {
-        var roleSelect = document.querySelector('[data-user-role]');
+        var globalRoleSelect = document.querySelector('[data-global-role]');
         var shopSelect = document.querySelector('[data-shop-select]');
-        if (!roleSelect || !shopSelect) {
-            return;
-        }
+        var shopRequired = document.querySelector('[data-shop-required]');
+        if (!globalRoleSelect || !shopSelect) return;
 
         function toggleShop() {
-            var role = roleSelect.value;
-            var disableShop = role === 'root' || role === 'helpdesk';
-            shopSelect.disabled = disableShop;
-            shopSelect.required = !disableShop;
-            if (disableShop) {
-                shopSelect.value = '';
-            }
+            var globalRole = globalRoleSelect.value;
+            var hasGlobalRole = globalRole === 'root' || globalRole === 'helpdesk';
+            shopSelect.disabled = hasGlobalRole;
+            shopSelect.required = !hasGlobalRole;
+            if (shopRequired) shopRequired.style.display = hasGlobalRole ? 'none' : '';
+            if (hasGlobalRole) shopSelect.value = '';
         }
 
-        roleSelect.addEventListener('change', toggleShop);
+        globalRoleSelect.addEventListener('change', toggleShop);
         toggleShop();
     })();
 </script>

@@ -5,9 +5,7 @@ Located in /scripts:
 - start.sh
 - generate_hosts.sh
 - migrate.php
-- seed_dev.php
-- seed_demo.php
-- seed_root.php
+- seed_db.php — demo data (packages, shops, root/helpdesk users); run via `php cartly db:seed` or `php scripts/seed_db.php`
 - test_api.sh
 - test_api_complete.sh
 - test_login.php

@@ -1,0 +1,161 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Customer Login{% endblock %}
+{% block page_title %}Customer Login{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-2">Customer Login & Registration</h2>
+            <p class="text-base-content/70 mb-6">Configure Google and Facebook OAuth for customer (shopper) login on your storefront. Shoppers can sign in with these providers instead of email/password.</p>
+
+            {% set uris = oauth_redirect_uris ?? { google: [], facebook: [] } %}
+
+            <form method="POST" action="/admin/setup/customer-auth" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6" x-data="{ googleEnabled: {{ (data.oauth.google.enabled ?? oauth_config.google.enabled) ? 'true' : 'false' }} }">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Google OAuth</h3>
+                        <div class="admin-form-control mb-4">
+                            <label class="label cursor-pointer justify-start gap-3">
+                                <input type="checkbox" name="oauth[google][enabled]" value="1" class="checkbox checkbox-sm" x-model="googleEnabled" />
+                                <span class="label-text font-semibold">Enable Google Login</span>
+                            </label>
+                        </div>
+                        <div x-show="googleEnabled" x-cloak>
+                            <label class="label py-0 mt-0"><span class="label-text font-semibold">Authorized redirect URIs</span></label>
+                            <div class="bg-base-300/50 rounded-lg p-3 font-mono text-sm break-all mb-4">
+                                {% for uri in uris.google %}
+                                <div class="mb-1 last:mb-0">{{ uri }}</div>
+                                {% else %}
+                                <span class="text-base-content/50">No shop domains. Add a domain in Shop settings.</span>
+                                {% endfor %}
+                            </div>
+                            <p class="text-sm text-base-content/60 mb-2">Create a project in <a href="https://console.cloud.google.com" target="_blank" rel="noopener" class="link link-primary">Google Cloud Console</a>, then:</p>
+                            <ol class="list-decimal list-inside text-sm text-base-content/60 mb-4 space-y-1">
+                                <li>APIs &amp; Services → Credentials → Create Credentials → OAuth client ID.</li>
+                                <li>Application type: <strong>Web application</strong>.</li>
+                                <li>Add each <strong>Authorized redirect URI</strong> above (exact URLs).</li>
+                                <li>Copy Client ID and Client Secret here. Ensure OAuth consent screen is configured if required.</li>
+                            </ol>
+                            <div class="admin-form-control">
+                                <label class="label" for="oauth_google_client_id">
+                                    <span class="label-text font-semibold">Client ID</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="oauth[google][client_id]"
+                                    id="oauth_google_client_id"
+                                    value="{{ (data.oauth.google.client_id ?? oauth_config.google.client_id) }}"
+                                    placeholder="xxxxx.apps.googleusercontent.com"
+                                    autocomplete="off"
+                                    :disabled="!googleEnabled"
+                                    class="admin-input {% if errors['oauth.google.client_id'] %}input-error{% endif %}"
+                                />
+                                {% if errors['oauth.google.client_id'] %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors['oauth.google.client_id'] }}</span></label>
+                                {% endif %}
+                            </div>
+                            <div class="admin-form-control mt-4">
+                                <label class="label" for="oauth_google_client_secret">
+                                    <span class="label-text font-semibold">Client Secret</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="password"
+                                    name="oauth[google][client_secret]"
+                                    id="oauth_google_client_secret"
+                                    value="{{ (data.oauth.google.client_secret ?? oauth_config.google.client_secret) }}"
+                                    placeholder="Leave blank to keep existing"
+                                    autocomplete="new-password"
+                                    :disabled="!googleEnabled"
+                                    class="admin-input {% if errors['oauth.google.client_secret'] %}input-error{% endif %}"
+                                />
+                                {% if errors['oauth.google.client_secret'] %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors['oauth.google.client_secret'] }}</span></label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6" x-data="{ facebookEnabled: {{ (data.oauth.facebook.enabled ?? oauth_config.facebook.enabled) ? 'true' : 'false' }} }">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Facebook Login</h3>
+                        <div class="admin-form-control mb-4">
+                            <label class="label cursor-pointer justify-start gap-3">
+                                <input type="checkbox" name="oauth[facebook][enabled]" value="1" class="checkbox checkbox-sm" x-model="facebookEnabled" />
+                                <span class="label-text font-semibold">Enable Facebook Login</span>
+                            </label>
+                        </div>
+                        <div x-show="facebookEnabled" x-cloak>
+                            <label class="label py-0 mt-0"><span class="label-text font-semibold">Valid OAuth Redirect URIs</span></label>
+                            <div class="bg-base-300/50 rounded-lg p-3 font-mono text-sm break-all mb-4">
+                                {% for uri in uris.facebook %}
+                                <div class="mb-1 last:mb-0">{{ uri }}</div>
+                                {% else %}
+                                <span class="text-base-content/50">No shop domains. Add a domain in Shop settings.</span>
+                                {% endfor %}
+                            </div>
+                            <p class="text-sm text-base-content/60 mb-2">Create an app in <a href="https://developers.facebook.com" target="_blank" rel="noopener" class="link link-primary">Facebook Developers</a>, then:</p>
+                            <ol class="list-decimal list-inside text-sm text-base-content/60 mb-4 space-y-1">
+                                <li>Add product → <strong>Facebook Login</strong> → Settings.</li>
+                                <li>Under <strong>Valid OAuth Redirect URIs</strong>, add each URI above (exact URLs).</li>
+                                <li>Save. Copy App ID and App Secret from Dashboard → Settings → Basic.</li>
+                                <li>Paste App ID and App Secret here.</li>
+                            </ol>
+                            <div class="admin-form-control">
+                                <label class="label" for="oauth_facebook_app_id">
+                                    <span class="label-text font-semibold">App ID</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="oauth[facebook][app_id]"
+                                    id="oauth_facebook_app_id"
+                                    value="{{ data.oauth.facebook.app_id ?? oauth_config.facebook.app_id ?? '' }}"
+                                    placeholder=""
+                                    autocomplete="off"
+                                    :disabled="!facebookEnabled"
+                                    class="admin-input {% if errors['oauth.facebook.app_id'] %}input-error{% endif %}"
+                                />
+                                {% if errors['oauth.facebook.app_id'] %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors['oauth.facebook.app_id'] }}</span></label>
+                                {% endif %}
+                            </div>
+                            <div class="admin-form-control mt-4">
+                                <label class="label" for="oauth_facebook_app_secret">
+                                    <span class="label-text font-semibold">App Secret</span>
+                                    <span class="text-error">*</span>
+                                </label>
+                                <input
+                                    type="password"
+                                    name="oauth[facebook][app_secret]"
+                                    id="oauth_facebook_app_secret"
+                                    value="{{ (data.oauth.facebook.app_secret ?? oauth_config.facebook.app_secret) }}"
+                                    placeholder="Leave blank to keep existing"
+                                    autocomplete="new-password"
+                                    :disabled="!facebookEnabled"
+                                    class="admin-input {% if errors['oauth.facebook.app_secret'] %}input-error{% endif %}"
+                                />
+                                {% if errors['oauth.facebook.app_secret'] %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors['oauth.facebook.app_secret'] }}</span></label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-sm text-base-content/60 mb-4">OAuth credentials are stored per shop. Customer login implementation (redirect flow, token exchange) will use these settings when enabled.</p>
+
+                <div class="admin-form-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

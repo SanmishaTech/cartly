@@ -669,6 +669,135 @@ class SetupController extends AppController
         return $this->render($response, 'setup/discounts.twig');
     }
 
+    public function customerAuth($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $shopMetadata = ShopMetadata::where('shop_id', $shop->id)->first();
+        $raw = $shopMetadata?->oauth_config ?? [];
+        if (!is_array($raw)) {
+            $raw = [];
+        }
+        $oauthConfig = [
+            'google' => array_merge(['enabled' => false, 'client_id' => '', 'client_secret' => ''], $raw['google'] ?? []),
+            'facebook' => array_merge(['enabled' => false, 'app_id' => '', 'app_secret' => ''], $raw['facebook'] ?? []),
+        ];
+
+        $scheme = $request->getUri()->getScheme() ?: 'https';
+        $redirectUris = $this->buildOAuthRedirectUris($shop, $scheme);
+
+        return $this->render($response, 'setup/customer_auth.twig', [
+            'shop' => $shop,
+            'oauth_config' => $oauthConfig,
+            'oauth_redirect_uris' => $redirectUris,
+            'errors' => $this->flashGet('errors', []),
+            'data' => $this->flashGet('old', []),
+        ]);
+    }
+
+    public function updateCustomerAuth($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $data = (array)$request->getParsedBody();
+        $oauth = (array)($data['oauth'] ?? []);
+
+        $shopMetadata = ShopMetadata::firstOrNew(['shop_id' => $shop->id]);
+        $existing = $shopMetadata->oauth_config ?? [];
+        if (!is_array($existing)) {
+            $existing = [];
+        }
+
+        $googleEnabled = !empty($oauth['google']['enabled']);
+        $facebookEnabled = !empty($oauth['facebook']['enabled']);
+
+        $clientId = trim((string)($oauth['google']['client_id'] ?? ''));
+        $clientSecret = trim((string)($oauth['google']['client_secret'] ?? ''));
+        $appId = trim((string)($oauth['facebook']['app_id'] ?? ''));
+        $appSecret = trim((string)($oauth['facebook']['app_secret'] ?? ''));
+
+        $errors = [];
+        if ($googleEnabled) {
+            if ($clientId === '') {
+                $errors['oauth.google.client_id'] = 'Client ID is required when Google Login is enabled.';
+            } elseif (str_contains($clientId, '@')) {
+                $errors['oauth.google.client_id'] = 'Client ID must be from Google Cloud Console (e.g. xxx.apps.googleusercontent.com), not an email.';
+            } elseif ($clientId === 'root@demo.com') {
+                $errors['oauth.google.client_id'] = 'Do not use demo login credentials. Use your Google OAuth Client ID from Google Cloud Console.';
+            }
+            $existingSecret = $existing['google']['client_secret'] ?? '';
+            if ($clientSecret === '' && $existingSecret === '') {
+                $errors['oauth.google.client_secret'] = 'Client Secret is required when Google Login is enabled.';
+            } elseif ($clientSecret === 'abcd123@') {
+                $errors['oauth.google.client_secret'] = 'Do not use demo password. Use your Google OAuth Client Secret from Google Cloud Console.';
+            }
+        } elseif ($clientId !== '' && (str_contains($clientId, '@') || $clientId === 'root@demo.com' || $clientSecret === 'abcd123@')) {
+            $errors['oauth.google.client_id'] = 'Invalid credentials. Use real OAuth Client ID from Google Cloud Console or leave empty.';
+        }
+        if ($facebookEnabled) {
+            if ($appId === '') {
+                $errors['oauth.facebook.app_id'] = 'App ID is required when Facebook Login is enabled.';
+            } elseif (str_contains($appId, '@') || $appId === 'root@demo.com') {
+                $errors['oauth.facebook.app_id'] = 'App ID must be from Meta for Developers, not an email or demo credentials.';
+            }
+            $existingFbSecret = $existing['facebook']['app_secret'] ?? '';
+            if ($appSecret === '' && $existingFbSecret === '') {
+                $errors['oauth.facebook.app_secret'] = 'App Secret is required when Facebook Login is enabled.';
+            } elseif ($appSecret === 'abcd123@') {
+                $errors['oauth.facebook.app_secret'] = 'Do not use demo password. Use your Facebook App Secret from Meta for Developers.';
+            }
+        } elseif ($appId !== '' && (str_contains($appId, '@') || $appId === 'root@demo.com' || $appSecret === 'abcd123@')) {
+            $errors['oauth.facebook.app_id'] = 'Invalid credentials. Use real App ID from Meta for Developers or leave empty.';
+        }
+        if (!empty($errors)) {
+            $this->flashSet('errors', $errors);
+            $this->flashSet('old', $data);
+            return $this->redirect($response, '/admin/setup/customer-auth');
+        }
+
+        $googleSecret = trim((string)($oauth['google']['client_secret'] ?? ''));
+        $fbSecret = trim((string)($oauth['facebook']['app_secret'] ?? ''));
+
+        $sanitizeGoogle = static function (string $v): string {
+            if ($v === '' || str_contains($v, '@') || $v === 'root@demo.com') {
+                return '';
+            }
+            return $v;
+        };
+        $sanitizeSecret = static function (string $v): string {
+            return $v === 'abcd123@' ? '' : $v;
+        };
+        $safeClientId = $googleEnabled ? $sanitizeGoogle($clientId) : $sanitizeGoogle($existing['google']['client_id'] ?? '');
+        $safeClientSecret = $googleEnabled ? $sanitizeSecret($clientSecret !== '' ? $clientSecret : ($existing['google']['client_secret'] ?? '')) : $sanitizeSecret($existing['google']['client_secret'] ?? '');
+        $safeAppId = $facebookEnabled ? $sanitizeGoogle($appId) : $sanitizeGoogle($existing['facebook']['app_id'] ?? '');
+        $safeAppSecret = $facebookEnabled ? $sanitizeSecret($fbSecret !== '' ? $fbSecret : ($existing['facebook']['app_secret'] ?? '')) : $sanitizeSecret($existing['facebook']['app_secret'] ?? '');
+
+        $oauthConfig = [
+            'google' => [
+                'enabled' => $googleEnabled,
+                'client_id' => $safeClientId,
+                'client_secret' => $safeClientSecret,
+            ],
+            'facebook' => [
+                'enabled' => $facebookEnabled,
+                'app_id' => $safeAppId,
+                'app_secret' => $safeAppSecret,
+            ],
+        ];
+        $shopMetadata->oauth_config = $oauthConfig;
+        $shopMetadata->save();
+
+        $this->flashSet('success', 'Customer auth settings saved.');
+
+        return $this->redirect($response, '/admin/setup/customer-auth');
+    }
+
     private function getShopOrRedirect(Response $response): Shop|Response
     {
         $this->startSession();
@@ -979,6 +1108,26 @@ class SetupController extends AppController
 
         $scheme = $request->getUri()->getScheme() ?: 'https';
         return $scheme . '://' . $domain;
+    }
+
+    /**
+     * Build full OAuth redirect URIs for this shop (all domains) for Google and Facebook.
+     * Paths: /auth/google/callback, /auth/facebook/callback.
+     */
+    private function buildOAuthRedirectUris(Shop $shop, string $scheme): array
+    {
+        $domains = $shop->domains()->pluck('domain')->filter()->map('strval')->values()->all();
+        if ($domains === []) {
+            return ['google' => [], 'facebook' => []];
+        }
+        $google = [];
+        $facebook = [];
+        foreach ($domains as $domain) {
+            $base = $scheme . '://' . $domain;
+            $google[] = $base . '/auth/google/callback';
+            $facebook[] = $base . '/auth/facebook/callback';
+        }
+        return ['google' => $google, 'facebook' => $facebook];
     }
 
     private function resolveShopDomain(Shop $shop): string

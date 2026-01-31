@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 use Slim\Psr7\Response;
 use Slim\Views\Twig;
 use App\Models\Shop;
+use App\Models\User;
 use App\Services\AuthorizationService;
 use App\Services\FlashService;
 use App\Helpers\PaginationHelper;
@@ -29,7 +30,21 @@ class AppController
         if (!array_key_exists('shop', $data)) {
             $shopId = (int)($_SESSION['shop_id'] ?? 0);
             if ($shopId > 0) {
-                $data['shop'] = Shop::with('domains')->find($shopId);
+                $userId = (int)($_SESSION['user_id'] ?? 0);
+                $user = $userId > 0 ? User::find($userId) : null;
+                if ($user && $user->canManageShop($shopId)) {
+                    $data['shop'] = Shop::with('domains')->find($shopId);
+                } else {
+                    $data['shop'] = null;
+                    $_SESSION['shop_id'] = 0;
+                    if ($user) {
+                        $firstShopId = $user->getFirstManagedShopId();
+                        if ($firstShopId) {
+                            $_SESSION['shop_id'] = $firstShopId;
+                            $_SESSION['user_role'] = $user->getEffectiveRoleForShop($firstShopId);
+                        }
+                    }
+                }
             }
         }
         if (!array_key_exists('shop_preview_url', $data) && !empty($data['shop'])) {
@@ -40,6 +55,14 @@ class AppController
         }
         if (!array_key_exists('can', $data)) {
             $role = $_SESSION['user_role'] ?? null;
+            $userId = (int)($_SESSION['user_id'] ?? 0);
+            $shopId = (int)($_SESSION['shop_id'] ?? 0);
+            if ($userId > 0) {
+                $user = User::find($userId);
+                if ($user) {
+                    $role = $shopId > 0 ? $user->getEffectiveRoleForShop($shopId) : $user->global_role;
+                }
+            }
             $authorization = new AuthorizationService();
             $data['can'] = [
                 'dashboard_access' => $authorization->roleHasPermission($role, AuthorizationService::PERMISSION_DASHBOARD_ACCESS),

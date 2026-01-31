@@ -8,7 +8,7 @@
     <div class="card bg-base-100 border border-base-300">
         <div class="admin-card-body">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <h2 class="card-title">Shop Admins</h2>
+                <h2 class="card-title">Shop owners</h2>
             </div>
 
             <div class="card bg-base-200/40 border border-base-300 mb-4">
@@ -21,7 +21,7 @@
                             type="text"
                             name="search"
                             value="{{ pager.query.search ?? '' }}"
-                            placeholder="Search by name, email, or shop"
+                            placeholder="Search by email or shop"
                             class="admin-input sm:w-64"
                         />
                         <button type="submit" class="btn btn-accent btn-sm">Filter</button>
@@ -35,20 +35,16 @@
                     <thead>
                         <tr>
                             <th>
-                                <a href="{{ pager.sortUrls.name }}" class="link link-hover">
-                                    Name{% if pager.sort == 'name' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
-                                </a>
-                            </th>
-                            <th>
                                 <a href="{{ pager.sortUrls.email }}" class="link link-hover">
                                     Email{% if pager.sort == 'email' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
                                 </a>
                             </th>
                             <th>
                                 <a href="{{ pager.sortUrls.shop }}" class="link link-hover">
-                                    Shop{% if pager.sort == 'shop' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                    Shop name{% if pager.sort == 'shop' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
                                 </a>
                             </th>
+                            <th>Domain</th>
                             <th>
                                 <a href="{{ pager.sortUrls.status }}" class="link link-hover">
                                     Status{% if pager.sort == 'status' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
@@ -60,9 +56,32 @@
                     <tbody>
                         {% for user in pager.items %}
                             <tr class="hover">
-                                <td class="font-semibold">{{ user.name }}</td>
-                                <td>{{ user.email }}</td>
-                                <td class="text-sm text-base-content/70 text-truncate">{{ user.shop_name ?? '—' }}</td>
+                                <td class="font-semibold">{{ user.email }}</td>
+                                <td class="text-sm text-base-content/80">
+                                    {% if user.shopUsers|length %}
+                                        {% set first = user.shopUsers|first %}
+                                        {{ first.shop.shop_name ?? '—' }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td class="text-sm text-base-content/70">
+                                    {% if user.shopUsers|length %}
+                                        {% set first = user.shopUsers|first %}
+                                        {% set domainDisplay = '—' %}
+                                        {% for d in first.shop.domains %}
+                                            {% if d.is_primary %}
+                                                {% set domainDisplay = d.domain %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if domainDisplay == '—' and first.shop.domains|length %}
+                                            {% set domainDisplay = (first.shop.domains|first).domain %}
+                                        {% endif %}
+                                        {{ domainDisplay }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if user.status == 'active' %}
                                         <div class="badge badge-success">Active</div>
@@ -101,7 +120,7 @@
             </div>
             {% else %}
             <div class="admin-card-body text-center py-12">
-                <h3 class="text-xl font-semibold mb-2">No shop admins found</h3>
+                <h3 class="text-xl font-semibold mb-2">No shop owners found</h3>
                 <p class="text-base-content/60">Try adjusting your search filters.</p>
             </div>
             {% endif %}

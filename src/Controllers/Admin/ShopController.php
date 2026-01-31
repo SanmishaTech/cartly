@@ -6,6 +6,7 @@ use App\Models\Package;
 use App\Models\Payment;
 use App\Models\Shop;
 use App\Models\ShopDomain;
+use App\Models\ShopUser;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\MailService;
@@ -81,7 +82,6 @@ class ShopController extends AppController
         $validator->rule('lengthMax', 'shop.state', 100)->message('State is too long.');
         $validator->rule('lengthMax', 'shop.postal_code', 20)->message('Postal code is too long.');
         $validator->rule('lengthMax', 'shop.country', 100)->message('Country is too long.');
-        $validator->rule('required', 'user.name')->message('Shop admin name is required.');
         $validator->rule('required', 'user.email')->message('Shop admin email is required.');
         $validator->rule('email', 'user.email')->message('Enter a valid email address.');
         if (!$sendPasswordLink) {
@@ -173,17 +173,19 @@ class ShopController extends AppController
             'status' => 'pending',
         ]);
 
-        $userData = [
-            'name' => (string)($userInput['name'] ?? ''),
-            'email' => (string)($userInput['email'] ?? ''),
-            'password' => $sendPasswordLink
-                ? $this->generateRandomPassword()
-                : (string)($userInput['password'] ?? ''),
-            'role' => 'admin',
-            'shop_id' => $shop->id,
-            'status' => 'active',
-        ];
-        $adminUser = User::create($userData);
+        $adminUser = User::firstOrCreate(
+            ['email' => (string)($userInput['email'] ?? '')],
+            [
+                'password' => $sendPasswordLink
+                    ? $this->generateRandomPassword()
+                    : (string)($userInput['password'] ?? ''),
+                'status' => 'active',
+            ]
+        );
+        ShopUser::firstOrCreate(
+            ['user_id' => $adminUser->id, 'shop_id' => $shop->id],
+            ['role' => ShopUser::ROLE_OWNER]
+        );
 
         if ($sendPasswordLink && $adminUser->status === 'active') {
             $this->sendResetLink($request, $adminUser);
@@ -247,9 +249,11 @@ class ShopController extends AppController
             return $response->withStatus(404);
         }
 
-        $adminUser = User::where('shop_id', $shopId)
-            ->where('role', 'admin')
+        $ownerMembership = ShopUser::where('shop_id', $shopId)
+            ->where('role', ShopUser::ROLE_OWNER)
+            ->with('user')
             ->first();
+        $adminUser = $ownerMembership ? $ownerMembership->user : null;
 
         $errors = $this->flashGet('errors', []);
         $data = $this->flashGet('old', []);
@@ -285,7 +289,6 @@ class ShopController extends AppController
         $validator->rule('lengthMax', 'state', 100)->message('State is too long.');
         $validator->rule('lengthMax', 'postal_code', 20)->message('Postal code is too long.');
         $validator->rule('lengthMax', 'country', 100)->message('Country is too long.');
-        $validator->rule('required', 'user.name')->message('Shop admin name is required.');
         $validator->rule('required', 'user.email')->message('Shop admin email is required.');
         $validator->rule('email', 'user.email')->message('Enter a valid email address.');
         $errors = $validator->validate() ? [] : $this->formatValitronErrors($validator->errors());
@@ -303,9 +306,11 @@ class ShopController extends AppController
             $errors['status'] = 'Invalid status.';
         }
 
-        $adminUser = User::where('shop_id', $shopId)
-            ->where('role', 'admin')
+        $ownerMembership = ShopUser::where('shop_id', $shopId)
+            ->where('role', ShopUser::ROLE_OWNER)
+            ->with('user')
             ->first();
+        $adminUser = $ownerMembership ? $ownerMembership->user : null;
         if (!$adminUser) {
             $errors['user.email'] = 'Shop admin account not found.';
         }
@@ -348,10 +353,7 @@ class ShopController extends AppController
             'country' => $country,
         ]);
 
-        $adminUser->update([
-            'name' => (string)($userInput['name'] ?? ''),
-            'email' => $adminEmail,
-        ]);
+        $adminUser->update(['email' => $adminEmail]);
 
         $this->flashSet('success', 'Shop updated successfully.');
 
@@ -366,7 +368,7 @@ class ShopController extends AppController
             return $response->withStatus(404);
         }
 
-        User::where('shop_id', $shopId)->delete();
+        ShopUser::where('shop_id', $shopId)->delete();
         Payment::where('shop_id', $shopId)->delete();
         Subscription::where('shop_id', $shopId)->delete();
         ShopDomain::where('shop_id', $shopId)->delete();
@@ -385,17 +387,19 @@ class ShopController extends AppController
             return $response->withStatus(404);
         }
 
-        $adminUser = User::where('shop_id', $shopId)
-            ->where('role', 'admin')
+        $ownerMembership = ShopUser::where('shop_id', $shopId)
+            ->where('role', ShopUser::ROLE_OWNER)
+            ->with('user')
             ->first();
+        $adminUser = $ownerMembership ? $ownerMembership->user : null;
 
         if (!$adminUser) {
-            $this->flashSet('error', 'No shop admin found for this shop.');
+            $this->flashSet('error', 'No shop owner found for this shop.');
             return $this->redirect($response, '/admin/shops');
         }
 
         if ($adminUser->status !== 'active') {
-            $this->flashSet('error', 'Shop admin must be active to send a password link.');
+            $this->flashSet('error', 'Shop owner must be active to send a password link.');
             return $this->redirect($response, '/admin/shops');
         }
 
@@ -429,9 +433,10 @@ class ShopController extends AppController
 
         $mailService = new MailService();
         $subject = 'Set your Cartly password';
-        $htmlBody = $this->buildResetEmailHtml($user->name, $resetUrl);
-        $textBody = $this->buildResetEmailText($user->name, $resetUrl);
-        $sent = $mailService->send($user->email, $user->name, $subject, $htmlBody, $textBody);
+        $displayName = $user->email;
+        $htmlBody = $this->buildResetEmailHtml($displayName, $resetUrl);
+        $textBody = $this->buildResetEmailText($displayName, $resetUrl);
+        $sent = $mailService->send($user->email, $displayName, $subject, $htmlBody, $textBody);
 
         if ($sent) {
             $logger = new AuthLogger();

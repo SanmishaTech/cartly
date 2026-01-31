@@ -40,6 +40,17 @@ return function (App $app, Twig $twig) {
     $app->get('/cart', [$storefrontController, 'cart']);
     $app->get('/checkout', [$storefrontController, 'checkout']);
     $app->get('/account', [$storefrontController, 'account']);
+    $app->get('/login', [$storefrontController, 'loginForm']);
+    $app->post('/login', [$storefrontController, 'login'])->add(new TrimInputMiddleware());
+    $app->get('/register', [$storefrontController, 'registerForm']);
+    $app->post('/register', [$storefrontController, 'register'])->add(new TrimInputMiddleware());
+    $app->get('/forgot-password', [$storefrontController, 'forgotPasswordForm']);
+
+    // Customer OAuth (Google / Facebook) — requires shop context (storefront host)
+    $app->get('/auth/google', [$storefrontController, 'redirectToGoogle']);
+    $app->get('/auth/google/callback', [$storefrontController, 'googleCallback']);
+    $app->get('/auth/facebook', [$storefrontController, 'redirectToFacebook']);
+    $app->get('/auth/facebook/callback', [$storefrontController, 'facebookCallback']);
 
     // Auth routes
     $authController = $container->get(AuthController::class);
@@ -62,8 +73,6 @@ return function (App $app, Twig $twig) {
     });
     // Logout
     $app->post('/logout', [$authController, 'logout'])->add(new TrimInputMiddleware());
-    
-    // TODO: Customer login and registration (will be implemented later)
 
     // Admin routes (protected)
     $dashboardController = $container->get(DashboardController::class);
@@ -168,6 +177,8 @@ return function (App $app, Twig $twig) {
         $setup->get('/payments', [$setupController, 'payments']);
         $setup->get('/delivery', [$setupController, 'delivery']);
         $setup->get('/discounts', [$setupController, 'discounts']);
+        $setup->get('/customer-auth', [$setupController, 'customerAuth']);
+        $setup->post('/customer-auth', [$setupController, 'updateCustomerAuth'])->add(new TrimInputMiddleware());
     });
     $setupGroup->add(
         new RequirePermissionMiddleware(

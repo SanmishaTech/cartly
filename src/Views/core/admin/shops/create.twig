@@ -335,33 +335,12 @@
 
                 <div class="card bg-base-100 border border-base-300 mb-6">
                     <div class="admin-card-body">
-                        <h3 class="admin-section-title mb-2">Shop Admin</h3>
+                        <h3 class="admin-section-title mb-2">Shop owner</h3>
                         {% set sendLink = data.user.send_password_link ?? false %}
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div class="admin-form-control">
-                                <label class="label" for="shop_admin_name">
-                                    <span class="label-text font-semibold">Admin Name</span>
-                                    <span class="text-error">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="user[name]"
-                                    id="shop_admin_name"
-                                    value="{{ data.user.name ?? '' }}"
-                                    placeholder="e.g., John Doe"
-                                    class="admin-input {% if errors['user.name'] %}input-error{% endif %}"
-                                    required
-                                />
-                                {% if errors['user.name'] %}
-                                    <label class="label">
-                                        <span class="label-text-alt text-error">{{ errors['user.name'] }}</span>
-                                    </label>
-                                {% endif %}
-                            </div>
-
-                            <div class="admin-form-control">
                                 <label class="label" for="shop_admin_email">
-                                    <span class="label-text font-semibold">Admin Email</span>
+                                    <span class="label-text font-semibold">Owner email</span>
                                     <span class="text-error">*</span>
                                 </label>
                                 <input

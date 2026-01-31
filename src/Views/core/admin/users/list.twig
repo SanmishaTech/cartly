@@ -27,7 +27,7 @@
                             type="text"
                             name="search"
                             value="{{ pager.query.search ?? '' }}"
-                            placeholder="Search by name, email, or shop"
+                            placeholder="Search by email or shop"
                             class="admin-input sm:w-64"
                         />
                         <button type="submit" class="btn btn-accent btn-sm">Filter</button>
@@ -41,21 +41,16 @@
                     <thead>
                         <tr>
                             <th>
-                                <a href="{{ pager.sortUrls.name }}" class="link link-hover">
-                                    Name{% if pager.sort == 'name' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
-                                </a>
-                            </th>
-                            <th>
                                 <a href="{{ pager.sortUrls.email }}" class="link link-hover">
                                     Email{% if pager.sort == 'email' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
                                 </a>
                             </th>
-                            <th>Shop</th>
                             <th>
-                                <a href="{{ pager.sortUrls.role }}" class="link link-hover">
-                                    Role{% if pager.sort == 'role' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
+                                <a href="{{ pager.sortUrls.global_role }}" class="link link-hover">
+                                    Global role{% if pager.sort == 'global_role' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
                                 </a>
                             </th>
+                            <th>Shop (role)</th>
                             <th>
                                 <a href="{{ pager.sortUrls.status }}" class="link link-hover">
                                     Status{% if pager.sort == 'status' %} {{ pager.dir == 'asc' ? '▲' : '▼' }}{% endif %}
@@ -72,10 +67,17 @@
                     <tbody>
                         {% for user in pager.items %}
                             <tr class="hover">
-                                <td class="font-semibold">{{ user.name }}</td>
-                                <td>{{ user.email }}</td>
-                                <td class="text-sm text-base-content/70 text-truncate">{{ user.shop_name ?? '—' }}</td>
-                                <td>{{ user.role|capitalize }}</td>
+                                <td class="font-semibold">{{ user.email }}</td>
+                                <td>{{ user.global_role ?? '—' }}</td>
+                                <td class="text-sm text-base-content/70">
+                                    {% if user.shopUsers|length %}
+                                        {% for su in user.shopUsers %}
+                                            {{ su.shop.shop_name ?? '—' }} ({{ su.role }}){% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if user.status == 'active' %}
                                         <div class="badge badge-success">Active</div>

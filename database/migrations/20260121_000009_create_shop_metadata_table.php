@@ -15,6 +15,7 @@ return [
             $table->json('home_content')->nullable();
             $table->json('footer_content')->nullable();
             $table->json('third_party')->nullable();
+            $table->json('oauth_config')->nullable();
 
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();

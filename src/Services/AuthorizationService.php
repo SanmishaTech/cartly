@@ -4,11 +4,14 @@ namespace App\Services;
 
 class AuthorizationService
 {
+    /** Platform-level roles (users.global_role) */
     public const ROLE_ROOT = 'root';
     public const ROLE_HELPDESK = 'helpdesk';
+
+    /** Shop-level roles (shop_users.role) */
+    public const ROLE_OWNER = 'owner';
     public const ROLE_ADMIN = 'admin';
-    public const ROLE_OPERATIONS = 'operations';
-    public const ROLE_SHOPPER = 'shopper';
+    public const ROLE_STAFF = 'staff';
 
     public const PERMISSION_DASHBOARD_ACCESS = 'dashboard.access';
     public const PERMISSION_PACKAGES_MANAGE = 'packages.manage';
@@ -27,18 +30,20 @@ class AuthorizationService
             self::PERMISSION_SUBSCRIPTIONS_MANAGE,
             self::PERMISSION_SUPPORT_SUDO,
         ],
-        self::ROLE_ADMIN => [
-            self::PERMISSION_DASHBOARD_ACCESS,
-            self::PERMISSION_SETUP_ACCESS,
-        ],
         self::ROLE_HELPDESK => [
             self::PERMISSION_DASHBOARD_ACCESS,
             self::PERMISSION_SUPPORT_SUDO,
         ],
-        self::ROLE_OPERATIONS => [
+        self::ROLE_OWNER => [
+            self::PERMISSION_DASHBOARD_ACCESS,
+            self::PERMISSION_SETUP_ACCESS,
+        ],
+        self::ROLE_ADMIN => [
             self::PERMISSION_DASHBOARD_ACCESS,
         ],
-        self::ROLE_SHOPPER => [],
+        self::ROLE_STAFF => [
+            self::PERMISSION_DASHBOARD_ACCESS,
+        ],
     ];
 
     public function roleHasPermission(?string $role, string $permission): bool

@@ -17,6 +17,17 @@
         </div>
 
         <div class="navbar-end gap-2">
+            {% if customer.id %}
+            <span class="text-sm text-base-content/70 hidden sm:inline">Welcome, {{ customer.name|default(customer.email) }}</span>
+            <a href="/account" class="btn btn-ghost btn-sm">Account</a>
+            <form method="post" action="/logout" class="inline" onsubmit="return confirm('Sign out?');">
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn-ghost btn-sm">Logout</button>
+            </form>
+            {% else %}
+            <a href="/login" class="btn btn-ghost btn-sm">Login</a>
+            <a href="/register" class="btn btn-primary btn-sm">Register</a>
+            {% endif %}
             <a href="/cart" class="btn btn-ghost">Cart</a>
             <div class="dropdown dropdown-end md:hidden">
                 <label tabindex="0" class="btn btn-ghost btn-circle" @click="mobileMenuOpen = !mobileMenuOpen">
@@ -24,13 +35,22 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </label>
-                {% if header_links|length %}
-                    <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-52" x-show="mobileMenuOpen">
+                <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-52" x-show="mobileMenuOpen">
+                    {% if customer.id %}
+                    <li><span class="px-4 py-2 text-sm text-base-content/70">Welcome, {{ customer.name|default(customer.email) }}</span></li>
+                    <li><a href="/account">Account</a></li>
+                    <li><form method="post" action="/logout"><input type="hidden" name="_token" value="{{ csrf_token }}"><button type="submit" class="text-left w-full px-4 py-2 text-error">Logout</button></form></li>
+                    {% else %}
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/register">Register</a></li>
+                    {% endif %}
+                    <li><a href="/cart">Cart</a></li>
+                    {% if header_links|length %}
                         {% for link in header_links %}
                             <li><a href="{{ link.url }}">{{ link.label }}</a></li>
                         {% endfor %}
-                    </ul>
-                {% endif %}
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </div>

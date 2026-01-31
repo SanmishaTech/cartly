@@ -1,7 +1,11 @@
 # Database
 
 ## Core Tables
+- users
 - shops
+- shop_users (pivot: user_id, shop_id, role) — staff permissions
+- shop_customers (pivot: shop_id, user_id, first_seen_at, last_seen_at) — customer activity
+- user_oauth_accounts (user_id, provider, provider_user_id, email)
 - shop_domains
 - packages
 - subscriptions
@@ -12,6 +16,28 @@
 ## Removed Tables
 - plans
 - plan_features
+
+## Users (identity only)
+- id, email (unique), name (nullable, display name)
+- password (nullable for OAuth-only users)
+- global_role (enum root|helpdesk, nullable)
+- status (active|inactive), created_at, updated_at
+- No shop_id, no role on users; shop membership and roles live in shop_users
+
+## shop_users (permissions — staff only)
+- user_id, shop_id, role (enum owner|admin|staff)
+- Unique (user_id, shop_id); one user can have many shops with a role per shop
+- Staff/owners who manage the shop
+
+## shop_customers (customer activity — shoppers)
+- shop_id, user_id, first_seen_at, last_seen_at
+- Unique (shop_id, user_id)
+- Records when logged-in shoppers visit a shop storefront; used for CRM/analytics
+- NOT for auth or permissions; distinct from shop_users
+
+## user_oauth_accounts
+- user_id, provider (google|facebook), provider_user_id, email
+- OAuth identities linked to global user; login can be email/password or linked provider
 
 ## Packages Schema (key fields)
 - name (string)
@@ -53,6 +79,7 @@ Note: Subscription billing period determines which cost column is used.
 - social_media_links (json)
 - home_sections (json)
 - home_content (json)
+- oauth_config (json) — per-shop OAuth for customer login: `{ "google": { "enabled", "client_id", "client_secret" }, "facebook": { "enabled", "app_id", "app_secret" } }`
 
 ## Subscriptions (key fields)
 - shop_id (fk)
