@@ -19,6 +19,7 @@ use App\Services\MenuService;
 use App\Services\ThemeResolver;
 use App\Services\MailResolver;
 use App\Services\MailService;
+use App\Services\HtmlSanitizer;
 use App\Services\TransactionalMailService;
 use App\Controllers\ThemeAssetController;
 use App\Twig\ThemeExtension;
@@ -76,6 +77,9 @@ $containerBuilder->addDefinitions([
     },
     MailResolver::class => function () {
         return new MailResolver();
+    },
+    HtmlSanitizer::class => function () {
+        return new HtmlSanitizer();
     },
     MailService::class => function () {
         return new MailService();

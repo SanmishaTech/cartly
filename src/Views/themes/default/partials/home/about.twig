@@ -7,7 +7,7 @@
                 <h2 class="text-2xl font-semibold mb-2">{{ about_title }}</h2>
             {% endif %}
             {% if about_description %}
-                <p class="text-base-content/70">{{ about_description }}</p>
+                <div class="text-base-content/70 prose prose-sm max-w-none prose-p:my-1">{{ about_description|raw }}</div>
             {% endif %}
         </div>
     </section>

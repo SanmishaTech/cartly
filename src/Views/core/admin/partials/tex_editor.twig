@@ -1,0 +1,18 @@
+{# TEX rich text editor partial.
+   Required: name, id
+   Optional: value (default ''), buttons (default 'bold,italic,strikethrough,ulist,olist'), input_id (default id ~ '_input'), required (default false)
+#}
+{% set input_id = input_id ?? id ~ '_input' %}
+{% set buttons_str = buttons ?? 'bold,italic,strikethrough,ulist,olist' %}
+{% set value_html = value ?? '' %}
+<div
+    class="tex-editor-wrapper min-h-[150px]"
+    data-tex-editor
+    data-tex-input-id="{{ input_id }}"
+    data-tex-name="{{ name }}"
+    data-tex-value="{{ value_html|e('html_attr') }}"
+    data-tex-buttons="{{ buttons_str }}"
+>
+    <div class="tex-placeholder border border-base-300 rounded-lg p-4 min-h-[120px] bg-base-100 text-base-content/60 text-sm">Loading editor…</div>
+</div>
+<input type="hidden" name="{{ name }}" id="{{ input_id }}" value="{{ value_html|e('html_attr') }}"{% if required %} required{% endif %}>

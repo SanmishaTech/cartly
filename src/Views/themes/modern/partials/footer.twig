@@ -8,7 +8,7 @@
     <div class="max-w-6xl mx-auto px-4 py-12 space-y-6">
         <div class="text-center space-y-2">
             {% if footer_summary %}
-                <p class="text-base-content/70">{{ footer_summary }}</p>
+                <div class="text-base-content/70 prose prose-sm max-w-none prose-p:my-0">{{ footer_summary|raw }}</div>
             {% endif %}
         </div>
 

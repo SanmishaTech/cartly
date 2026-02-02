@@ -40,15 +40,14 @@
                             </div>
 
                             <div class="admin-form-control">
-                                <label class="label" for="shop_description">
+                                <label class="label" for="shop_description_input">
                                     <span class="label-text font-semibold">Shop Description</span>
                                 </label>
-                                <textarea
-                                    name="shop_description"
-                                    id="shop_description"
-                                    class="admin-textarea {% if errors.shop_description %}textarea-error{% endif %}"
-                                    rows="3"
-                                >{{ data.shop_description ?? shop.shop_description ?? '' }}</textarea>
+                                {% include 'partials/tex_editor.twig' with {
+                                    name: 'shop_description',
+                                    id: 'shop_description',
+                                    value: data.shop_description ?? shop.shop_description ?? ''
+                                } %}
                                 {% if errors.shop_description %}
                                     <label class="label">
                                         <span class="label-text-alt text-error">{{ errors.shop_description }}</span>

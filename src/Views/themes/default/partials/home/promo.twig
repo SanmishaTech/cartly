@@ -6,7 +6,7 @@
             {% endif %}
             <h3 class="text-2xl font-semibold">{{ content.promo.title ?? '' }}</h3>
             {% if content.promo.body %}
-                <p class="text-base-content/80">{{ content.promo.body }}</p>
+                <div class="text-base-content/80 prose prose-sm max-w-none prose-p:my-1">{{ content.promo.body|raw }}</div>
             {% endif %}
             {% if content.promo.cta_text and content.promo.cta_link %}
                 <div class="card-actions">

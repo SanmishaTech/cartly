@@ -3,7 +3,7 @@
 {% if hero.title and hero.description %}
 <section class="rounded-lg bg-base-200 shadow-sm p-8 md:p-12 text-center" style="min-height: 320px;">
     <h1 class="text-4xl md:text-6xl font-bold">{{ hero.title }}</h1>
-    <p class="mt-4 text-lg text-base-content/70 max-w-2xl mx-auto">{{ hero.description }}</p>
+    <div class="mt-4 text-lg text-base-content/70 max-w-2xl mx-auto prose prose-sm max-w-none prose-p:my-1">{{ hero.description|raw }}</div>
     {% if hero.cta and hero.cta.text and hero.cta.link %}
         <div class="mt-6">
             <a href="{{ hero.cta.link }}" class="btn btn-primary">{{ hero.cta.text }}</a>

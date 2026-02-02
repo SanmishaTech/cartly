@@ -265,6 +265,7 @@
                         const block = { id: this.generateId(), type: type, data: {} };
                         this.applyDefaults(block);
                         this.blocks.push(block);
+                        this.$nextTick(() => { typeof initTexEditors === 'function' && initTexEditors(); });
                     },
                     removeBlock(index) {
                         this.blocks.splice(index, 1);
@@ -315,6 +316,7 @@
                     },
                     addFaq(block) {
                         block.data.items.push({ question: '', answer: '' });
+                        this.$nextTick(() => { typeof initTexEditors === 'function' && initTexEditors(); });
                     },
                     removeFaq(block, index) {
                         block.data.items.splice(index, 1);
@@ -386,17 +388,22 @@
                                         <template x-if="block.type === 'text'">
                                             <div class="admin-form-control">
                                                 <div class="flex flex-wrap items-start gap-3">
-                                                    <label class="label w-32 shrink-0" :for="`block_text_${index}`">
+                                                    <label class="label w-32 shrink-0" :for="`block_text_${index}_input`">
                                                         <span class="label-text font-semibold">Rich Text</span>
                                                     </label>
                                                     <div class="flex-1">
-                                                        <textarea
-                                                            class="admin-textarea min-h-[140px] w-full"
-                                                            :id="`block_text_${index}`"
+                                                        <div
+                                                            class="tex-editor-wrapper"
+                                                            data-tex-editor
+                                                            :data-tex-input-id="`block_text_${index}_input`"
+                                                            data-tex-buttons="bold,italic,strikethrough,ulist,olist"
+                                                        ></div>
+                                                        <input
+                                                            type="hidden"
+                                                            :id="`block_text_${index}_input`"
                                                             :name="`content_json[blocks][${index}][data][html]`"
-                                                            x-model="block.data.html"
-                                                        ></textarea>
-                                                        <p class="text-xs text-base-content/60 mt-1">Use HTML for formatting.</p>
+                                                            :value="block.data.html || ''"
+                                                        />
                                                     </div>
                                                 </div>
                                                 <template x-if="errors[`content_json.blocks.${index}.data.html`]">
@@ -497,15 +504,23 @@
                                                     </div>
                                                     <div class="admin-form-control">
                                                         <div class="flex flex-wrap items-start gap-3">
-                                                            <label class="label w-32 shrink-0" :for="`block_image_text_html_${index}`">
+                                                            <label class="label w-32 shrink-0" :for="`block_image_text_html_${index}_input`">
                                                                 <span class="label-text font-semibold">Rich Text</span>
                                                             </label>
-                                                            <textarea
-                                                                class="admin-textarea min-h-[120px] flex-1"
-                                                                :id="`block_image_text_html_${index}`"
-                                                                :name="`content_json[blocks][${index}][data][html]`"
-                                                                x-model="block.data.html"
-                                                            ></textarea>
+                                                            <div class="flex-1">
+                                                                <div
+                                                                    class="tex-editor-wrapper"
+                                                                    data-tex-editor
+                                                                    :data-tex-input-id="`block_image_text_html_${index}_input`"
+                                                                    data-tex-buttons="bold,italic,strikethrough,ulist,olist"
+                                                                ></div>
+                                                                <input
+                                                                    type="hidden"
+                                                                    :id="`block_image_text_html_${index}_input`"
+                                                                    :name="`content_json[blocks][${index}][data][html]`"
+                                                                    :value="block.data.html || ''"
+                                                                />
+                                                            </div>
                                                         </div>
                                                         <template x-if="errors[`content_json.blocks.${index}.data.html`]">
                                                             <label class="label">
@@ -669,15 +684,23 @@
                                                             </div>
                                                             <div class="admin-form-control">
                                                                 <div class="flex flex-wrap items-start gap-3">
-                                                                    <label class="label w-32 shrink-0" :for="`block_faq_answer_${index}_${itemIndex}`">
+                                                                    <label class="label w-32 shrink-0" :for="`block_faq_answer_${index}_${itemIndex}_input`">
                                                                         <span class="label-text font-semibold">Answer</span>
                                                                     </label>
-                                                                    <textarea
-                                                                        class="admin-textarea min-h-[96px] flex-1"
-                                                                        :id="`block_faq_answer_${index}_${itemIndex}`"
-                                                                        :name="`content_json[blocks][${index}][data][items][${itemIndex}][answer]`"
-                                                                        x-model="item.answer"
-                                                                    ></textarea>
+                                                                    <div class="flex-1">
+                                                                        <div
+                                                                            class="tex-editor-wrapper"
+                                                                            data-tex-editor
+                                                                            :data-tex-input-id="`block_faq_answer_${index}_${itemIndex}_input`"
+                                                                            data-tex-buttons="bold,italic,strikethrough,ulist,olist"
+                                                                        ></div>
+                                                                        <input
+                                                                            type="hidden"
+                                                                            :id="`block_faq_answer_${index}_${itemIndex}_input`"
+                                                                            :name="`content_json[blocks][${index}][data][items][${itemIndex}][answer]`"
+                                                                            :value="item.answer || ''"
+                                                                        />
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div class="flex items-center">

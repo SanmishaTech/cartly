@@ -26,14 +26,11 @@
 
                 {% set currentHero = data.hero.type ?? hero_type ?? shop.hero_type ?? 'banner' %}
                 {% set heroValues = (hero_settings ?? {})|merge(data.hero.settings ?? {}) %}
-
-                <div
-                    class="card bg-base-200/40 border border-base-300 mb-6"
-                    x-data='{
-                        heroType: {{ currentHero|json_encode|raw }},
-                        allSettings: {{ heroValues|json_encode|raw }},
-                        errors: {{ errors|json_encode|raw }},
-                        init() {
+                {% set heroXData %}{
+                    heroType: {{ currentHero|json_encode(constant('JSON_HEX_APOS'))|raw }},
+                    allSettings: {{ heroValues|json_encode(constant('JSON_HEX_APOS'))|raw }},
+                    errors: {{ errors|json_encode(constant('JSON_HEX_APOS'))|raw }},
+                    init() {
                             if (!this.allSettings.banner) {
                                 this.allSettings.banner = { content: {} };
                             }
@@ -81,12 +78,18 @@
                             if (!this.allSettings.headline.content.cta) {
                                 this.allSettings.headline.content.cta = {};
                             }
+                            if (this.heroType === "headline") {
+                                this.$nextTick(() => { typeof initTexEditors === "function" && initTexEditors(); });
+                            }
                         },
                         setHeroType(type) {
                             if (this.heroType === type) {
                                 return;
                             }
                             this.heroType = type;
+                            if (type === "headline") {
+                                this.$nextTick(() => { typeof initTexEditors === "function" && initTexEditors(); });
+                            }
                         },
                         addSlide() {
                             this.allSettings.slider.slides.push({ title: "", subtitle: "", image: "", cta: { text: "", link: "" } });
@@ -96,7 +99,10 @@
                                 this.allSettings.slider.slides.splice(index, 1);
                             }
                         }
-                    }'
+                }{% endset %}
+                <div
+                    class="card bg-base-200/40 border border-base-300 mb-6"
+                    x-data="{{ heroXData|e('html_attr') }}"
                 >
                     <div class="admin-card-body">
                         <h3 class="admin-section-title mb-2">Hero Type</h3>
@@ -470,18 +476,18 @@
                                     {% endif %}
                                 </div>
                                 <div class="admin-form-control">
-                                    <label class="label" for="headline_description">
+                                    <label class="label" for="headline_description_input">
                                         <span class="label-text font-semibold">Description</span>
                                         <span class="text-error">*</span>
                                     </label>
-                                    <textarea
-                                        id="headline_description"
-                                        name="hero[settings][headline][content][description]"
-                                        class="admin-textarea {% if errors['hero.content.description'] %}textarea-error{% endif %}"
-                                        rows="4"
-                                        x-model="allSettings.headline.content.description"
-                                        required
-                                    ></textarea>
+                                    {% set headline_desc = ((heroValues.headline ?? {}).content ?? {}).description ?? '' %}
+                                    {% include 'partials/tex_editor.twig' with {
+                                        name: 'hero[settings][headline][content][description]',
+                                        id: 'headline_description',
+                                        value: headline_desc,
+                                        input_id: 'headline_description_input',
+                                        required: true
+                                    } %}
                                     {% if errors['hero.content.description'] %}
                                         <label class="label">
                                             <span class="label-text-alt text-error">{{ errors['hero.content.description'] }}</span>

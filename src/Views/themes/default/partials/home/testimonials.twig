@@ -115,7 +115,7 @@
                     {% for testimonial in testimonials %}
                         <div class="card bg-base-200/60 border border-base-300 testimonial-card" data-item>
                             <div class="card-body">
-                                <blockquote class="text-base-content/80">"{{ testimonial.quote }}"</blockquote>
+                                <blockquote class="text-base-content/80 prose prose-sm max-w-none prose-p:my-0">"{{ testimonial.quote|raw }}"</blockquote>
                                 <cite class="text-sm font-semibold text-base-content">{{ testimonial.name }}</cite>
                             </div>
                         </div>
@@ -125,7 +125,7 @@
                             {% for testimonial in testimonials %}
                                 <div class="card bg-base-200/60 border border-base-300 testimonial-card" data-item>
                                     <div class="card-body">
-                                        <blockquote class="text-base-content/80">"{{ testimonial.quote }}"</blockquote>
+                                        <blockquote class="text-base-content/80 prose prose-sm max-w-none prose-p:my-0">"{{ testimonial.quote|raw }}"</blockquote>
                                         <cite class="text-sm font-semibold text-base-content">{{ testimonial.name }}</cite>
                                     </div>
                                 </div>

@@ -8,6 +8,7 @@ use App\Models\Shop;
 use App\Models\SeoMetadata;
 use App\Models\ShopEmailSettings;
 use App\Models\ShopMetadata;
+use App\Services\HtmlSanitizer;
 use App\Services\LocalStorageService;
 use App\Services\TransactionalMailService;
 use Slim\Psr7\Response;
@@ -22,7 +23,8 @@ class SetupController extends AppController
     public function __construct(
         Twig $view,
         ThemeResolver $themeResolver,
-        private TransactionalMailService $transactionalMailService
+        private TransactionalMailService $transactionalMailService,
+        private HtmlSanitizer $htmlSanitizer
     ) {
         parent::__construct($view, $themeResolver);
     }
@@ -52,7 +54,7 @@ class SetupController extends AppController
         $validator = new Validator($data);
         $validator->rule('required', 'shop_name')->message('Shop name is required.');
         $validator->rule('lengthMax', 'shop_name', 255)->message('Shop name is too long.');
-        $validator->rule('lengthMax', 'shop_description', 500)->message('Description is too long.');
+        $validator->rule('lengthMax', 'shop_description', 2000)->message('Description is too long.');
         $validator->rule('lengthMax', 'address_line1', 255)->message('Address line 1 is too long.');
         $validator->rule('lengthMax', 'address_line2', 255)->message('Address line 2 is too long.');
         $validator->rule('lengthMax', 'city', 100)->message('City is too long.');
@@ -89,8 +91,23 @@ class SetupController extends AppController
 
         $shop->update(['shop_name' => (string)($data['shop_name'] ?? '')]);
 
+        $shopDescErrors = [];
+        $shopDescription = $this->htmlSanitizer->sanitize(
+            $data['shop_description'] ?? null,
+            2000,
+            'shop_description',
+            $shopDescErrors,
+            true
+        );
+        if (!empty($shopDescErrors)) {
+            $errors = array_merge($errors, $shopDescErrors);
+            $this->flashSet('errors', $errors);
+            $this->flashSet('old', $data);
+            return $this->redirect($response, '/admin/setup/basic');
+        }
+
         $metadata = ShopMetadata::firstOrNew(['shop_id' => $shop->id]);
-        $metadata->shop_description = (string)($data['shop_description'] ?? '');
+        $metadata->shop_description = $shopDescription ?? '';
         $metadata->address_line1 = $addressLine1 !== '' ? $addressLine1 : null;
         $metadata->address_line2 = $addressLine2 !== '' ? $addressLine2 : null;
         $metadata->city = $city !== '' ? $city : null;
@@ -423,14 +440,23 @@ class SetupController extends AppController
             $headlineInput = (array)($settingsInput['headline'] ?? []);
             $content = (array)($headlineInput['content'] ?? []);
             $title = trim((string)($content['title'] ?? ''));
-            $description = trim((string)($content['description'] ?? ''));
+            $descriptionRaw = $content['description'] ?? '';
             $imagePath = trim((string)($content['image'] ?? ''));
 
             if ($title === '') {
                 $errors['hero.content.title'] = 'Headline title is required.';
             }
-            if ($description === '') {
-                $errors['hero.content.description'] = 'Headline description is required.';
+            $description = $this->htmlSanitizer->sanitize(
+                $descriptionRaw,
+                2000,
+                'hero.content.description',
+                $errors,
+                false
+            );
+            if ($description === null) {
+                if (trim((string)$descriptionRaw) === '') {
+                    $errors['hero.content.description'] = 'Headline description is required.';
+                }
             }
             if ($imagePath !== '') {
                 $errors['hero.content.image'] = 'Headline hero does not allow images.';
@@ -446,7 +472,7 @@ class SetupController extends AppController
             $heroSettings['headline'] = [
                 'content' => [
                     'title' => $title,
-                    'description' => $description,
+                    'description' => $description ?? '',
                     'cta' => $ctaText !== '' && $ctaLink !== '' ? [
                         'text' => $ctaText,
                         'link' => $ctaLink,
@@ -1384,7 +1410,7 @@ class SetupController extends AppController
         $clean = [];
 
         $aboutTitle = $this->cleanText($input, ['about', 'title'], 255, 'home_content.about.title', $errors);
-        $aboutDescription = $this->cleanText($input, ['about', 'description'], 500, 'home_content.about.description', $errors);
+        $aboutDescription = $this->cleanHtmlField($input, ['about', 'description'], 500, 'home_content.about.description', $errors);
         if ($aboutTitle !== null || $aboutDescription !== null) {
             $clean['about'] = array_filter([
                 'title' => $aboutTitle,
@@ -1421,7 +1447,7 @@ class SetupController extends AppController
 
         $promoBadge = $this->cleanText($input, ['promo', 'badge'], 120, 'home_content.promo.badge', $errors);
         $promoTitle = $this->cleanText($input, ['promo', 'title'], 255, 'home_content.promo.title', $errors);
-        $promoBody = $this->cleanText($input, ['promo', 'body'], 500, 'home_content.promo.body', $errors);
+        $promoBody = $this->cleanHtmlField($input, ['promo', 'body'], 500, 'home_content.promo.body', $errors);
         $promoCtaText = $this->cleanText($input, ['promo', 'cta_text'], 120, 'home_content.promo.cta_text', $errors);
         $promoCtaLink = $this->cleanText($input, ['promo', 'cta_link'], 255, 'home_content.promo.cta_link', $errors);
         if ($promoBadge !== null || $promoTitle !== null || $promoBody !== null || $promoCtaText !== null || $promoCtaLink !== null) {
@@ -1463,7 +1489,7 @@ class SetupController extends AppController
     {
         $clean = [];
 
-        $summary = $this->cleanText($input, ['summary'], 500, 'footer.summary', $errors);
+        $summary = $this->cleanHtmlField($input, ['summary'], 500, 'footer.summary', $errors);
         $legal = $this->cleanText($input, ['legal'], 255, 'footer.legal', $errors);
         if ($summary !== null) {
             $clean['summary'] = $summary;
@@ -1535,7 +1561,7 @@ class SetupController extends AppController
             if (!is_array($item)) {
                 continue;
             }
-            $quote = $this->cleanText($item, ['quote'], 500, "home_content.testimonials.items.{$index}.quote", $errors);
+            $quote = $this->cleanHtmlField($item, ['quote'], 500, "home_content.testimonials.items.{$index}.quote", $errors);
             $name = $this->cleanText($item, ['name'], 255, "home_content.testimonials.items.{$index}.name", $errors);
             if ($quote === null && $name === null) {
                 continue;
@@ -1547,6 +1573,18 @@ class SetupController extends AppController
         }
 
         return array_slice($clean, 0, 10);
+    }
+
+    private function cleanHtmlField(array $input, array $path, int $maxLength, string $field, array &$errors, bool $allowEmpty = false): ?string
+    {
+        $value = $input;
+        foreach ($path as $segment) {
+            if (!is_array($value) || !array_key_exists($segment, $value)) {
+                return null;
+            }
+            $value = $value[$segment];
+        }
+        return $this->htmlSanitizer->sanitize($value, $maxLength, $field, $errors, $allowEmpty);
     }
 
     private function cleanText(array $input, array $path, int $maxLength, string $field, array &$errors, bool $allowEmpty = false): ?string

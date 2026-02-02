@@ -18,16 +18,14 @@
                     <div class="admin-card-body">
                         <h3 class="admin-section-title mb-2">Footer Summary</h3>
                         <div class="admin-form-control">
-                            <label class="label" for="footer_summary">
+                            <label class="label" for="footer_summary_input">
                                 <span class="label-text font-semibold">Summary Text</span>
                             </label>
-                            <textarea
-                                id="footer_summary"
-                                name="footer[summary]"
-                                rows="3"
-                                placeholder="Your trusted online store for quality products."
-                                class="admin-textarea {% if errors['footer.summary'] %}textarea-error{% endif %}"
-                            >{{ footer_values.summary ?? '' }}</textarea>
+                            {% include 'partials/tex_editor.twig' with {
+                                name: 'footer[summary]',
+                                id: 'footer_summary',
+                                value: footer_values.summary ?? ''
+                            } %}
                             {% if errors['footer.summary'] %}
                                 <label class="label">
                                     <span class="label-text-alt text-error">{{ errors['footer.summary'] }}</span>

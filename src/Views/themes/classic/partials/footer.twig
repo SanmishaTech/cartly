@@ -13,7 +13,7 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div class="space-y-2">
                 <h3 class="text-lg font-semibold">{{ shop.shop_name }}</h3>
-                <p class="text-base-content/70">{{ footer_summary }}</p>
+                <div class="text-base-content/70 prose prose-sm max-w-none prose-p:my-0">{{ footer_summary|raw }}</div>
             </div>
 
             {% if quick_links|length %}

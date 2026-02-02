@@ -25,7 +25,7 @@
                             <div
                                 class="card bg-base-200/40 border border-base-300"
                                 data-section-item
-                                x-data="{ open: {{ loop.first ? 'true' : 'false' }} }"
+                                x-data="{ open: true }"
                             >
                                 <div class="admin-card-body">
                                     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -38,7 +38,7 @@
                                             <button
                                                 type="button"
                                                 class="btn btn-ghost btn-sm gap-2"
-                                                @click="open = !open"
+                                                @click="open = !open; setTimeout(() => { typeof initTexEditors === 'function' && initTexEditors(); }, 100)"
                                                 :aria-expanded="open"
                                                 :aria-label="open ? 'Collapse section' : 'Expand section'"
                                             >
@@ -72,7 +72,7 @@
                                         data-section-order
                                     >
 
-                                    <div x-show="open" class="mt-4">
+                                    <div x-show="open" class="mt-4" x-intersect="typeof initTexEditors === 'function' && initTexEditors()" x-init="$nextTick(() => setTimeout(() => typeof initTexEditors === 'function' && initTexEditors(), 100))">
                                 {% if type == 'hero' %}
                                     <p class="text-sm text-base-content/70">
                                         Hero content is managed in the Hero setup screen. This section controls ordering and visibility only.
@@ -80,7 +80,7 @@
                                 {% endif %}
 
                                 {% if type == 'about' %}
-                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                                    <div class="space-y-4 mt-4">
                                         <div class="admin-form-control">
                                             <label class="label" for="about_title">
                                                 <span class="label-text font-semibold">Heading</span>
@@ -100,16 +100,15 @@
                                             {% endif %}
                                         </div>
                                         <div class="admin-form-control">
-                                            <label class="label" for="about_description">
+                                            <label class="label" for="about_description_input">
                                                 <span class="label-text font-semibold">Description</span>
                                             </label>
-                                            <textarea
-                                                id="about_description"
-                                                name="home_content[about][description]"
-                                                rows="3"
-                                                placeholder="{{ fallback.description ?? shop.shop_description ?? '' }}"
-                                                class="admin-textarea {% if errors['home_content.about.description'] %}textarea-error{% endif %}"
-                                            >{{ value.description ?? '' }}</textarea>
+                                            {% include 'partials/tex_editor.twig' with {
+                                                name: 'home_content[about][description]',
+                                                id: 'about_description',
+                                                input_id: 'about_description_input',
+                                                value: value.description ?? ''
+                                            } %}
                                             {% if errors['home_content.about.description'] %}
                                                 <label class="label">
                                                     <span class="label-text-alt text-error">{{ errors['home_content.about.description'] }}</span>
@@ -213,16 +212,14 @@
                                             {% endif %}
                                         </div>
                                         <div class="admin-form-control lg:col-span-2">
-                                            <label class="label" for="promo_body">
+                                            <label class="label" for="promo_body_input">
                                                 <span class="label-text font-semibold">Description</span>
                                             </label>
-                                            <textarea
-                                                id="promo_body"
-                                                name="home_content[promo][body]"
-                                                rows="3"
-                                                placeholder="{{ fallback.body ?? '' }}"
-                                                class="admin-textarea {% if errors['home_content.promo.body'] %}textarea-error{% endif %}"
-                                            >{{ value.body ?? '' }}</textarea>
+                                            {% include 'partials/tex_editor.twig' with {
+                                                name: 'home_content[promo][body]',
+                                                id: 'promo_body',
+                                                value: value.body ?? ''
+                                            } %}
                                             {% if errors['home_content.promo.body'] %}
                                                 <label class="label">
                                                     <span class="label-text-alt text-error">{{ errors['home_content.promo.body'] }}</span>
@@ -308,29 +305,37 @@
                                         </div>
                                     </div>
                                     {% set testimonial_items = value.items ?? fallback.items ?? [] %}
+                                    {% set testimonials_xdata %}
+                                    {
+                                        items: {{ testimonial_items|json_encode(constant('JSON_HEX_APOS'))|raw }},
+                                        errors: {{ errors|json_encode(constant('JSON_HEX_APOS'))|raw }},
+                                        maxItems: 10,
+                                        add() { if (this.items.length < this.maxItems) { this.items.push({ quote: "", name: "" }); this.$nextTick(() => { typeof initTexEditors === "function" && initTexEditors(); }); } },
+                                        remove(index) { this.items.splice(index, 1); }
+                                    }
+                                    {% endset %}
                                     <div
                                         class="mt-4 space-y-4"
-                                        x-data='{
-                                            items: {{ testimonial_items|json_encode|raw }},
-                                            errors: {{ errors|json_encode|raw }},
-                                            maxItems: 10,
-                                            add() { if (this.items.length < this.maxItems) { this.items.push({ quote: "", name: "" }); } },
-                                            remove(index) { this.items.splice(index, 1); }
-                                        }'
+                                        x-data="{{ testimonials_xdata|e('html_attr') }}"
                                     >
                                         <template x-for="(item, index) in items" :key="index">
                                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                                 <div class="admin-form-control lg:col-span-1">
-                                                    <label class="label" :for="`testimonial_quote_${index}`">
+                                                    <label class="label" :for="`testimonial_quote_${index}_input`">
                                                         <span class="label-text font-semibold">Quote <span x-text="index + 1"></span></span>
                                                     </label>
-                                                    <textarea
-                                                        :id="`testimonial_quote_${index}`"
+                                                    <div
+                                                        class="tex-editor-wrapper"
+                                                        data-tex-editor
+                                                        :data-tex-input-id="`testimonial_quote_${index}_input`"
+                                                        data-tex-buttons="bold,italic,strikethrough,ulist,olist"
+                                                    ></div>
+                                                    <input
+                                                        type="hidden"
+                                                        :id="`testimonial_quote_${index}_input`"
                                                         :name="`home_content[testimonials][items][${index}][quote]`"
-                                                        rows="2"
-                                                        class="admin-textarea"
-                                                        x-model="item.quote"
-                                                    ></textarea>
+                                                        :value="item.quote || ''"
+                                                    />
                                                     <template x-if="errors[`home_content.testimonials.items.${index}.quote`]">
                                                         <label class="label">
                                                             <span class="label-text-alt text-error" x-text="errors[`home_content.testimonials.items.${index}.quote`]"></span>
@@ -445,7 +450,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
     (function () {
+        if (typeof tex !== 'undefined' && tex.initAll) tex.initAll();
         const init = () => {
+        if (typeof initTexEditors === 'function') initTexEditors();
         const list = document.getElementById('home-section-list');
         if (!list) {
             return;
@@ -487,10 +494,12 @@
             onEnd: () => {
                 renumberSectionNames();
                 updateOrderInputs();
+                setTimeout(() => { typeof initTexEditors === 'function' && initTexEditors(); }, 50);
             },
         });
         renumberSectionNames();
         updateOrderInputs();
+        setTimeout(() => { typeof initTexEditors === 'function' && initTexEditors(); }, 500);
         };
 
         if (document.readyState === 'loading') {
