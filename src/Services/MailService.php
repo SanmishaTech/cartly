@@ -24,6 +24,7 @@ class MailService
         $mailer = new PHPMailer(true);
 
         try {
+            $mailer->XMailer = ' ';
             $mailer->isSMTP();
             $mailer->Host = $this->config['host'];
             $mailer->Port = (int) $this->config['port'];
@@ -44,6 +45,56 @@ class MailService
                 $this->config['from_name']
             );
             $mailer->addAddress($toEmail, $toName);
+            $mailer->Subject = $subject;
+            $mailer->isHTML(true);
+            $mailer->Body = $htmlBody;
+            $mailer->AltBody = $textBody ?? strip_tags($htmlBody);
+
+            return $mailer->send();
+        } catch (MailException $exception) {
+            error_log('MailService error: ' . $exception->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Send with explicit From/Reply-To (used by TransactionalMailService).
+     */
+    public function sendWithEnvelope(
+        string $fromEmail,
+        string $fromName,
+        string $toEmail,
+        string $toName,
+        string $subject,
+        string $htmlBody,
+        ?string $textBody = null,
+        ?string $replyToEmail = null,
+        ?string $replyToName = null
+    ): bool {
+        $mailer = new PHPMailer(true);
+
+        try {
+            $mailer->XMailer = ' ';
+            $mailer->isSMTP();
+            $mailer->Host = $this->config['host'];
+            $mailer->Port = (int) $this->config['port'];
+            $mailer->SMTPAuth = $this->config['username'] !== '';
+            $mailer->Username = $this->config['username'];
+            $mailer->Password = $this->config['password'];
+            $mailer->CharSet = 'UTF-8';
+
+            $encryption = strtolower($this->config['encryption']);
+            if ($encryption === 'tls') {
+                $mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            } elseif ($encryption === 'ssl') {
+                $mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            }
+
+            $mailer->setFrom($fromEmail, $fromName);
+            $mailer->addAddress($toEmail, $toName);
+            if ($replyToEmail !== null && $replyToEmail !== '') {
+                $mailer->addReplyTo($replyToEmail, $replyToName ?? '');
+            }
             $mailer->Subject = $subject;
             $mailer->isHTML(true);
             $mailer->Body = $htmlBody;

@@ -48,3 +48,12 @@
 - Every change creates a new subscription row
 - Latest row is the current subscription
 - History is shown on the Manage Subscription screen
+
+## Email (transactional)
+- **Provider-agnostic:** MailResolver resolves From/Reply-To from shop settings; TransactionalMailService enforces limits and logs; transport is Brevo today (SES-ready).
+- **Modes:** Global (Shop Name via Cartly &lt;no-reply@…&gt;) or custom_domain (shop From email when set and verified). Custom domain uses shop From when `email_mode=custom_domain` and `from_email` is set.
+- **Reply-To:** Optional per-shop reply_to_email/reply_to_name; falls back to from_email when empty.
+- **Limits:** Per-shop daily (and optional monthly) limit from .env; counts in shop_email_settings; over-limit blocks send and is logged. No limit when shop is null (e.g. admin forgot-password).
+- **Admin UI:** `/admin/setup/email` — Sender (Cartly vs custom domain), Reply-To, Save; Domain verification block (status + Verify Domain button, separate form); Test email form.
+- **Scope:** Transactional only (password reset, test email, etc.). No newsletter or bulk. Do not mention Brevo/SES in UI.
+- **Logging:** Each send and failure (and limit_exceeded) to `storage/logs/mail.log`.

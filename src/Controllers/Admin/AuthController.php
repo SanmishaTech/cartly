@@ -6,14 +6,24 @@ use App\Models\ShopUser;
 use App\Models\User;
 use App\Services\AuthorizationService;
 use App\Services\FlashService;
-use App\Services\MailService;
 use App\Services\PasswordResetService;
+use App\Services\TransactionalMailService;
 use Cartly\Utilities\AuthLogger;
 use Slim\Psr7\Response;
+use Slim\Views\Twig;
+use App\Services\ThemeResolver;
 use Valitron\Validator;
 
 class AuthController extends AppController
 {
+    public function __construct(
+        Twig $view,
+        ThemeResolver $themeResolver,
+        private TransactionalMailService $transactionalMailService
+    ) {
+        parent::__construct($view, $themeResolver);
+    }
+
     /**
      * Start PHP session if not already started
      */
@@ -222,12 +232,11 @@ class AuthController extends AppController
             $token = $resetService->createForUser($user);
             $resetUrl = $this->buildResetUrl($request, $token);
 
-            $mailService = new MailService();
             $subject = 'Reset your Cartly password';
             $displayName = $user->email;
             $htmlBody = $this->buildResetEmailHtml($displayName, $resetUrl);
             $textBody = $this->buildResetEmailText($displayName, $resetUrl);
-            $mailService->send($user->email, $displayName, $subject, $htmlBody, $textBody);
+            $this->transactionalMailService->send(null, $user->email, $displayName, $subject, $htmlBody, $textBody);
 
             $logger = new AuthLogger();
             $logger->logPasswordResetRequested(

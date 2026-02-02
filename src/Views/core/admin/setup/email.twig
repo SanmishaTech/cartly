@@ -1,0 +1,195 @@
+{% extends 'layouts/dashboard.twig' %}
+
+{% block title %}Email Setup{% endblock %}
+{% block page_title %}Email Setup{% endblock %}
+
+{% block content %}
+<div class="w-full">
+    <div class="card bg-base-100 border border-base-300">
+        <div class="admin-card-body">
+            <h2 class="card-title mb-2">Email Settings</h2>
+            <p class="text-base-content/70 mb-4">Choose how transactional emails (order confirmation, password reset, etc.) are sent. Emails are sent using Cartly email until your domain is verified.</p>
+
+            {% if info %}
+            <div class="alert alert-info mb-6">
+                <span>{{ info }}</span>
+            </div>
+            {% endif %}
+
+            {% set current_mode = data.email.mode ?? email_settings.email_mode ?? 'global' %}
+            {% set initial_domain = data.email.domain ?? email_settings.domain ?? '' %}
+            <div x-data="{ customDomain: {{ current_mode == 'custom_domain' ? 'true' : 'false' }}, domainValue: '{{ initial_domain|e('js') }}' }">
+            <form method="POST" action="/admin/setup/email" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token }}">
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Sender</h3>
+                        <div class="admin-form-control mb-4">
+                            <label class="label cursor-pointer justify-start gap-3">
+                                <input type="radio" name="email[mode]" value="global" class="radio radio-sm" {{ current_mode == 'global' ? 'checked' : '' }} @change="customDomain = false" />
+                                <span class="label-text font-semibold">Use Cartly Email (default)</span>
+                            </label>
+                            <p class="text-sm text-base-content/60 mt-1 ml-6">Emails are sent from &quot;{{ shop.shop_name }} via Cartly&quot; using Cartly email.</p>
+                        </div>
+                        <div class="admin-form-control mb-4">
+                            <label class="label cursor-pointer justify-start gap-3">
+                                <input type="radio" name="email[mode]" value="custom_domain" class="radio radio-sm" {{ current_mode == 'custom_domain' ? 'checked' : '' }} @change="customDomain = true" />
+                                <span class="label-text font-semibold">Send from my domain</span>
+                            </label>
+                            <p class="text-sm text-base-content/60 mt-1 ml-6">Use your own domain for the From address. Domain verification will be required.</p>
+                        </div>
+
+                        <div x-show="customDomain" x-cloak class="mt-4 pt-4 border-t border-base-300">
+                            <p class="text-sm text-base-content/60 mb-2">When &quot;Send from my domain&quot; is selected:</p>
+                            <div class="admin-form-control mb-4">
+                                <label class="label" for="email_from_email">
+                                    <span class="label-text font-semibold">From Email</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email[from_email]"
+                                    id="email_from_email"
+                                    value="{{ data.email.from_email ?? email_settings.from_email ?? '' }}"
+                                    placeholder="e.g. abc@myshop.com"
+                                    class="admin-input {% if errors['email.from_email'] %}input-error{% endif %}"
+                                />
+                                {% if errors['email.from_email'] %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors['email.from_email'] }}</span></label>
+                                {% endif %}
+                            </div>
+                            <div class="admin-form-control mb-4">
+                                <label class="label" for="email_from_name">
+                                    <span class="label-text font-semibold">From Name (optional)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="email[from_name]"
+                                    id="email_from_name"
+                                    value="{{ data.email.from_name ?? email_settings.from_name ?? '' }}"
+                                    placeholder="{{ shop.shop_name }}"
+                                    class="admin-input {% if errors['email.from_name'] %}input-error{% endif %}"
+                                />
+                                {% if errors['email.from_name'] %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors['email.from_name'] }}</span></label>
+                                {% endif %}
+                            </div>
+                            <div class="admin-form-control mb-4">
+                                <label class="label" for="email_domain">
+                                    <span class="label-text font-semibold">Domain</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="email[domain]"
+                                    id="email_domain"
+                                    x-model="domainValue"
+                                    value="{{ data.email.domain ?? email_settings.domain ?? '' }}"
+                                    placeholder="myshop.com"
+                                    class="admin-input {% if errors['email.domain'] %}input-error{% endif %}"
+                                />
+                                {% if errors['email.domain'] %}
+                                    <label class="label"><span class="label-text-alt text-error">{{ errors['email.domain'] }}</span></label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Reply-To (optional)</h3>
+                        <p class="text-sm text-base-content/60 mb-3">Where replies to transactional emails go. Leave empty to use From address when available.</p>
+                        <div class="admin-form-control mb-4">
+                            <label class="label" for="email_reply_to_email">
+                                <span class="label-text font-semibold">Reply-To Email</span>
+                            </label>
+                            <input
+                                type="email"
+                                name="email[reply_to_email]"
+                                id="email_reply_to_email"
+                                value="{{ data.email.reply_to_email ?? email_settings.reply_to_email ?? '' }}"
+                                placeholder="e.g. support@myshop.com"
+                                class="admin-input {% if errors['email.reply_to_email'] %}input-error{% endif %}"
+                            />
+                            {% if errors['email.reply_to_email'] %}
+                                <label class="label"><span class="label-text-alt text-error">{{ errors['email.reply_to_email'] }}</span></label>
+                            {% endif %}
+                        </div>
+                        <div class="admin-form-control mb-4">
+                            <label class="label" for="email_reply_to_name">
+                                <span class="label-text font-semibold">Reply-To Name (optional)</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="email[reply_to_name]"
+                                id="email_reply_to_name"
+                                value="{{ data.email.reply_to_name ?? email_settings.reply_to_name ?? '' }}"
+                                placeholder="{{ shop.shop_name }} Support"
+                                class="admin-input {% if errors['email.reply_to_name'] %}input-error{% endif %}"
+                            />
+                            {% if errors['email.reply_to_name'] %}
+                                <label class="label"><span class="label-text-alt text-error">{{ errors['email.reply_to_name'] }}</span></label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <p class="text-sm text-base-content/60 mb-3">Save your sender and reply-to settings.</p>
+                    <button type="submit" class="btn btn-primary">Save Email Settings</button>
+                </div>
+            </form>
+
+            <div x-show="customDomain && domainValue.trim() !== ''" x-cloak class="mt-6 pt-6 border-t border-base-300">
+                <div class="card bg-base-200/40 border border-base-300 mb-6">
+                    <div class="admin-card-body">
+                        <h3 class="admin-section-title mb-2">Domain verification</h3>
+                        <p class="text-sm text-base-content/60 mb-3">After saving your domain above, you can verify it here. This is a separate action from saving settings.</p>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <span class="text-sm font-medium text-base-content/80">Domain status:</span>
+                            {% if email_settings and email_settings.domain_verified %}
+                            <span class="badge badge-success badge-sm">Verified</span>
+                            {% else %}
+                            <span class="badge badge-warning badge-sm">Not verified</span>
+                            {% endif %}
+                            <form method="POST" action="/admin/setup/email/verify-domain" class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-outline btn-sm">Verify Domain</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-base-300">
+                <h3 class="admin-section-title mb-2">Test email</h3>
+                <p class="text-sm text-base-content/60 mb-3">Send a test email to verify your settings. Uses the same sender as your saved configuration.</p>
+                <form method="POST" action="/admin/setup/email/test">
+                    <input type="hidden" name="_token" value="{{ csrf_token }}">
+                    <div class="admin-form-control">
+                        <label class="label" for="test_email">
+                            <span class="label-text font-semibold">Send test to</span>
+                        </label>
+                        <div class="flex gap-3 items-center">
+                            <input
+                                type="email"
+                                name="test_email"
+                                id="test_email"
+                                value="{{ data.test_email ?? '' }}"
+                                placeholder="you@example.com"
+                                class="admin-input flex-1 min-w-0 {% if errors['test_email'] %}input-error{% endif %}"
+                                required
+                            />
+                            <button type="submit" class="btn btn-outline flex-shrink-0">Send test email</button>
+                        </div>
+                        {% if errors['test_email'] %}
+                            <label class="label"><span class="label-text-alt text-error">{{ errors['test_email'] }}</span></label>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

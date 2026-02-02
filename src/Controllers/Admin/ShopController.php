@@ -6,18 +6,29 @@ use App\Models\Package;
 use App\Models\Payment;
 use App\Models\Shop;
 use App\Models\ShopDomain;
+use App\Models\ShopMetadata;
 use App\Models\ShopUser;
 use App\Models\Subscription;
 use App\Models\User;
-use App\Services\MailService;
 use App\Services\PasswordResetService;
+use App\Services\TransactionalMailService;
 use Cartly\Utilities\AuthLogger;
 use Carbon\Carbon;
 use Slim\Psr7\Response;
+use Slim\Views\Twig;
+use App\Services\ThemeResolver;
 use Valitron\Validator;
 
 class ShopController extends AppController
 {
+    public function __construct(
+        Twig $view,
+        ThemeResolver $themeResolver,
+        private TransactionalMailService $transactionalMailService
+    ) {
+        parent::__construct($view, $themeResolver);
+    }
+
     public function index($request, Response $response): Response
     {
         $params = $request->getQueryParams();
@@ -148,10 +159,14 @@ class ShopController extends AppController
             $country = 'India';
         }
 
-        $shopData = [
+        $shop = Shop::create([
             'shop_name' => (string)($shopInput['shop_name'] ?? ''),
             'slug' => $slug,
             'status' => 'active',
+        ]);
+
+        ShopMetadata::create([
+            'shop_id' => $shop->id,
             'theme' => 'default',
             'address_line1' => $addressLine1 !== '' ? $addressLine1 : null,
             'address_line2' => $addressLine2 !== '' ? $addressLine2 : null,
@@ -159,8 +174,7 @@ class ShopController extends AppController
             'state' => $state !== '' ? $state : null,
             'postal_code' => $postalCode !== '' ? $postalCode : null,
             'country' => $country,
-        ];
-        $shop = Shop::create($shopData);
+        ]);
 
         $appDomain = $_ENV['APP_DOMAIN'] ?? getenv('APP_DOMAIN') ?? 'cartly.test';
         $domain = $slug . '.' . $appDomain;
@@ -244,7 +258,7 @@ class ShopController extends AppController
     public function edit($request, Response $response): Response
     {
         $shopId = (int)$request->getAttribute('id');
-        $shop = Shop::with('domains')->find($shopId);
+        $shop = Shop::with(['domains', 'metadata'])->find($shopId);
         if (!$shop) {
             return $response->withStatus(404);
         }
@@ -269,7 +283,7 @@ class ShopController extends AppController
     public function update($request, Response $response): Response
     {
         $shopId = (int)$request->getAttribute('id');
-        $shop = Shop::find($shopId);
+        $shop = Shop::with('metadata')->find($shopId);
         if (!$shop) {
             return $response->withStatus(404);
         }
@@ -345,13 +359,16 @@ class ShopController extends AppController
             'shop_name' => $shopName,
             'slug' => $slug,
             'status' => $status,
-            'address_line1' => $addressLine1 !== '' ? $addressLine1 : null,
-            'address_line2' => $addressLine2 !== '' ? $addressLine2 : null,
-            'city' => $city !== '' ? $city : null,
-            'state' => $state !== '' ? $state : null,
-            'postal_code' => $postalCode !== '' ? $postalCode : null,
-            'country' => $country,
         ]);
+
+        $metadata = ShopMetadata::firstOrNew(['shop_id' => $shop->id]);
+        $metadata->address_line1 = $addressLine1 !== '' ? $addressLine1 : null;
+        $metadata->address_line2 = $addressLine2 !== '' ? $addressLine2 : null;
+        $metadata->city = $city !== '' ? $city : null;
+        $metadata->state = $state !== '' ? $state : null;
+        $metadata->postal_code = $postalCode !== '' ? $postalCode : null;
+        $metadata->country = $country;
+        $metadata->save();
 
         $adminUser->update(['email' => $adminEmail]);
 
@@ -372,6 +389,7 @@ class ShopController extends AppController
         Payment::where('shop_id', $shopId)->delete();
         Subscription::where('shop_id', $shopId)->delete();
         ShopDomain::where('shop_id', $shopId)->delete();
+        ShopMetadata::where('shop_id', $shopId)->delete();
         $shop->delete();
 
         $this->flashSet('success', 'Shop deleted successfully.');
@@ -403,11 +421,11 @@ class ShopController extends AppController
             return $this->redirect($response, '/admin/shops');
         }
 
-        $sent = $this->sendResetLink($request, $adminUser);
+        $sent = $this->sendResetLink($request, $shop, $adminUser);
         if ($sent) {
             $this->flashSet('success', 'Password link sent to shop admin.');
         } else {
-            $this->flashSet('error', 'Failed to send password link. Check SMTP settings.');
+            $this->flashSet('error', 'Failed to send password link. Daily email limit may have been reached or the mail service is temporarily unavailable.');
         }
 
         return $this->redirect($response, '/admin/shops');
@@ -425,18 +443,17 @@ class ShopController extends AppController
         return bin2hex(random_bytes(8));
     }
 
-    private function sendResetLink($request, User $user): bool
+    private function sendResetLink($request, Shop $shop, User $user): bool
     {
         $resetService = new PasswordResetService();
         $token = $resetService->createForUser($user);
         $resetUrl = $this->buildResetUrl($request, $token);
 
-        $mailService = new MailService();
         $subject = 'Set your Cartly password';
         $displayName = $user->email;
         $htmlBody = $this->buildResetEmailHtml($displayName, $resetUrl);
         $textBody = $this->buildResetEmailText($displayName, $resetUrl);
-        $sent = $mailService->send($user->email, $displayName, $subject, $htmlBody, $textBody);
+        $sent = $this->transactionalMailService->send($shop, $user->email, $displayName, $subject, $htmlBody, $textBody);
 
         if ($sent) {
             $logger = new AuthLogger();

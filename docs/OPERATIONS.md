@@ -17,6 +17,7 @@ Located in /scripts:
 ## Logging
 Monolog channels:
 - app, payment, order, auth, api, error, database, security
+Transactional email (send/failure/limit): `storage/logs/mail.log` (plain append; see EMAIL.md).
 Logs are stored in storage/logs with rotation.
 
 ## Maintenance

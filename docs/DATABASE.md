@@ -12,6 +12,7 @@
 - payments
 - seo_metadata
 - shop_metadata
+- shop_email_settings
 
 ## Removed Tables
 - plans
@@ -80,6 +81,18 @@ Note: Subscription billing period determines which cost column is used.
 - home_sections (json)
 - home_content (json)
 - oauth_config (json) — per-shop OAuth for customer login: `{ "google": { "enabled", "client_id", "client_secret" }, "facebook": { "enabled", "app_id", "app_secret" } }`
+
+## Shop Email Settings (key fields)
+- shop_id (fk, unique)
+- email_mode (global|custom_domain)
+- from_name, from_email (nullable; used when custom_domain)
+- reply_to_email, reply_to_name (nullable; optional Reply-To for all modes)
+- domain (nullable; for custom_domain verification)
+- domain_verified (bool, default 0)
+- provider (brevo|ses; for future migration)
+- daily_email_count, monthly_email_count, last_sent_at (for per-shop limits)
+- created_at, updated_at
+- No SMTP credentials stored; sending uses app-level SMTP (Brevo) or future SES
 
 ## Subscriptions (key fields)
 - shop_id (fk)

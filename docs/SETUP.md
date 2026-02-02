@@ -9,7 +9,12 @@
 ## Environment
 Copy .env.example → .env and set DB credentials.
 
-India localization defaults:
+### Email (transactional)
+- **SMTP (Brevo):** SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, SMTP_ENCRYPTION, SMTP_FROM_ADDRESS, SMTP_FROM_NAME
+- **Limits (per shop):** EMAIL_DAILY_LIMIT_PER_SHOP (default 50), EMAIL_MONTHLY_LIMIT_PER_SHOP (optional)
+- Sending is provider-agnostic (MailResolver + TransactionalMailService); Brevo is the current transport. Logs: `storage/logs/mail.log`
+
+### India localization defaults:
 - APP_TIMEZONE=Asia/Kolkata
 - APP_LOCALE=en_IN
 - APP_COUNTRY=India
@@ -37,6 +42,17 @@ To enable shoppers to log in with Google or Facebook on a storefront:
 5. Save
 
 Use real OAuth credentials from the provider dashboards, not user login credentials. The form disables credential fields when a provider is unchecked to avoid browser autofill.
+
+## Email Setup (Shop Owner)
+Admin Setup → Email (`/admin/setup/email`):
+
+1. **Sender:** Choose **Use Cartly Email** (default) or **Send from my domain**. For custom domain, enter From Email, From Name, and Domain; save first.
+2. **Reply-To (optional):** Set a common Reply-To address and name for transactional emails; leave empty to use From when available.
+3. **Save Email Settings** — saves sender and reply-to only (no nested forms).
+4. **Domain verification:** Shown only when “Send from my domain” is selected and domain is filled. Displays Verified/Not verified; **Verify Domain** is a separate action (for now a placeholder; set `domain_verified` in DB to test).
+5. **Test email:** Send a test to any address; uses the same sender as saved settings and counts toward the shop’s daily limit.
+
+Per-shop limits are read from .env; exceeding the daily (or optional monthly) limit blocks sending and is logged.
 
 ## Dev Server
 - Start: php cartly serve

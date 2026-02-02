@@ -179,6 +179,10 @@ return function (App $app, Twig $twig) {
         $setup->get('/discounts', [$setupController, 'discounts']);
         $setup->get('/customer-auth', [$setupController, 'customerAuth']);
         $setup->post('/customer-auth', [$setupController, 'updateCustomerAuth'])->add(new TrimInputMiddleware());
+        $setup->get('/email', [$setupController, 'email']);
+        $setup->post('/email', [$setupController, 'updateEmail'])->add(new TrimInputMiddleware());
+        $setup->post('/email/verify-domain', [$setupController, 'verifyDomain'])->add(new TrimInputMiddleware());
+        $setup->post('/email/test', [$setupController, 'sendTestEmail'])->add(new TrimInputMiddleware());
     });
     $setupGroup->add(
         new RequirePermissionMiddleware(

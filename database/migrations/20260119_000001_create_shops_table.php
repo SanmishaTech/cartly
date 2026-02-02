@@ -13,23 +13,6 @@ return [
             $table->bigIncrements('id');
             $table->string('slug', 120)->unique();
             $table->string('shop_name', 255);
-            $table->text('shop_description')->nullable();
-            $table->string('address_line1', 255)->nullable();
-            $table->string('address_line2', 255)->nullable();
-            $table->string('city', 100)->nullable();
-            $table->string('state', 100)->nullable();
-            $table->string('postal_code', 20)->nullable();
-            $table->string('country', 100)->default('India');
-
-            $table->string('logo_path', 255)->nullable();
-            $table->string('favicon_path', 255)->nullable();
-
-            $table->string('hero_type', 50)->default('banner');
-            $table->json('hero_settings')->nullable();
-
-            $table->string('theme', 50)->default('default');
-            $table->json('theme_config')->nullable();
-
             $table->enum('status', ['active', 'inactive'])->default('active');
 
             $table->timestamp('created_at')->useCurrent();

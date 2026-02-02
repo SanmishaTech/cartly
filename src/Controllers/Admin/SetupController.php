@@ -6,14 +6,26 @@ use App\Config\FontConfig;
 use App\Helpers\HomeSectionConfig;
 use App\Models\Shop;
 use App\Models\SeoMetadata;
+use App\Models\ShopEmailSettings;
 use App\Models\ShopMetadata;
 use App\Services\LocalStorageService;
+use App\Services\TransactionalMailService;
 use Slim\Psr7\Response;
+use Slim\Views\Twig;
+use App\Services\ThemeResolver;
 use Valitron\Validator;
 
 class SetupController extends AppController
 {
     private const HERO_TYPES = ['banner', 'slider', 'headline'];
+
+    public function __construct(
+        Twig $view,
+        ThemeResolver $themeResolver,
+        private TransactionalMailService $transactionalMailService
+    ) {
+        parent::__construct($view, $themeResolver);
+    }
 
     public function basic($request, Response $response): Response
     {
@@ -75,34 +87,34 @@ class SetupController extends AppController
             $country = 'India';
         }
 
-        $updates = [
-            'shop_name' => (string)($data['shop_name'] ?? ''),
-            'shop_description' => (string)($data['shop_description'] ?? ''),
-            'address_line1' => $addressLine1 !== '' ? $addressLine1 : null,
-            'address_line2' => $addressLine2 !== '' ? $addressLine2 : null,
-            'city' => $city !== '' ? $city : null,
-            'state' => $state !== '' ? $state : null,
-            'postal_code' => $postalCode !== '' ? $postalCode : null,
-            'country' => $country,
-        ];
+        $shop->update(['shop_name' => (string)($data['shop_name'] ?? '')]);
+
+        $metadata = ShopMetadata::firstOrNew(['shop_id' => $shop->id]);
+        $metadata->shop_description = (string)($data['shop_description'] ?? '');
+        $metadata->address_line1 = $addressLine1 !== '' ? $addressLine1 : null;
+        $metadata->address_line2 = $addressLine2 !== '' ? $addressLine2 : null;
+        $metadata->city = $city !== '' ? $city : null;
+        $metadata->state = $state !== '' ? $state : null;
+        $metadata->postal_code = $postalCode !== '' ? $postalCode : null;
+        $metadata->country = $country;
 
         try {
             if ($logoFile && $logoFile->getError() === UPLOAD_ERR_OK) {
-                $updates['logo_path'] = $storage->storeShopBranding($logoFile, $shop->id, 'logo', 512, 512);
+                $metadata->logo_path = $storage->storeShopBranding($logoFile, $shop->id, 'logo', 512, 512);
             }
 
             if ($faviconFile && $faviconFile->getError() === UPLOAD_ERR_OK) {
-                $updates['favicon_path'] = $storage->storeShopBranding($faviconFile, $shop->id, 'favicon', 64, 64);
+                $metadata->favicon_path = $storage->storeShopBranding($faviconFile, $shop->id, 'favicon', 64, 64);
             }
-
         } catch (\RuntimeException $exception) {
             $this->flashSet('errors', ['uploads' => $exception->getMessage()]);
             $this->flashSet('old', $data);
             return $this->redirect($response, '/admin/setup/basic');
         }
 
-        $shop->update($updates);
+        $metadata->save();
         $shop->refresh();
+        $shop->setRelation('metadata', $metadata);
 
         $seoRecord = SeoMetadata::firstOrNew([
             'entity_type' => 'shop',
@@ -449,10 +461,10 @@ class SetupController extends AppController
             return $this->redirect($response, '/admin/setup/hero');
         }
 
-        $shop->update([
-            'hero_type' => $heroType,
-            'hero_settings' => $heroSettings,
-        ]);
+        $metadata = ShopMetadata::firstOrNew(['shop_id' => $shop->id]);
+        $metadata->hero_type = $heroType;
+        $metadata->hero_settings = $heroSettings;
+        $metadata->save();
 
         $this->flashSet('success', 'Hero settings saved.');
 
@@ -510,10 +522,10 @@ class SetupController extends AppController
             return $this->redirect($response, '/admin/setup/themes');
         }
 
-        $shop->update([
-            'theme' => $theme,
-            'theme_config' => empty($themeConfig) ? null : json_encode($themeConfig),
-        ]);
+        $metadata = ShopMetadata::firstOrNew(['shop_id' => $shop->id]);
+        $metadata->theme = $theme;
+        $metadata->theme_config = empty($themeConfig) ? null : $themeConfig;
+        $metadata->save();
 
         $this->flashSet('success', $resetTheme ? 'Theme settings reset.' : 'Theme settings saved.');
 
@@ -798,6 +810,162 @@ class SetupController extends AppController
         return $this->redirect($response, '/admin/setup/customer-auth');
     }
 
+    public function email($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $settings = ShopEmailSettings::where('shop_id', $shop->id)->first();
+
+        return $this->render($response, 'setup/email.twig', [
+            'shop' => $shop,
+            'email_settings' => $settings,
+            'errors' => $this->flashGet('errors', []),
+            'data' => $this->flashGet('old', []),
+        ]);
+    }
+
+    public function updateEmail($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $data = (array)$request->getParsedBody();
+        $email = (array)($data['email'] ?? []);
+
+        $validator = new Validator($data);
+        $validator->rule('lengthMax', 'email.from_email', 191)->message('From email is too long.');
+        $validator->rule('lengthMax', 'email.from_name', 191)->message('From name is too long.');
+        $validator->rule('lengthMax', 'email.reply_to_email', 191)->message('Reply-To email is too long.');
+        $validator->rule('lengthMax', 'email.reply_to_name', 191)->message('Reply-To name is too long.');
+        $validator->rule('lengthMax', 'email.domain', 191)->message('Domain is too long.');
+        $validator->rule('optional', 'email.from_email');
+        $validator->rule('email', 'email.from_email')->message('Enter a valid from email.');
+        $validator->rule('optional', 'email.reply_to_email');
+        $validator->rule('email', 'email.reply_to_email')->message('Enter a valid reply-to email.');
+
+        $errors = $validator->validate() ? [] : $this->formatValitronErrors($validator->errors());
+
+        $mode = trim((string)($email['mode'] ?? 'global'));
+        if (!in_array($mode, [ShopEmailSettings::EMAIL_MODE_GLOBAL, ShopEmailSettings::EMAIL_MODE_CUSTOM_DOMAIN], true)) {
+            $mode = ShopEmailSettings::EMAIL_MODE_GLOBAL;
+        }
+
+        $fromEmail = trim((string)($email['from_email'] ?? ''));
+        $fromName = trim((string)($email['from_name'] ?? ''));
+        $replyToEmail = trim((string)($email['reply_to_email'] ?? ''));
+        $replyToName = trim((string)($email['reply_to_name'] ?? ''));
+        $domain = trim((string)($email['domain'] ?? ''));
+
+        if ($mode === ShopEmailSettings::EMAIL_MODE_CUSTOM_DOMAIN) {
+            if ($fromEmail === '') {
+                $errors['email.from_email'] = $errors['email.from_email'] ?? 'From email is required when sending from your domain.';
+            }
+            if ($domain === '') {
+                $errors['email.domain'] = $errors['email.domain'] ?? 'Domain is required when sending from your domain.';
+            }
+        }
+
+        if (!empty($errors)) {
+            $this->flashSet('errors', $errors);
+            $this->flashSet('old', $data);
+            return $this->redirect($response, '/admin/setup/email');
+        }
+
+        $settings = ShopEmailSettings::firstOrCreate(
+            ['shop_id' => $shop->id],
+            [
+                'email_mode' => ShopEmailSettings::EMAIL_MODE_GLOBAL,
+                'provider' => ShopEmailSettings::PROVIDER_BREVO,
+            ]
+        );
+
+        $newFromEmail = $fromEmail !== '' ? $fromEmail : null;
+        $newFromName = $fromName !== '' ? $fromName : null;
+        $newDomain = $domain !== '' ? $domain : null;
+
+        $domainInfoChanged = $settings->from_email !== $newFromEmail
+            || $settings->from_name !== $newFromName
+            || $settings->domain !== $newDomain;
+        if ($domainInfoChanged) {
+            $settings->domain_verified = false;
+        }
+
+        $settings->email_mode = $mode;
+        $settings->from_email = $newFromEmail;
+        $settings->from_name = $newFromName;
+        $settings->reply_to_email = $replyToEmail !== '' ? $replyToEmail : null;
+        $settings->reply_to_name = $replyToName !== '' ? $replyToName : null;
+        $settings->domain = $newDomain;
+        $settings->save();
+
+        $this->flashSet('success', 'Email settings saved.');
+
+        return $this->redirect($response, '/admin/setup/email');
+    }
+
+    public function verifyDomain($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $settings = ShopEmailSettings::firstOrCreate(
+            ['shop_id' => $shop->id],
+            [
+                'email_mode' => ShopEmailSettings::EMAIL_MODE_GLOBAL,
+                'provider' => ShopEmailSettings::PROVIDER_BREVO,
+            ]
+        );
+        $settings->domain_verified = false;
+        $settings->save();
+
+        $this->flashSet('info', 'Domain verification will be enabled soon. Emails will be sent using Cartly email until then.');
+
+        return $this->redirect($response, '/admin/setup/email');
+    }
+
+    public function sendTestEmail($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $data = (array)$request->getParsedBody();
+        $toEmail = trim((string)($data['test_email'] ?? ''));
+
+        $validator = new Validator($data);
+        $validator->rule('required', 'test_email')->message('Email address is required.');
+        $validator->rule('email', 'test_email')->message('Enter a valid email address.');
+
+        $errors = $validator->validate() ? [] : $this->formatValitronErrors($validator->errors());
+        if (!empty($errors)) {
+            $this->flashSet('errors', $errors);
+            $this->flashSet('old', ['test_email' => $toEmail]);
+            return $this->redirect($response, '/admin/setup/email');
+        }
+
+        $subject = 'Cartly test email';
+        $htmlBody = '<p>This is a test email from your Cartly email settings.</p><p>If you received this, your configuration is working.</p>';
+        $textBody = "This is a test email from your Cartly email settings.\n\nIf you received this, your configuration is working.";
+
+        $sent = $this->transactionalMailService->send($shop, $toEmail, $toEmail, $subject, $htmlBody, $textBody);
+
+        if ($sent) {
+            $this->flashSet('success', 'Test email sent to ' . $toEmail . '.');
+        } else {
+            $this->flashSet('error', 'Failed to send test email. Daily limit may have been reached or the mail service is temporarily unavailable.');
+        }
+
+        return $this->redirect($response, '/admin/setup/email');
+    }
+
     private function getShopOrRedirect(Response $response): Shop|Response
     {
         $this->startSession();
@@ -807,7 +975,7 @@ class SetupController extends AppController
             return $this->redirect($response, '/admin/dashboard');
         }
 
-        $shop = Shop::find($shopId);
+        $shop = Shop::with('metadata')->find($shopId);
         if (!$shop) {
             return $response->withStatus(404);
         }

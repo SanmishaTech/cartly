@@ -9,6 +9,10 @@ This is the consolidated documentation set for Cartly.
 - Operations: OPERATIONS.md
 - UI & Theme: UI_THEME.md
 - Database: DATABASE.md
+- Email (transactional): EMAIL.md
+- User ownership model: USER_OWNERSHIP.md
+- Storefront semantics: STOREFRONT_SEMANTICS.md
+- Cursor/editor rules: `.cursor/rules/` (project-specific rules for Cursor and AI-assisted editing)
 
 ## Project Summary
 Cartly is a multi-tenant e‑commerce SaaS built with Slim + Twig + Eloquent. It includes:

@@ -17,6 +17,9 @@ use App\Middleware\CsrfMiddleware;
 use App\Services\SeoService;
 use App\Services\MenuService;
 use App\Services\ThemeResolver;
+use App\Services\MailResolver;
+use App\Services\MailService;
+use App\Services\TransactionalMailService;
 use App\Controllers\ThemeAssetController;
 use App\Twig\ThemeExtension;
 use App\Config\LocalizationConfig;
@@ -70,6 +73,18 @@ $containerBuilder->addDefinitions([
     },
     ThemeAssetController::class => function () {
         return new ThemeAssetController();
+    },
+    MailResolver::class => function () {
+        return new MailResolver();
+    },
+    MailService::class => function () {
+        return new MailService();
+    },
+    TransactionalMailService::class => function (\Psr\Container\ContainerInterface $c) {
+        return new TransactionalMailService(
+            $c->get(MailResolver::class),
+            $c->get(MailService::class)
+        );
     },
 ]);
 $container = $containerBuilder->build();

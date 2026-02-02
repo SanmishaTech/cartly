@@ -22,7 +22,7 @@ class ShopResolverMiddleware implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        $domain = ShopDomain::where('domain', $host)->first();
+        $domain = ShopDomain::with('shop.metadata')->where('domain', $host)->first();
 
         if ($domain && $domain->shop) {
             $request = $request->withAttribute('shop', $domain->shop);

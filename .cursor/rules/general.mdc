@@ -5,6 +5,7 @@ globs:
 ---
 - Prefer minimal, explicit changes; avoid unrelated edits.
 - Keep admin routes under /admin and use /admin/login as the only login entrypoint.
+- Shop setup routes live under /admin/setup and require setup.access permission.
 - Use existing helpers/services instead of duplicating logic.
 - Keep templates ASCII unless file already uses Unicode.
 - Place stateless utilities in src/Helpers, side-effect classes in src/Services, and builders in src/Factories.
