@@ -152,7 +152,22 @@
                 </div>
 
                 <div class="card bg-base-200/40 border border-base-300 mb-6">
-                    <div class="admin-card-body">
+                    <script>
+                        window.themeFontProfiles = {{ font_profiles|json_encode|raw }};
+                    </script>
+                    <div class="admin-card-body" x-data="{
+                        fontProfiles: window.themeFontProfiles || {},
+                        selectedBaseFont: '{{ selected_font_base|e('js') }}',
+                        selectedHeadingFont: '{{ selected_font_heading|e('js') }}',
+                        getBaseFontCss() {
+                            const profile = this.fontProfiles[this.selectedBaseFont] || this.fontProfiles.system;
+                            return profile ? (profile.css || 'system-ui, -apple-system, sans-serif') : 'system-ui, -apple-system, sans-serif';
+                        },
+                        getHeadingFontCss() {
+                            const profile = this.fontProfiles[this.selectedHeadingFont] || this.fontProfiles.system;
+                            return profile ? (profile.css || 'system-ui, -apple-system, sans-serif') : 'system-ui, -apple-system, sans-serif';
+                        }
+                    }">
                         <h3 class="admin-section-title mb-2">Typography</h3>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {% set fontBaseFieldKey = 'theme_config.font_profile_base' %}
@@ -164,6 +179,7 @@
                                     id="theme_font_profile_base"
                                     name="theme_config[font_profile_base]"
                                     class="admin-select {% if errors[fontBaseFieldKey] %}select-error{% endif %}"
+                                    x-model="selectedBaseFont"
                                 >
                                     {% for key, profile in font_profiles %}
                                         <option value="{{ key }}" {% if selected_font_base == key %}selected{% endif %}>
@@ -176,7 +192,7 @@
                                         <span class="label-text-alt text-error">{{ errors[fontBaseFieldKey] }}</span>
                                     </label>
                                 {% endif %}
-                                <p class="text-sm text-base-content/70 mt-2" style="font-family: {{ (selected_font_base_profile.css ?? 'system-ui, -apple-system, sans-serif')|raw }};">
+                                <p class="text-sm text-base-content/70 mt-2" :style="'font-family: ' + getBaseFontCss()">
                                     The quick brown fox jumps over the lazy dog.
                                 </p>
                             </div>
@@ -190,6 +206,7 @@
                                     id="theme_font_profile_heading"
                                     name="theme_config[font_profile_heading]"
                                     class="admin-select {% if errors[fontHeadingFieldKey] %}select-error{% endif %}"
+                                    x-model="selectedHeadingFont"
                                 >
                                     {% for key, profile in font_profiles %}
                                         <option value="{{ key }}" {% if selected_font_heading == key %}selected{% endif %}>
@@ -202,9 +219,37 @@
                                         <span class="label-text-alt text-error">{{ errors[fontHeadingFieldKey] }}</span>
                                     </label>
                                 {% endif %}
-                                <p class="text-sm text-base-content/70 mt-2" style="font-family: {{ (selected_font_heading_profile.css ?? 'system-ui, -apple-system, sans-serif')|raw }};">
+                                <p class="text-sm text-base-content/70 mt-2" :style="'font-family: ' + getHeadingFontCss()">
                                     The quick brown fox jumps over the lazy dog.
                                 </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-6 border-t border-base-300">
+                            <h4 class="font-semibold text-base-content mb-4">Sample Typography</h4>
+                            <div class="card bg-base-100 border border-base-300 p-6">
+                                <div>
+                                    <h1 class="text-4xl font-bold mb-3" :style="'font-family: ' + getHeadingFontCss()">
+                                        Heading 1
+                                    </h1>
+                                    <h2 class="text-3xl font-semibold mb-4" :style="'font-family: ' + getHeadingFontCss()">
+                                        Heading 2
+                                    </h2>
+                                </div>
+                                <div :style="'font-family: ' + getBaseFontCss()" class="space-y-2">
+                                    <p class="text-base">
+                                        This is a paragraph of text. The quick brown fox jumps over the lazy dog. It demonstrates how regular body text will appear with the selected base font.
+                                    </p>
+                                    <p class="text-base">
+                                        <strong>This is bold text.</strong> It shows how emphasized content will look in your typography.
+                                    </p>
+                                    <p class="text-base">
+                                        <em>This is italic text.</em> It demonstrates the italic style with your selected font.
+                                    </p>
+                                    <p class="text-base">
+                                        <strong><em>This is bold and italic text.</em></strong> Combining both styles for emphasis.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
