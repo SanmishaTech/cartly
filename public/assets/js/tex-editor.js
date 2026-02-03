@@ -3,14 +3,14 @@
  * Uses contenteditable with bold, italic, strikethrough, ulist, olist.
  */
 (function (global) {
-  const LABELS = {
-    bold: 'B',
-    italic: 'I',
-    underline: 'U',
-    strikethrough: 'S',
-    ulist: '\u2022',
-    olist: '1.',
-    link: 'Link',
+  const ICONS = {
+    bold: '<i class="fa-solid fa-bold"></i>',
+    italic: '<i class="fa-solid fa-italic"></i>',
+    underline: '<i class="fa-solid fa-underline"></i>',
+    strikethrough: '<i class="fa-solid fa-strikethrough"></i>',
+    ulist: '<i class="fa-solid fa-list-ul"></i>',
+    olist: '<i class="fa-solid fa-list-ol"></i>',
+    link: '<i class="fa-solid fa-link"></i>',
   };
   const COMMANDS = {
     bold: { cmd: 'bold', val: null },
@@ -34,7 +34,7 @@
       btn.dataset.cmd = spec.cmd;
       btn.dataset.val = spec.val || '';
       btn.title = key;
-      btn.textContent = LABELS[key] || (key.charAt(0).toUpperCase() + key.slice(1));
+      btn.innerHTML = ICONS[key] || (key.charAt(0).toUpperCase() + key.slice(1));
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         if (spec.val === 'url') {

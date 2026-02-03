@@ -345,9 +345,7 @@
                                         <div class="flex flex-wrap items-center justify-between gap-2">
                                             <div class="flex items-center gap-2">
                                                 <button type="button" class="btn btn-ghost btn-sm cursor-move" aria-label="Drag to reorder" data-drag-handle>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
-                                                    </svg>
+                                                    <i class="fa-solid fa-grip-vertical text-sm"></i>
                                                 </button>
                                                 <button
                                                     type="button"
@@ -356,12 +354,8 @@
                                                     :aria-expanded="open"
                                                     :aria-label="open ? 'Collapse block' : 'Expand block'"
                                                 >
-                                                    <svg x-show="open" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                                                    </svg>
-                                                    <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                                    </svg>
+                                                    <i x-show="open" class="fa-solid fa-chevron-up text-sm" aria-hidden="true"></i>
+                                                    <i x-show="!open" class="fa-solid fa-chevron-down text-sm" aria-hidden="true"></i>
                                                     <span class="text-sm font-semibold">Block <span x-text="index + 1"></span></span>
                                                 </button>
                                                 <span class="badge badge-outline" x-text="block.type"></span>
