@@ -1,6 +1,6 @@
 {% if topbar and topbar.enabled and not (session.topbar_closed ?? false) %}
 <div 
-    class="w-full px-4 py-3 flex items-center gap-4 text-sm font-medium relative"
+    class="w-full px-4 py-4 flex items-center gap-4 text-sm font-medium relative"
     style="background-color: {{ topbar.background_color ?? '#2563eb' }}; color: {{ topbar.text_color ?? '#ffffff' }};"
     x-data="{ show: true }"
     x-show="show"
@@ -15,7 +15,7 @@
             type="submit" 
             class="opacity-70 hover:opacity-100 transition-opacity p-1 cursor-pointer bg-transparent border-none outline-none"
             aria-label="Close top bar"
-            style="color: {{ topbar.text_color ?? '#ffffff' }}; background: transparent;"
+            style="color: {{ topbar.text_color ?? '#ffffff' }}; background: transparent; border: none !important; cursor: pointer;"
         >
             <i class="fa-solid fa-times text-lg"></i>
         </button>
