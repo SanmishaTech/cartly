@@ -30,6 +30,7 @@
                                     id="shop_name"
                                     value="{{ data.shop_name ?? shop.shop_name ?? '' }}"
                                     class="admin-input {% if errors.shop_name %}input-error{% endif %}"
+                                    autocomplete="organization"
                                     required
                                 />
                                 {% if errors.shop_name %}
@@ -40,7 +41,7 @@
                             </div>
 
                             <div class="admin-form-control">
-                                <label class="label" for="shop_description_input">
+                                <label class="label">
                                     <span class="label-text font-semibold">Shop Description</span>
                                 </label>
                                 {% include 'partials/tex_editor.twig' with {
@@ -134,6 +135,7 @@
                                     id="address_line1"
                                     value="{{ data.address_line1 ?? shop.address_line1 ?? '' }}"
                                     class="admin-input {% if errors.address_line1 %}input-error{% endif %}"
+                                    autocomplete="street-address"
                                 />
                                 {% if errors.address_line1 %}
                                     <label class="label">
@@ -152,6 +154,7 @@
                                     id="address_line2"
                                     value="{{ data.address_line2 ?? shop.address_line2 ?? '' }}"
                                     class="admin-input {% if errors.address_line2 %}input-error{% endif %}"
+                                    autocomplete="address-line2"
                                 />
                                 {% if errors.address_line2 %}
                                     <label class="label">
@@ -171,6 +174,7 @@
                                         id="city"
                                         value="{{ data.city ?? shop.city ?? '' }}"
                                         class="admin-input {% if errors.city %}input-error{% endif %}"
+                                        autocomplete="address-level2"
                                     />
                                     {% if errors.city %}
                                         <label class="label">
@@ -189,6 +193,7 @@
                                         id="state"
                                         value="{{ data.state ?? shop.state ?? '' }}"
                                         class="admin-input {% if errors.state %}input-error{% endif %}"
+                                        autocomplete="address-level1"
                                     />
                                     {% if errors.state %}
                                         <label class="label">
@@ -207,6 +212,7 @@
                                         id="postal_code"
                                         value="{{ data.postal_code ?? shop.postal_code ?? '' }}"
                                         class="admin-input {% if errors.postal_code %}input-error{% endif %}"
+                                        autocomplete="postal-code"
                                     />
                                     {% if errors.postal_code %}
                                         <label class="label">
@@ -225,6 +231,7 @@
                                         id="country"
                                         value="{{ data.country ?? shop.country ?? 'India' }}"
                                         class="admin-input {% if errors.country %}input-error{% endif %}"
+                                        autocomplete="country"
                                     />
                                     {% if errors.country %}
                                         <label class="label">
