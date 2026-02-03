@@ -3,6 +3,15 @@
  * Uses contenteditable with bold, italic, strikethrough, ulist, olist.
  */
 (function (global) {
+  const LABELS = {
+    bold: 'B',
+    italic: 'I',
+    underline: 'U',
+    strikethrough: 'S',
+    ulist: '\u2022',
+    olist: '1.',
+    link: 'Link',
+  };
   const COMMANDS = {
     bold: { cmd: 'bold', val: null },
     italic: { cmd: 'italic', val: null },
@@ -21,11 +30,11 @@
       if (!spec) return;
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'tex-btn btn btn-ghost btn-xs';
+      btn.className = 'tex-btn btn btn-outline btn-xs border-base-300';
       btn.dataset.cmd = spec.cmd;
       btn.dataset.val = spec.val || '';
       btn.title = key;
-      btn.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+      btn.textContent = LABELS[key] || (key.charAt(0).toUpperCase() + key.slice(1));
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         if (spec.val === 'url') {
@@ -43,7 +52,7 @@
 
   function init(options) {
     const el = options.element;
-    const buttons = options.buttons || ['bold', 'italic', 'strikethrough', 'ulist', 'olist'];
+    const buttons = options.buttons || ['bold', 'italic', 'underline', 'strikethrough', 'ulist', 'olist', 'link'];
     const onChange = options.onChange;
 
     if (el === undefined || el === null) return null;
@@ -56,7 +65,7 @@
       editorEl.innerHTML = el;
     }
     editorEl.contentEditable = 'true';
-    editorEl.className = (editorEl.className || '') + ' tex-content p-3 min-h-[100px] text-base-content bg-base-100 focus:outline-none';
+    editorEl.className = (editorEl.className || '') + ' tex-content p-3 min-h-[200px] text-base-content bg-base-100 focus:outline-none';
     editorEl.style.outline = 'none';
 
     const toolbar = createToolbar(buttons, editorEl);
@@ -87,7 +96,7 @@
     wrapper.dataset.texInitialized = '1';
     const inputId = wrapper.dataset.texInputId;
     let value = (wrapper.dataset.texValue || '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
-    const buttons = (wrapper.dataset.texButtons || 'bold,italic,strikethrough,ulist,olist').split(',').map(function (s) { return s.trim(); });
+    const buttons = (wrapper.dataset.texButtons || 'bold,italic,underline,strikethrough,ulist,olist,link').split(',').map(function (s) { return s.trim(); });
 
     let inputEl = wrapper.nextElementSibling;
     if (!inputEl || inputEl.tagName !== 'INPUT' || inputEl.type !== 'hidden') {
