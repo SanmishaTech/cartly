@@ -174,15 +174,26 @@
                                     </div>
                                     <div class="admin-form-control">
                                         <label class="label" for="og_image">
-                                            <span class="label-text font-semibold">OG Image Path</span>
+                                            <span class="label-text font-semibold">OG Image (1200x630)</span>
                                         </label>
                                         <input
-                                            type="text"
-                                            name="seo[og_image]"
+                                            type="file"
+                                            name="og_image"
                                             id="og_image"
-                                            value="{{ og_image_value }}"
-                                            class="admin-input {% if errors['seo.og_image'] %}input-error{% endif %}"
+                                            accept="image/png,image/jpeg,image/webp"
+                                            class="file-input file-input-bordered w-full {% if errors['seo.og_image'] %}input-error{% endif %}"
                                         />
+                                        <p class="text-xs text-base-content/60 mt-1">We resize to fit within 1200x630 and convert to WebP.</p>
+                                        {% if seo_metadata and seo_metadata.og_image %}
+                                            <div class="mt-3">
+                                                <p class="text-xs text-base-content/60 mb-2">Current image preview</p>
+                                                <img
+                                                    src="/media/{{ seo_metadata.og_image }}"
+                                                    alt="OG image preview"
+                                                    class="max-w-xs rounded bg-base-200 object-cover"
+                                                />
+                                            </div>
+                                        {% endif %}
                                         {% if errors['seo.og_image'] %}
                                             <label class="label">
                                                 <span class="label-text-alt text-error">{{ errors['seo.og_image'] }}</span>

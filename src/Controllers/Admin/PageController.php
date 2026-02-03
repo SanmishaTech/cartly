@@ -92,6 +92,23 @@ class PageController extends AppController
         $errors = $validator->validate() ? [] : $this->formatValitronErrors($validator->errors());
         $errors = array_merge($uploadErrors, $errors);
         $seoInput = (array)($data['seo'] ?? []);
+        
+        // Handle OG image file upload
+        $uploads = $request->getUploadedFiles();
+        $ogImageFile = $uploads['og_image'] ?? null;
+        if ($ogImageFile) {
+            if (!$this->validateImageUpload($ogImageFile, 'seo.og_image', $errors)) {
+                // Validation failed, error already added
+            } elseif ($ogImageFile->getError() === UPLOAD_ERR_OK) {
+                $storage = new LocalStorageService();
+                try {
+                    $seoInput['og_image'] = $storage->storeShopImageFit($ogImageFile, $shop->id, 'og', 1200, 630);
+                } catch (\RuntimeException $exception) {
+                    $errors['seo.og_image'] = $exception->getMessage();
+                }
+            }
+        }
+        
         $errors = array_merge($errors, $this->validateSeoInput($seoInput));
 
         $title = trim((string)($pageInput['title'] ?? ''));
@@ -184,6 +201,31 @@ class PageController extends AppController
         $errors = $validator->validate() ? [] : $this->formatValitronErrors($validator->errors());
         $errors = array_merge($uploadErrors, $errors);
         $seoInput = (array)($data['seo'] ?? []);
+        
+        // Handle OG image file upload
+        $uploads = $request->getUploadedFiles();
+        $ogImageFile = $uploads['og_image'] ?? null;
+        if ($ogImageFile) {
+            if (!$this->validateImageUpload($ogImageFile, 'seo.og_image', $errors)) {
+                // Validation failed, error already added
+            } elseif ($ogImageFile->getError() === UPLOAD_ERR_OK) {
+                $storage = new LocalStorageService();
+                try {
+                    $seoInput['og_image'] = $storage->storeShopImageFit($ogImageFile, $shop->id, 'og', 1200, 630);
+                } catch (\RuntimeException $exception) {
+                    $errors['seo.og_image'] = $exception->getMessage();
+                }
+            }
+        } else {
+            // Preserve existing OG image if no new file is uploaded
+            $existingSeo = SeoMetadata::where('entity_type', 'page')
+                ->where('entity_id', $page->id)
+                ->first();
+            if ($existingSeo && $existingSeo->og_image) {
+                $seoInput['og_image'] = $existingSeo->og_image;
+            }
+        }
+        
         $errors = array_merge($errors, $this->validateSeoInput($seoInput));
 
         $title = trim((string)($pageInput['title'] ?? ''));
