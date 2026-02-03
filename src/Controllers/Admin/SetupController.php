@@ -1655,4 +1655,99 @@ class SetupController extends AppController
 
         return $sanitized;
     }
+
+    public function topbar($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $shopMetadata = ShopMetadata::where('shop_id', $shop->id)->first();
+        $raw = $shopMetadata?->topbar_settings ?? [];
+        if (!is_array($raw)) {
+            $raw = [];
+        }
+        $topbarSettings = [
+            'enabled' => $raw['enabled'] ?? false,
+            'message' => $raw['message'] ?? '',
+            'background_color' => $raw['background_color'] ?? '#2563eb',
+            'text_color' => $raw['text_color'] ?? '#ffffff',
+        ];
+
+        return $this->render($response, 'setup/topbar.twig', [
+            'shop' => $shop,
+            'topbar_settings' => $topbarSettings,
+            'errors' => $this->flashGet('errors', []),
+            'data' => $this->flashGet('old', []),
+        ]);
+    }
+
+    public function updateTopbar($request, Response $response): Response
+    {
+        $shop = $this->getShopOrRedirect($response);
+        if ($shop instanceof Response) {
+            return $shop;
+        }
+
+        $data = (array)$request->getParsedBody();
+        $topbar = (array)($data['topbar'] ?? []);
+
+        $enabled = !empty($topbar['enabled']);
+        $messageRaw = $topbar['message'] ?? '';
+        $backgroundColor = trim((string)($topbar['background_color'] ?? '#2563eb'));
+        $textColor = trim((string)($topbar['text_color'] ?? '#ffffff'));
+
+        $validator = new Validator($data);
+        
+        if ($enabled) {
+            $validator->rule('required', 'topbar.message')->message('Message is required when top bar is enabled.');
+            
+            $validator->rule('required', 'topbar.background_color')->message('Background color is required.');
+            $validator->rule('required', 'topbar.text_color')->message('Text color is required.');
+        }
+
+        $messageErrors = [];
+        $message = $this->htmlSanitizer->sanitize(
+            $messageRaw,
+            2000,
+            'topbar.message',
+            $messageErrors,
+            true
+        );
+
+        $errors = $validator->validate() ? [] : $this->formatValitronErrors($validator->errors());
+        if (!empty($messageErrors)) {
+            $errors = array_merge($errors, $messageErrors);
+        }
+
+        // Validate hex colors
+        if ($enabled && empty($errors)) {
+            if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $backgroundColor)) {
+                $errors['topbar.background_color'] = 'Background color must be a valid hex color (e.g., #2563eb).';
+            }
+            if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $textColor)) {
+                $errors['topbar.text_color'] = 'Text color must be a valid hex color (e.g., #ffffff).';
+            }
+        }
+
+        if (!empty($errors)) {
+            $this->flashSet('errors', $errors);
+            $this->flashSet('old', $data);
+            return $this->redirect($response, '/admin/setup/topbar');
+        }
+
+        $shopMetadata = ShopMetadata::firstOrNew(['shop_id' => $shop->id]);
+        $shopMetadata->topbar_settings = [
+            'enabled' => $enabled,
+            'message' => $message ?? '',
+            'background_color' => $backgroundColor,
+            'text_color' => $textColor,
+        ];
+        $shopMetadata->save();
+
+        $this->flashSet('success', 'Top bar settings saved.');
+
+        return $this->redirect($response, '/admin/setup/topbar');
+    }
 }

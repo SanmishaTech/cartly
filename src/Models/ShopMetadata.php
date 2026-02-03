@@ -30,6 +30,7 @@ class ShopMetadata extends Model
         'footer_content',
         'third_party',
         'oauth_config',
+        'topbar_settings',
     ];
 
     protected $casts = [
@@ -41,6 +42,7 @@ class ShopMetadata extends Model
         'footer_content' => 'array',
         'third_party' => 'array',
         'oauth_config' => 'array',
+        'topbar_settings' => 'array',
     ];
 
     public function shop(): BelongsTo

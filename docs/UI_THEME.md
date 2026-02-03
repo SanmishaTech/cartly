@@ -11,6 +11,20 @@
 - Fallback chain: active → default → core views
 - Storefront semantics and loading rules are in `docs/STOREFRONT_SEMANTICS.md`.
 
+## Top Bar Component
+- Promotional banner displayed at the top of all storefront pages
+- Location: `src/Views/themes/{theme}/partials/topbar.twig`
+- Included in all theme layouts (`layout.twig`) at the top of `<body>`
+- Features:
+  - Session-based close state (reappears in new session)
+  - HTML message rendering (rich text from TEX editor)
+  - Centered message display with responsive design
+  - Customizable background and text colors
+  - Close button positioned absolutely on the right
+- Twig global: `topbar` (array with `enabled`, `message`, `background_color`, `text_color`)
+- Session check: `session.topbar_closed` to hide if closed
+- Available in all themes (default, classic, modern)
+
 ## Default Theme Home Split
 - Home page template is `src/Views/themes/default/pages/home.twig`.
 - Section rendering is split into partials under `src/Views/themes/default/partials/home/`.

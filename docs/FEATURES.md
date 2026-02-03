@@ -49,6 +49,27 @@
 - Latest row is the current subscription
 - History is shown on the Manage Subscription screen
 
+## Top Bar (Promotional Banner)
+- **Shop-specific:** Each shop can configure their own promotional top bar
+- **Admin UI:** `/admin/setup/topbar` — Configure message, colors, enable/disable
+- **Fields:**
+  - `enabled` (boolean) — Toggle to show/hide top bar
+  - `message` (HTML) — Rich text message using TEX editor (supports formatting, links, lists)
+  - `background_color` (hex) — Background color (default: #2563eb)
+  - `text_color` (hex) — Text color (default: #ffffff)
+- **Features:**
+  - Closable by customers (session-based, reappears in new session)
+  - Centered message display
+  - HTML content rendering (formatted text, links, etc.)
+  - Responsive design
+  - Available in all themes (default, classic, modern)
+- **Routes:**
+  - GET `/admin/setup/topbar` — Display form
+  - POST `/admin/setup/topbar` — Save settings
+  - POST `/topbar/close` — Close bar for current session
+- **Storage:** `shop_metadata.topbar_settings` (JSON column)
+- **Security:** Permission gated by setup_access, CSRF token required
+
 ## Email (transactional)
 - **Provider-agnostic:** MailResolver resolves From/Reply-To from shop settings; TransactionalMailService enforces limits and logs; transport is Brevo today (SES-ready).
 - **Modes:** Global (Shop Name via Cartly &lt;no-reply@…&gt;) or custom_domain (shop From email when set and verified). Custom domain uses shop From when `email_mode=custom_domain` and `from_email` is set.

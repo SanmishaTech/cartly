@@ -33,6 +33,7 @@ return [
             $table->json('footer_content')->nullable();
             $table->json('third_party')->nullable();
             $table->json('oauth_config')->nullable();
+            $table->json('topbar_settings')->nullable();
 
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

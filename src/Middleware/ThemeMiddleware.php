@@ -86,6 +86,7 @@ class ThemeMiddleware implements MiddlewareInterface
         $environment->addGlobal('social_links', $this->buildSocialLinksPayload($context, $shop));
         $environment->addGlobal('footer_content', $this->buildFooterPayload($context, $shop));
         $environment->addGlobal('menus', $this->buildMenuPayload($context, $shop));
+        $environment->addGlobal('topbar', $this->buildTopbarPayload($context, $shop));
         $themeConfig = $this->buildThemeConfig($shop);
         $environment->addGlobal('theme_config', $themeConfig);
         $environment->addGlobal('font_profiles', $this->resolveFontProfiles($themeConfig));
@@ -98,6 +99,9 @@ class ThemeMiddleware implements MiddlewareInterface
             'id' => $_SESSION['user_id'] ?? null,
             'name' => $_SESSION['user_name'] ?? null,
             'email' => $_SESSION['user_email'] ?? null,
+        ]);
+        $environment->addGlobal('session', [
+            'topbar_closed' => $_SESSION['topbar_closed'] ?? false,
         ]);
         
         // Add context to request for controllers
@@ -182,6 +186,21 @@ class ThemeMiddleware implements MiddlewareInterface
         }
 
         return $this->menuService->getMenusForShop($shop);
+    }
+
+    private function buildTopbarPayload(string $context, mixed $shop): ?array
+    {
+        if ($context !== 'storefront' || !$shop) {
+            return null;
+        }
+
+        $metadata = ShopMetadata::where('shop_id', $shop->id)->first();
+        $topbarSettings = $metadata?->topbar_settings ?? [];
+        if (!is_array($topbarSettings)) {
+            return null;
+        }
+
+        return $topbarSettings;
     }
 
     private function buildThemeConfig(?Shop $shop): array

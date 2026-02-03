@@ -733,4 +733,25 @@ class StorefrontController
             'description' => 'This is a placeholder category description. Replace with your collection story.',
         ];
     }
+
+    public function closeTopbar($request, Response $response): Response
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+        
+        $_SESSION['topbar_closed'] = true;
+        
+        // Return JSON for AJAX requests, otherwise redirect back
+        $acceptHeader = $request->getHeaderLine('Accept');
+        if (str_contains($acceptHeader, 'application/json')) {
+            $response->getBody()->write(json_encode(['success' => true]));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+        
+        // Redirect back to referer or home
+        $referer = $request->getHeaderLine('Referer');
+        $redirectUrl = $referer ?: '/';
+        return $response->withStatus(302)->withHeader('Location', $redirectUrl);
+    }
 }

@@ -45,6 +45,7 @@ return function (App $app, Twig $twig) {
     $app->get('/register', [$storefrontController, 'registerForm']);
     $app->post('/register', [$storefrontController, 'register'])->add(new TrimInputMiddleware());
     $app->get('/forgot-password', [$storefrontController, 'forgotPasswordForm']);
+    $app->post('/topbar/close', [$storefrontController, 'closeTopbar'])->add(new TrimInputMiddleware());
 
     // Customer OAuth (Google / Facebook) — requires shop context (storefront host)
     $app->get('/auth/google', [$storefrontController, 'redirectToGoogle']);
@@ -179,6 +180,8 @@ return function (App $app, Twig $twig) {
         $setup->get('/discounts', [$setupController, 'discounts']);
         $setup->get('/customer-auth', [$setupController, 'customerAuth']);
         $setup->post('/customer-auth', [$setupController, 'updateCustomerAuth'])->add(new TrimInputMiddleware());
+        $setup->get('/topbar', [$setupController, 'topbar']);
+        $setup->post('/topbar', [$setupController, 'updateTopbar'])->add(new TrimInputMiddleware());
         $setup->get('/email', [$setupController, 'email']);
         $setup->post('/email', [$setupController, 'updateEmail'])->add(new TrimInputMiddleware());
         $setup->post('/email/verify-domain', [$setupController, 'verifyDomain'])->add(new TrimInputMiddleware());

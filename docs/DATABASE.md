@@ -81,6 +81,7 @@ Note: Subscription billing period determines which cost column is used.
 - home_sections (json)
 - home_content (json)
 - oauth_config (json) — per-shop OAuth for customer login: `{ "google": { "enabled", "client_id", "client_secret" }, "facebook": { "enabled", "app_id", "app_secret" } }`
+- topbar_settings (json) — Promotional top bar configuration: `{ "enabled": boolean, "message": string (HTML), "background_color": string (hex), "text_color": string (hex) }`
 
 ## Shop Email Settings (key fields)
 - shop_id (fk, unique)

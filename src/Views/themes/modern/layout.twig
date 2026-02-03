@@ -21,6 +21,8 @@
     {% if third_party and third_party.body_start_html %}
         {{ third_party.body_start_html|raw }}
     {% endif %}
+    {# Top Bar #}
+    {% include 'partials/topbar.twig' %}
     {% include 'partials/header.twig' %}
     
     <main class="min-h-screen">
